@@ -1,0 +1,13 @@
+Place the file containing the already verified solutions in the folder labeled CorrectValues.
+
+The folder OutputFiles should contain the files with results of OCR transcription. Expects values be formatted separated by commas and no spaces. Supports testing multiple different test files against a single verified file.
+
+Prints results to console with number of terms from correct list of values that appear in test input, number of errors in test input etc.
+
+If using g++ compile with:
+
+g++ -c OutputChecker.cpp
+g++ -o a OutputChecker.o
+./a
+
+while inside ./OutputChecker
