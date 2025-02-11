@@ -4,6 +4,10 @@ import pytesseract
 import os
 import PIL
 from PIL import Image, ImageEnhance
+from itertools import islice
+#import pkg_resources
+from itertools import islice
+from symspellpy import SymSpell, Verbosity
 
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
@@ -42,10 +46,10 @@ def binarize(image_path):
 
     image = cv2.imread(image_path)
 
-    # Normalize image
+    # normalize image
     image = cv2.normalize(image, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
 
-    # Noise removal
+    # noise removal
     kernel = np.ones((3, 3), np.uint8)
     opening = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel, iterations=2)
     opening = cv2.fastNlMeansDenoisingColored(opening, None, 10, 10, 7, 15)
@@ -53,7 +57,7 @@ def binarize(image_path):
     gray = cv2.cvtColor(opening, cv2.COLOR_BGR2GRAY)
     gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
 
-    # Thinning and Skeletonization
+    # thinning, skeletonization
     kernel = np.ones((3, 3), np.uint8) # 5, 5 -> thicker idk
     erosion = cv2.erode(gray, kernel, iterations=1)
     #dilation = cv2.dilate(erosion, kernel, iterations=1)
@@ -65,6 +69,15 @@ def extract_text(image_path):
     text = pytesseract.image_to_string(image, lang='eng', config='--psm 4')
     #image_to_data(im, lang='eng', config=psm)
     return text
+
+def post_correction(text):
+    sym_spell = SymSpell(max_dictionary_edit_distance=3, prefix_length=7)
+
+    dictionary_path = "prelimDict.txt"
+    sym_spell.load_dictionary(dictionary_path, term_index=0, count_index=1, separator="$")
+
+    suggestions = sym_spell.lookup_compound(text, max_edit_distance=2, transfer_casing=True, ignore_non_words=True)
+    return suggestions
 
 if __name__ == '__main__':
     # why so many diff directories?
@@ -81,6 +94,10 @@ if __name__ == '__main__':
     for file in os.listdir('preprocessed/'):
         while count1 < 1:
             text1 = extract_text(f'preprocessed/{file}')
+
+            corrections = post_correction(text1)
+            for suggestion in corrections:
+                print(suggestion.term)
             count1 += 1
 
     text2 = ''
