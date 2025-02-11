@@ -88,7 +88,7 @@ int main()
             }
             //Check if term appears in list
             //int cnt = count(correctValues.begin(), correctValues.end(), tempValues[j]);
-            cout << "String: " << tempValues[j] << endl;
+            //cout << "String: " << tempValues[j] << endl;
 
             if (tempValues[j].compare(correctValues[j]) == 0) {
                 numMatched++;
