@@ -4,10 +4,11 @@ import pytesseract
 import os
 import PIL
 from PIL import Image, ImageEnhance
-from itertools import islice
-#import pkg_resources
-from itertools import islice
+from pip._internal.metadata import pkg_resources
 from symspellpy import SymSpell, Verbosity
+
+#import keras_ocr
+#import tensorflow as tf
 
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
@@ -70,13 +71,34 @@ def extract_text(image_path):
     #image_to_data(im, lang='eng', config=psm)
     return text
 
+# def extract_text_keras(image_path): KERAS BLOWS
+#     pipeline = keras_ocr.pipeline.Pipeline()
+#     images = [keras_ocr.tools.read(image_path)]
+#     prediction_groups = pipeline.recognize(images)
+#     text = ''
+#     for predictions in prediction_groups:
+#         for text in predictions:
+#             text += text
+#     return text
+
 def post_correction(text):
-    sym_spell = SymSpell(max_dictionary_edit_distance=3, prefix_length=7)
+    sym_spell = SymSpell(max_dictionary_edit_distance=2, prefix_length=7)
+    dictionary_path = pkg_resources.resource_filename(
+        "symspellpy", "frequency_dictionary_en_82_765.txt"
+    )
 
-    dictionary_path = "prelimDict.txt"
+    dictionary_path = "newDict.txt"
     sym_spell.load_dictionary(dictionary_path, term_index=0, count_index=1, separator="$")
+    #print(text)
 
-    suggestions = sym_spell.lookup_compound(text, max_edit_distance=2, transfer_casing=True, ignore_non_words=True)
+    # print first 10 words in dictionary
+
+
+    #suggestions = sym_spell.lookup_compound(text, max_edit_distance=2, transfer_casing=True, ignore_non_words=True)
+    suggestions = sym_spell.lookup(
+        text, Verbosity.CLOSEST, max_edit_distance=2, include_unknown=True
+    )
+
     return suggestions
 
 if __name__ == '__main__':
@@ -100,11 +122,11 @@ if __name__ == '__main__':
                 print(suggestion.term)
             count1 += 1
 
-    text2 = ''
-    count2 = 0
-    for file in os.listdir('cut_turned/'):
-        while count2 < 1:
-            text2 = extract_text(f'cut_turned/{file}')
-            count2 += 1
-    print(text1)
+    # text2 = ''
+    # count2 = 0
+    # for file in os.listdir('preprocessed/'):
+    #     while count2 < 1:
+    #         text2 = extract_text(f'preprocessed/{file}')
+    #         count2 += 1
+    #print(text1)
     #print(text2)
