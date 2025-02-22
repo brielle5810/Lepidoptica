@@ -269,7 +269,6 @@ halia$20
 amathea$3
 februa$18
 archippus$66
-lena$3
 minima$20
 xenocles$3
 postverta$3
@@ -309,7 +308,6 @@ istapa$73
 cymela$20
 floridianus$20
 zabulon$72
-iole$20
 frisia$20
 histrio$20
 maesites$40
@@ -373,7 +371,6 @@ rumiko$10
 octavia$3
 tharos$20
 barombina$3
-iris$2
 midea$20
 hewitsonii$3
 machaon$5
@@ -564,3 +561,386 @@ minima$3
 avernus$3
 nobilis$3
 sanantonio$11
+St-Laurent du Maroni$8
+Boyacá$12
+Pará$8
+Amazonas$9
+Corozal$1
+São Paulo$6
+San José$29
+Veracruz$148
+Yucatán$14
+Bolívar$9
+Tungurahua$37
+San Luis Potosí$44
+Meta$19
+Cartago$33
+Paraná$11
+Tabasco$1
+Chiapas$78
+Guerrero$133
+Michoacán$19
+Valle del Cauca$85
+Oaxaca$46
+Minas Gerais$2
+Santa Catarina$12
+La Libertad$19
+0$0
+Petén$7
+Alta Verapaz$40
+San Salvador$7
+Izabal$3
+Bahía$2
+Escuintla$3
+Chocó$2
+Napo$20
+Espírito Santo$5
+Santo Domingo de los Tsáchilas$8
+Managua$14
+Rio de Janeiro$1
+Salta$53
+Atlántico Sur$2
+Matagalpa$2
+Tamaulipas$27
+Rondônia$121
+Essequibo Islands-West Demerara$1
+Tunapuna-Piarco$3
+Francisco Morazán$5
+El César$1
+Guanacaste$64
+Limón$16
+Tucumán$4
+Junín$15
+La Paz$8
+Santa Rosa$9
+Morelos$23
+Quintana Roo$9
+La Vega$222
+Dajabón$3
+Cajamarca$1
+Huánuco$58
+Loreto$8
+San Martín$2
+California$326
+Texas$554
+Cundinamarca$21
+Arizona$769
+Chiriquí$7
+Kansas$42
+Cochabamba$8
+Distrito Federal$5
+Georgia$147
+New Mexico$86
+Nevada$308
+Sinaloa$23
+Paraíba$1
+Colón$13
+Port of Spain$1
+Panamá$13
+Heredia$16
+Utah$52
+Nuevo León$7
+Azuay$2
+Los Ríos$2
+Colima$6
+Jalisco$20
+Darién$2
+South Carolina$42
+Gros Islet$1
+Aragua$10
+Entre Ríos$1
+Alajuela$81
+Mérida$1
+Táchira$3
+Nueva Esparta$2
+Grand Cayman$11
+Puntarenas$46
+La Altagracia$20
+Laborie$11
+Canaries$1
+Jujuy$15
+St. Paul$11
+Pastaza$6
+Ucayali$1
+Sucumbíos$2
+Pichincha$40
+Atlántida$1
+Tucuman$2
+Delta Amacuro$5
+Ahuachapán$13
+Tennessee$40
+Cuyuni-Mazaruni$1
+Sangre Grande$3
+Morona-Santiago$3
+Guairá$3
+Gracias a Dios$2
+Misiones$1
+María Trinidad Sanchez$1
+Pedernales$35
+Maine$84
+Indiana$141
+Missouri$318
+North Carolina$214
+Kentucky$49
+Connecticut$8
+Colorado$53
+Oklahoma$61
+Mississippi$44
+Ohio$14
+Maryland$75
+Virginia$63
+Louisiana$53
+Arkansas$47
+New York$117
+Dent$1
+Andalusia$2
+Ambon Island$3
+Pennsylvania$209
+Quebec$44
+Manyara$1
+Ontario$77
+Bali$2
+New Jersey$31
+Oti$12
+St. Thomas$34
+Manitoba$64
+Central Hungary$2
+Santiago de Cuba$40
+Wisconsin$181
+Mongala$1
+Iowa$15
+Santiago$76
+Montana$21
+Para$1
+Saskatchewan$12
+Alaska$1
+West Bengal$1
+Western Region$3
+Queensland$1
+New Hampshire$77
+Zamora-Chinchipe$2
+Assam$6
+La Habana$8
+Bambesa$1
+El Oro$1
+Nebraska$8
+Nova Scotia$23
+Michigan$30
+Northwest Territories$44
+Agoyan$1
+North Sumatra$1
+Matanzas$17
+Zacatecas$6
+British Columbia$9
+Alberta$14
+West Virginia$17
+Illinois$32
+National District$5
+Kanagawa$2
+New South Wales$9
+South Dakota$17
+Buenos Aires$2
+Ogoja$1
+Massachusetts$41
+Hokkaido$1
+Alabama$18
+Conneticut$3
+Merida$2
+Nueva Ecija$1
+Volta$3
+St. John$21
+St. James$12
+Campeche$1
+Washington$1
+Mashonaland$2
+Transvaal$2
+Dong Nai$5
+New Brunswick$35
+Nam La$4
+Cayo$4
+Sololá$1
+St. Andrew$39
+St. Ann$12
+Kingston$29
+Newfoundland and Labrador$1
+Cortés$5
+Puebla$1
+Shan$4
+Kachin$2
+Oregon$3
+Oriente$1
+Vermont$58
+Minnesota$6
+Abidjan$3
+San Sebastian$8
+San Juan$12
+Fajardo$8
+Humacao$4
+Canovanas$1
+Cayey$4
+Manati$3
+Trelawny$2
+Yukon$2
+Sulawesi$2
+San Jose$14
+Morales$2
+Sonsonate$3
+Malaku$5
+Isabella$1
+Eastern Region$6
+Ashanti$1
+Chihuahua$3
+Bangui$2
+Guayama$1
+Gallia$1
+St. Catherine$7
+Manchester$4
+Clarendon$2
+Cotopaxi$3
+Dihn Quan$1
+Baja California Sur$2
+Baja Calif Sur$3
+Granada$3
+Satyria$3
+Queretaro$1
+Nayarit$10
+Malanje$3
+Santa Ana$3
+Magallanes y de la Antártica Chilena$2
+Tolima$2
+Copperbelt$3
+Cayman Brac$4
+Hoher Atlas$2
+Drome$1
+Zelaya$1
+Singapore$4
+Hawaii$3
+Guayas$1
+Veraguas$2
+Nariño$1
+Andros Island$5
+Manicaland$1
+Nord$1
+Santa Cruz$5
+Chimaltenango$1
+Durango$1
+Gt. Abaco$7
+St Croix$11
+West Papua$1
+Carabobo$2
+Gyeonggi$1
+Grande Abaco$1
+Cuzco$4
+South Sulawesi$3
+Madre de Dios$10
+Maria Trinidad Sanchez$33
+Lara$1
+Yaracuy$1
+Hidalgo$3
+Palawan$3
+Samana$4
+Zulia$1
+Chantaburi$1
+Turks$1
+North Caicos$1
+Caicos$10
+Wyoming$1
+St. Peter$28
+Bonaire$2
+St. Lucy$3
+Gt. Inagua Island$28
+Delaware$1
+North Dakota$3
+Marquis$1
+Ouest$8
+El Seibo$1
+Sanchez Ramirez$7
+Monte Christi$5
+Duarte$1
+Puerto Plata$201
+Lower Austria$1
+Barahona$23
+Independencia$11
+Azua$40
+Bahoruco$1
+Monte Plata$1
+Abaco$1
+Guatemala$2
+Cayenne$3
+Imbabura$1
+Monte Cristi$1
+Santiago Rodriguez$7
+Inagua$3
+St. George$16
+St. Paul Charlestown$13
+Bequia$3
+Idaho$2
+Mayaguana Island$7
+Mayaguana$2
+Rio Grande$7
+Yabucoa$1
+Coamo$3
+Sabana Grande$5
+Guanica$2
+Maricao$7
+Tortola$4
+Virgin Gorda$6
+Crooked Island$5
+Long Island$3
+St. Patrick$1
+Charlotte$2
+St. David$6
+Castries Quarter$13
+Laborie Quarter$6
+Vaupés$1
+Uttara Khand$1
+Barbuda$14
+Bioko Island$1
+St. Mary$29
+Southwest Papua$1
+Holguín$6
+Bohol$1
+Peten$10
+Yauco$1
+Ponce$1
+Baja California Norte$1
+Terre De Haut$2
+Grade Terre$8
+Basse Terre$5
+St. Anthony$10
+St. Joseph$4
+St. James Windward$3
+St. Thomas Lowland$3
+Middle Island$1
+Trinity Palmetto Point$5
+St. George Basseterre$5
+St. John Capesterre$5
+St Eustatius$1
+St. Anne Sandy Point$5
+Horatio Estates$2
+Granma$42
+Pinar del Río$5
+Guantánamo$23
+Baracoa$8
+La Romana$1
+Sonora$1
+Southern Leyte$2
+Nandi$1
+Cat Island$1
+Nagua$2
+Retalhuleu$3
+Jinotega$1
+Baja Verapaz$1
+Sichuan$1
+Monagas$7
+Cabo Rojo$1
+Basses Alpes$3
+Cuvette-Ouest$5
+San Juan-Laventille$1
+Isle de Formose$2
+Kankan$1
+Mato Grosso$1
+Santo Domingo$2
+Distrito Nacional$3
+Guantanamo$3
+Puerto Rico$9
