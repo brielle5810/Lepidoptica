@@ -167,7 +167,7 @@ if __name__ == '__main__':
 
         print("====================================================")
 
-        #binarize(f'smartcrop/{file}')
+        #binarize(f'smartcrop/{file}') erm
 
     count1 = 0
     text1 = ''
