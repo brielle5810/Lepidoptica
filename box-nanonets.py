@@ -5,9 +5,10 @@ from PIL import Image
 
 model = NANONETSOCR()
 
-model.set_token('API_KEY')
-MODEL_ID = 'MODEL_ID'
-API_KEY = 'API_KEY'
+# model.set_token('API_KEY')
+# MODEL_ID = 'MODEL_ID'
+# API_KEY = 'API_KEY'
+
 
 from datetime import datetime
 
@@ -35,6 +36,7 @@ for image in response_data["moderated_images"]:
         continue
 
     img = Image.open(image_path)
+    image = ImageOps.exif_transpose(image)
 
     for box in image["moderated_boxes"]:
 
