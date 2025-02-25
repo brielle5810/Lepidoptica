@@ -1,21 +1,19 @@
 from nanonets import NANONETSOCR
 import os
 import requests
-from PIL import Image
+from PIL import Image, ImageOps
 
 model = NANONETSOCR()
-
-# model.set_token('API_KEY')
-# MODEL_ID = 'MODEL_ID'
-# API_KEY = 'API_KEY'
-
+model.set_token
+MODEL_ID =
+API_KEY =
 
 from datetime import datetime
 
 current_batch_day = (datetime.utcnow() - datetime(1970, 1, 1)).days
 print(current_batch_day)
 
-url = f'https://app.nanonets.com/api/v2/Inferences/Model/5c1490c0-0edc-412e-949c-0e68060b76db/ImageLevelInferences?start_day_interval=0&current_batch_day={current_batch_day}'
+url = f'https://app.nanonets.com/api/v2/Inferences/Model/{MODEL_ID}/ImageLevelInferences?start_day_interval=0&current_batch_day={current_batch_day}'
 response = requests.post(url, auth=(API_KEY, ''), headers={"Content-Type": "application/json"})
 response_data = response.json()
 #print (response_data)
