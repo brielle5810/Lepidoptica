@@ -24,8 +24,8 @@ def crop_left_half(image_path):
     image = Image.open(image_path)
     image = ImageOps.exif_transpose(image)
 
-    image.show()
-    print("HELOJIf")
+    # image.show()
+    # print("HELOJIf")
 
     # height, width, _ = image.shape
     width, height = image.size  # Get actual image dimensions
@@ -48,7 +48,8 @@ def rotate_180(image_path):
     image = Image.open(image_path)
     image = ImageOps.exif_transpose(image)
     image.save(after_path + image_path.split('/')[1])
-    image.show()
+    # image.show()
+
     crop_left_half(after_path + image_path.split('/')[1])
 
 def binarize(image_path):
@@ -142,15 +143,11 @@ if __name__ == '__main__':
     # why so many diff directories?
     # to compare different stages of the image processing and processing techniques
     # this is just a test so... chill
-    for file in os.listdir('uncropped/'):
-        rotate_180(f'uncropped/{file}')
+    for file in os.listdir('unprocessed/'):
+        rotate_180(f'unprocessed/{file}')
 
     for file in os.listdir('cut_turned/'):
         binarize(f'cut_turned/{file}')
-        (f'preprocessed/{file}')
-
-        print("====================================================")
-
         #binarize(f'smartcrop/{file}') erm
 
     count1 = 0
