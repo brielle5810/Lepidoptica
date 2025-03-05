@@ -4,7 +4,7 @@ import requests
 from PIL import Image, ImageOps
 
 model = NANONETSOCR()
-model.set_token
+model.set_token(
 MODEL_ID =
 API_KEY =
 
@@ -34,7 +34,7 @@ for image in response_data["moderated_images"]:
         continue
 
     img = Image.open(image_path)
-    image = ImageOps.exif_transpose(image)
+    img = ImageOps.exif_transpose(img)
 
     for box in image["moderated_boxes"]:
 
