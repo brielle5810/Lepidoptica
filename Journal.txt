@@ -1,0 +1,30 @@
+Previously:
+- Decided to try to make my own model to recognize text. I'm attempting to follow a research paper (very roughly because the paper's model was created with Matlab) and I have a very large dataset of text and other information. 
+- A large portion of my time was spent trying to figure out how to import all the data and organize it. 
+
+2/21/25 Update:
+Spent a lot of time reorganizing preprocessing, reading/watching resources on what is the best ways to preprocess for ocr, and trying out different methods to see what gives the best results. I found that any form of noise reduction, whether it be CLAHE, Dialating, Eroding, MorphologyEx, etc would make my images much more busy and hard to read.
+
+I also read an article about Adaptive Thresholding, which is much more useful for images of variable lighting (which is how my data is). Adaptive Thresholding determines the threshold of a pixel based on the region around it, which allows binarization to be more uniform. I used Adaptive Gaussian Thresholding. It worked a lot better than my previous attempts with Otsu's Binarization.
+
+Other resources I want to look into:
+
+https://www.geeksforgeeks.org/bounding-box-prediction-using-pytorch/
+https://builtin.com/data-science/python-ocr
+https://www.youtube.com/watch?v=9FCw1xo_s0I
+https://github.com/wjbmattingly/ocr_python_textbook/blob/main/03_bounding_boxes_index-Copy1.ipynb
+https://www.reddit.com/r/deeplearning/comments/sxagv0/help_training_a_model_on_google_colab_and_my/
+
+Update: 
+Hit issues with RAM on Google Colab. I'm still holding out for Hypergator, so I don't want to buy Google Colab pro. Though as it's been already a few weeks since they told us they'd give us access, I'm starting to think I should buy it anyways.
+
+Update:
+Found a work around the RAM issue, but now just had issues training the model. My runtime disconnects before the model is finished training (which would be like... 4 days). Essentially it means that it never completes. So I had to buy Google Colab pro.
+
+3/10/25 Update:
+Last week, I finally successfully was able to run the model. Over the weekend, I tested two different runs successfully, but the best the model ever did in accuracy was 32%. It hit that percentage after only a few epochs, making me think that the model is overfitting. That would make sense, since I realized that the images I had in my data file (though incredibly diverse) was also super busy and hard to deal with. Each image had extra items in it, people, varying levels of readability, etc. I think it was a foolish idea to try and make a model out of this data, especially since the butterfly images we would've been working with would be more standard and similar to one another. But I guess I was hoping to get a good grasp on both handwritten and machine text. 
+
+Instead, I'm going to look at pytesseract. We don't have enough time to go through what I just did and try to create our own model, so I'll see if pytesseract can make our lives easier. I can then work on just trying to build on the pytesseract model, like my teammates have been doing. 
+
+Later 3/10/25 Update:
+I decided to try easyocr after watching a few resources. It's terrible on non processed images, but after preprocessing, it worked out pretty good (not too bad either with some more legible handwriting). Even better, we get a confidence percentage on how good each text prediction is. That way, we can tell the user when the machine thinks it's made a mistake and the user can go in and fix it themselves. Next time, I'm going to see if I can improve the accuracy and test it on multiple images. 
