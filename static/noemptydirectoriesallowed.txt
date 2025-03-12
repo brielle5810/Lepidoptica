@@ -1,0 +1,4 @@
+no enmpty directories allowed on github
+static for frontend
+
+css, js, images, fonts, etc.
