@@ -1,0 +1,54 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Gallery</title>
+</head>
+
+ <script>
+        function deleteImage(filename) {
+            fetch(`/delete/${filename}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log(`Deleted: ${filename}`);
+                        location.reload(); // updat/refresh page
+                    } else {
+                        alert(`Error: ${data.error}`);
+                    }
+                });
+        }
+        function deleteAll() {
+            fetch(`/delete_all`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log(`Deleted all images`);
+                        location.reload();
+                    } else {
+                        alert(`Error: ${data.error}`);
+                    }
+                });
+        }
+    </script>
+<body>
+    <h2>Uploaded Images</h2>
+    <div>
+          {% for image in images %}
+            <div>
+                <img src="{{ url_for('download_file', name=image) }}" alt="{{ image }}" width="200">
+                <p>{{ image }}</p>
+                <button onclick="deleteImage('{{ image }}')">Delete Image</button>
+            </div>
+        {% endfor %}
+    </div>
+    <br>
+    <button> <a href="/" style="all: unset;">UPLOAD MORE</a></button>
+<!--    #removed link styling-->
+    <br>
+    <br>
+    <button onclick="deleteAll()">DELETE ALL IMAGES</button>
+
+</body>
+</html>
