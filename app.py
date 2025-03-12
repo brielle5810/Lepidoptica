@@ -16,8 +16,9 @@ CORS(app)
 
 UPLOAD_FOLDER = "uploads"
 PREPROCESS_FOLDER = "preprocess"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(PREPROCESS_FOLDER, exist_ok=True)
+STAGE1_FOLDER = "stage1_crop"
+for folder in [UPLOAD_FOLDER, STAGE1_FOLDER, PREPROCESS_FOLDER]:
+    os.makedirs(folder, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["PREPROCESS_FOLDER"] = PREPROCESS_FOLDER
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "tiff"}
@@ -52,82 +53,89 @@ def upload():
                 filenames.append(filename)
 
         if filenames:
-            preprocess()
             return redirect(url_for("loading_page", filenames=",".join(filenames)))
 
         flash("No valid files selected")
         return redirect(request.url)
 
-            # redirected to the uploaded file see def download_file(name)
-             #when uploaded 1 file, not in use rn with mult
-            #return redirect(url_for('download_file', name=filename))
 
 @app.route("/loading_page", methods=["GET"])
 def loading_page():
+
+    #loading page renders THEN CALLS preprocess! so user waits on loading page
     #filenames = request.args.get("filenames", "").split(",") if request.args.get("filenames") else []
     return render_template("loading.html")
 
-@app.route("/preprocess", methods=["GET","POST"])
+
+@app.route("/preprocess", methods=["GET", "POST"])
 def preprocess():
+    # edited for bath uoloads/processing
     filenames = os.listdir(app.config["UPLOAD_FOLDER"])
 
+    if not filenames:
+        return jsonify({"message": "No files to preprocess"}), 400
+
+    #crop and save in stage1 folder
+    crop_images_in_batch(filenames)
+    #preprocess cropped images and save in preprocess folder
+    preprocess_images_in_batch()
+
+    return jsonify({"message": "Batch preprocessing complete", "files": os.listdir(PREPROCESS_FOLDER)})
+
+
+def crop_images_in_batch(filenames):
     for filename in filenames:
-        image_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-        preprocessed_path = os.path.join(app.config["PREPROCESS_FOLDER"], filename)
+        image_path = os.path.join(UPLOAD_FOLDER, filename)
+        cropped_path = os.path.join(STAGE1_FOLDER, filename)
 
         try:
             image = Image.open(image_path)
             image = ImageOps.exif_transpose(image)
-            image = crop_left_half(image)
-            image = preproc_image(np.array(image))
+            width, height = image.size
+            new_width = int(width * (2 / 5))
+            cropped_image = image.crop((0, 0, new_width, height))
 
-            processed_image = Image.fromarray(image)
-            processed_image.save(preprocessed_path)
+            cropped_image.save(cropped_path)
+        except Exception as e:
+            print(f"Error cropping {filename}: {e}")
 
-            print(f"Saved preprocessed image: {preprocessed_path}")
+    print("All images cropped successfully!")
+
+
+def preprocess_images_in_batch():
+    # create kernels once, instead of repeatedly for each pic as b4....
+    kernel_open = np.ones((3, 3), np.uint8)
+    kernel_erode = np.ones((2, 2), np.uint8)
+
+    for filename in os.listdir(STAGE1_FOLDER):
+        image_path = os.path.join(STAGE1_FOLDER, filename)
+        final_path = os.path.join(PREPROCESS_FOLDER, filename)
+
+        try:
+            image = Image.open(image_path)
+            image_np = np.array(image)
+
+            # normalize image
+            image_np = cv2.normalize(image_np, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+
+            # noise removal
+            opening = cv2.morphologyEx(image_np, cv2.MORPH_OPEN, kernel_open, iterations=2)
+            opening = cv2.fastNlMeansDenoisingColored(opening, None, 10, 10, 7, 15)
+
+            # grayscale
+            gray = cv2.cvtColor(opening, cv2.COLOR_BGR2GRAY)
+            gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+
+            processed_image = cv2.erode(gray, kernel_erode, iterations=1)
+
+            # save in preprocess folder
+            processed_pil = Image.fromarray(processed_image)
+            processed_pil.save(final_path)  # Overwrite the image in PREPROCESS_FOLDER
 
         except Exception as e:
-            print(f"Error processing {filename}: {e}")
-            return jsonify({"message": f"Error processing {filename}: {e}"}), 500
+            print(f"Error preprocessing {filename}: {e}")
 
-    return jsonify({"message": "Preprocessing complete", "files": filenames})
-
-def crop_left_half(image):
-    image = ImageOps.exif_transpose(image)
-    # height, width, _ = image.shape
-    width, height = image.size  # Get actual image dimensions
-
-    # width = image.shape[1]
-    fraction = 2 / 5
-    new_width = int(width * fraction)
-    # image.crop((xmin, ymin, xmax, ymax))
-    left_half = image.crop((0, 0, new_width, height))
-
-    return left_half
-    # output_path = os.path.join(after_path, os.path.basename(image_path))
-    # left_half.save(output_path, format="JPEG")
-
-def preproc_image(image):
-    image = cv2.normalize(image, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-    # noise removal
-    kernel = np.ones((3, 3), np.uint8)
-    opening = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel, iterations=2)
-    opening = cv2.fastNlMeansDenoisingColored(opening, None, 10, 10, 7, 15)
-    gray = cv2.cvtColor(opening, cv2.COLOR_BGR2GRAY)
-    gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
-    # gray = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
-    # kernel = np.ones((2, 2), np.uint8)  # smaller kernel for subtle effects
-    # processed = cv2.morphologyEx(gray, cv2.MORPH_CLOSE, kernel, iterations=1)  # fill gaps instead of erosion
-    # thinning, skeletonization
-    kernel = np.ones((2, 2), np.uint8)
-    erosion = cv2.erode(gray, kernel, iterations=1)
-
-    return erosion
-    # # show image
-    # # os.mkdir('preprocessed2')
-    # os.makedirs('preprocessed2', exist_ok=True)
-    # cv2.imwrite('preprocessed2/' + image_path.split('/')[1], erosion)
-
+    print("✅ All images preprocessed successfully!")
 
 @app.route("/ocr", methods=["POST"])
 def ocr():
@@ -149,9 +157,9 @@ def download_preprocessed_file(name):
 @app.route('/uploads/<name>')
 def download_file(name):
     return send_from_directory(app.config["UPLOAD_FOLDER"], name)
-app.add_url_rule(
-    "/uploads/<name>", endpoint="download_file", build_only=True
-)
+# app.add_url_rule(
+#     "/uploads/<name>", endpoint="download_file", build_only=True
+# )
 
 @app.route("/delete/<filename>", methods=["DELETE"])
 def delete_file(filename):

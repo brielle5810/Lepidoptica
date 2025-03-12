@@ -12,8 +12,8 @@
 </body>
 
 <script>
-        // document.addEventListener("DOMContentLoaded", function() { // load page before script runs
-        //     setTimeout(() => {
+        document.addEventListener("DOMContentLoaded", function() { // load page before script runs
+            setTimeout(() => {
                 fetch('/preprocess')
                     .then(response => response.json())
                     .then(data => {
@@ -23,7 +23,7 @@
                     .catch(error => {
                         console.error("Error during preprocessing:", error);
                     });
-            // }, 500);  // delay slightly to ensure page renders
-        // });
+            }, 500);  // delay slightly to ensure page renders
+        });
 </script>
 </html>
