@@ -36,8 +36,9 @@
     <h2>Uploaded Images</h2>
     <div>
           {% for image in images %}
+            <p>image</p>
             <div>
-                <img src="{{ url_for('download_file', name=image) }}" alt="{{ image }}" width="200">
+                <img src="{{ url_for('download_preprocessed_file', name=image) }}" alt="{{ image }}" width="200">
                 <p>{{ image }}</p>
                 <button onclick="deleteImage('{{ image }}')">Delete Image</button>
             </div>
