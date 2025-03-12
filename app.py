@@ -9,7 +9,7 @@ CORS(app)
 
 @app.route("/", methods=["GET"])
 def index():
-    print("hello, world!")
+    print("hello, world!!")
     return render_template("index.html")
 
 @app.route("/upload", methods=["POST"])
