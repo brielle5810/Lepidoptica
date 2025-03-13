@@ -21,6 +21,7 @@ for folder in [UPLOAD_FOLDER, STAGE1_FOLDER, PREPROCESS_FOLDER]:
     os.makedirs(folder, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["PREPROCESS_FOLDER"] = PREPROCESS_FOLDER
+app.config["STAGE1_FOLDER"] = STAGE1_FOLDER
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "tiff"}
 
 def allowed_file(filename):
@@ -58,6 +59,11 @@ def upload():
         flash("No valid files selected")
         return redirect(request.url)
 
+def clear_folder(folder):
+    for filename in os.listdir(folder):
+        file_path = os.path.join(folder, filename)
+        if os.path.exists(file_path):
+            os.remove(file_path)
 
 @app.route("/loading_page", methods=["GET"])
 def loading_page():
@@ -131,6 +137,8 @@ def preprocess_images_in_batch():
             # save in preprocess folder
             processed_pil = Image.fromarray(processed_image)
             processed_pil.save(final_path)  # Overwrite the image in PREPROCESS_FOLDER
+            # clear_folder(STAGE1_FOLDER)
+            # clear_folder(UPLOAD_FOLDER)
 
         except Exception as e:
             print(f"Error preprocessing {filename}: {e}")
