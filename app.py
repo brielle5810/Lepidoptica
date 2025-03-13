@@ -137,12 +137,13 @@ def preprocess_images_in_batch():
             # save in preprocess folder
             processed_pil = Image.fromarray(processed_image)
             processed_pil.save(final_path)  # Overwrite the image in PREPROCESS_FOLDER
-            # clear_folder(STAGE1_FOLDER)
-            # clear_folder(UPLOAD_FOLDER)
+
 
         except Exception as e:
             print(f"Error preprocessing {filename}: {e}")
 
+    clear_folder(STAGE1_FOLDER) #cleanup
+    clear_folder(UPLOAD_FOLDER) #also everytime we preprocess, we process ALL in these, so clear it !
     print("All images preprocessed successfully!")
 
 @app.route("/ocr", methods=["POST"])
@@ -181,11 +182,9 @@ def delete_file(filename):
         os.remove(preprocessed_path)
     if os.path.exists(stage1_path):
         os.remove(stage1_path)
-        return jsonify({"success": True, "message": f"{filename} deleted"})
-    else:
-        return jsonify({"success": False, "error": "File not found"}), 404
 
     return jsonify({"success": True, "message": f"{filename} deleted"})
+
 @app.route("/delete_all", methods=["DELETE"])
 def delete_all():
     #file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
