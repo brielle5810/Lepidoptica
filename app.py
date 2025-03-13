@@ -97,7 +97,7 @@ def crop_images_in_batch(filenames):
 
             cropped_image.save(cropped_path)
         except Exception as e:
-            print(f"Error cropping {filename}: {e}")
+            (f"Error cropping {filename}: {e}")
 
     print("All images cropped successfully!")
 
@@ -135,7 +135,7 @@ def preprocess_images_in_batch():
         except Exception as e:
             print(f"Error preprocessing {filename}: {e}")
 
-    print("✅ All images preprocessed successfully!")
+    print("All images preprocessed successfully!")
 
 @app.route("/ocr", methods=["POST"])
 def ocr():
@@ -165,21 +165,25 @@ def download_file(name):
 def delete_file(filename):
     file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
     preprocessed_path = os.path.join(app.config["PREPROCESS_FOLDER"], filename)
-
+    stage1_path = os.path.join(app.config["STAGE1_FOLDER"], filename)
 
     if os.path.exists(file_path):
         os.remove(file_path)
-        return jsonify({"success": True, "message": f"{filename} deleted"})
     if os.path.exists(preprocessed_path):
         os.remove(preprocessed_path)
+    if os.path.exists(stage1_path):
+        os.remove(stage1_path)
         return jsonify({"success": True, "message": f"{filename} deleted"})
-
     else:
         return jsonify({"success": False, "error": "File not found"}), 404
 
+    return jsonify({"success": True, "message": f"{filename} deleted"})
 @app.route("/delete_all", methods=["DELETE"])
 def delete_all():
-    for folder in [UPLOAD_FOLDER, PREPROCESS_FOLDER]:
+    #file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+    #preprocessed_path = os.path.join(app.config["PREPROCESS_FOLDER"], filename)
+    #stage1_path = os.path.join(app.config["STAGE1_FOLDER"], filename)
+    for folder in [UPLOAD_FOLDER, PREPROCESS_FOLDER, STAGE1_FOLDER]:
         for filename in os.listdir(folder):
             file_path = os.path.join(folder, filename)
             if os.path.exists(file_path):
