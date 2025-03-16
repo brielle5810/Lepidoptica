@@ -5,12 +5,12 @@ Our goal is to work with curators Andrei Sourakov, Keith Willmott and Vaughn Shi
 ## To install all required packages for the flask app via Pycharm + venv:
 1. Enter the flask app directory
 2. Create a virtual environment (venv) and make sure it's selected for the project
-![Screenshot 2025-03-16 125543](https://hackmd.io/_uploads/rkhhGKEnkx.png)
+![Screenshot 2025-03-16 125543](https://hackmd.io/_uploads/rkhhGKEnkx.png?raw=true)
 4. Open the requirements.txt
 5. Select prompt for installing all missing packages. It can be finnicky so repeat until there are no more squiggly lines
-![Screenshot 2025-03-16 124950](https://hackmd.io/_uploads/BJvTfFNhyg.png)
+![Screenshot 2025-03-16 124950](https://hackmd.io/_uploads/BJvTfFNhyg.png?raw=true)
 6. Anything that can't be successfully installed can be installed through the python package manager
-![Screenshot 2025-03-16 125751](https://hackmd.io/_uploads/ryfmQYVh1l.png)
+![Screenshot 2025-03-16 125751](https://hackmd.io/_uploads/ryfmQYVh1l.png?raw=true)
 
 
 ## To install all required packages with no venv:
