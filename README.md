@@ -12,7 +12,7 @@ Our goal is to work with curators Andrei Sourakov, Keith Willmott and Vaughn Shi
 You can do this in the Pycharm Powershell terminal, it's much easier than the 2nd method.
 ![Screenshot 2025-03-16 125543](readme-images/4.png?raw=true)
 
-### Method 2: via Pycharm + venv:
+### Method 2: via no terminal, only Pycharm + venv:
 1. Enter the flask app directory
 2. Create a virtual environment (venv) and make sure it's selected for the project
 ![Screenshot 2025-03-16 125543](readme-images/1.png?raw=true)
