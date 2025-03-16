@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h1>Loading...</h1>
+    <h2>Pre-processing images...</h2>
+    <h2>Running OCR script...</h2>
+    <h2>Parsing text...</h2>
+</body>
+
+<script>
+        document.addEventListener("DOMContentLoaded", function() { // load page before script runs
+            setTimeout(() => {
+                fetch('/preprocess')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                        window.location.href = '/image_gallery';
+                    })
+                    .catch(error => {
+                        console.error("Error during preprocessing:", error);
+                    });
+            }, 500);  // delay slightly to ensure page renders
+        });
+</script>
+</html>
