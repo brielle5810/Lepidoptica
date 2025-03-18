@@ -39,27 +39,36 @@
         }
     </script>
 <body class="">
-<div class="container mt-4">
-    <h2 class="mb-4">Uploaded Images</h2>
-    <div class="gallery-container p-5 border-2 border-dark">
-         <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
-          {% for image in images %}
-              <div class="col">
-                    <div class="card p-2">
-                        <img src="{{ url_for('download_preprocessed_file', name=image) }}" class="card-img-top" alt="Processed Image">
-                        <button onclick="deleteImage('{{ image }}')">Delete Image</button>
-                    </div>
+    <form action="{{ url_for('reprocess_page') }}" method="POST">
+        <div class="container mt-4">
+        <!-- <h2 class="mb-4">Uploaded Images</h2> -->
+        <h2 class="text-center mb-4">Preprocessed Images</h2>
+
+            <div class="gallery-container p-5 border-2 border-dark">
+                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
+                {% for image in images %}
+                    <div class="col">
+                            <div class="card p-2">
+                                <img src="{{ url_for('download_preprocessed_file', name=image) }}" class="card-img-top" alt="Processed Image">
+                                <div class="card-body text-center">
+                                    <input type="checkbox" name="selected_images" value="{{ image }}">
+                                </div>
+                                <button onclick="deleteImage('{{ image }}')">Delete Image</button>
+                            </div>
+                        </div>
+                {% endfor %}
                 </div>
-        {% endfor %}
-         </div>
-    </div>
-    <br>
-    <!--    #removed link styling-->
-    <button class="mb-2"> <a href="/" style="all: unset;">UPLOAD MORE</a></button>
-    <button onclick="deleteAll()">DELETE ALL IMAGES</button>
-    <br>
-    <br>
-     </div>
+            </div>
+
+        <br>
+        <!--    #removed link styling-->
+        <button type="submit" class="mb-2">REPROCESSED SELECTED</button>
+        <button class="mb-2"> <a href="/" style="all: unset;">UPLOAD MORE</a></button>
+        <button onclick="deleteAll()">DELETE ALL IMAGES</button>
+        <br>
+        <br>
+        </div>
+    </form>
 </body>
 
 
