@@ -7,6 +7,7 @@ import pandas as pd
 from PIL import Image, ImageOps
 import io
 from flask_cors import CORS
+#from flask_table import Table, Col
 from werkzeug.utils import secure_filename
 import shutil
 
@@ -31,6 +32,10 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "tiff"}
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# class ImageTable(Table):
+#     image = Col('Image')
+#     imageName = Col('Image Name')
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -98,7 +103,6 @@ def preprocess():
     preprocess_images_in_batch()
 
     return jsonify({"message": "Batch preprocessing complete", "files": os.listdir(PREPROCESS_FOLDER)})
-
 
 def crop_images_in_batch(filenames):
     for filename in filenames:
@@ -297,6 +301,13 @@ def apply_processing_strength(image_np, strength):
         eroded = cv2.erode(gray, kernel_two, iterations=1) 
     return eroded
 
+@app.route("/output", methods=["GET"])
+def output():
+    #view the images in a galley
+    images = os.listdir(app.config["PREPROCESS_FOLDER"])
+    print(images)
+    print("====================================")
+    return render_template("output_gallery.html", images=images)
 
 if __name__ == "__main__":
     app.run(debug=True)
