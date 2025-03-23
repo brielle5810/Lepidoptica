@@ -10,6 +10,7 @@ from flask_cors import CORS
 #from flask_table import Table, Col
 from werkzeug.utils import secure_filename
 import shutil
+from datetime import datetime
 
 import easyocr
 
@@ -20,6 +21,7 @@ UPLOAD_FOLDER = "uploads"
 PREPROCESS_FOLDER = "preprocess"
 STAGE1_FOLDER = "stage1_crop"
 SAVED_ORIGINALS = "saved_originals"
+OCR_OUTPUT = "ocr_output"
 
 for folder in [UPLOAD_FOLDER, STAGE1_FOLDER, PREPROCESS_FOLDER, SAVED_ORIGINALS]:
     os.makedirs(folder, exist_ok=True)
@@ -27,6 +29,7 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["STAGE1_FOLDER"] = STAGE1_FOLDER
 app.config["PREPROCESS_FOLDER"] = PREPROCESS_FOLDER
 app.config["SAVED_ORIGINALS"] = SAVED_ORIGINALS
+app.config["OCR_OUTPUT"] = OCR_OUTPUT
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "tiff"}
 
@@ -305,9 +308,59 @@ def apply_processing_strength(image_np, strength):
 def output():
     #view the images in a galley
     images = os.listdir(app.config["PREPROCESS_FOLDER"])
+
     print(images)
     print("====================================")
-    return render_template("output_gallery.html", images=images)
+    pd.set_option('display.max_columns', None)
+
+    ### USE THIS FOR THE FINAL VERSION
+    df = pd.read_csv(os.path.join(OCR_OUTPUT, "data.csv"))
+    print("df:\n", df)
+
+    ### THIS IS BAD VERSION
+    metadata = {
+        "Image": [""],
+        "Catalog Number": ["#########"],
+        "Specimen Voucher": ["MGCL "],
+        "Family": [""],
+        "Genus": [""],
+        "Species": [""],
+        "Subspecies": [""],
+        "Sex": [""],
+        "Country": [""],
+        "State": [""],
+        "County": [""],
+        "Locality Name": [""],
+        "Elevation Min": [""],
+        "Elevation Max": [""],
+        "Elevation Unit": [""],
+        "Collectors": [""],
+        "Image Name": [""],
+        "Latitude": [""],
+        "Longitude": [""],
+        "Geo-referencing Source": [""],
+        "Geo-referencing Precision": [""],
+        "Questionable Label Data": [""],
+        "Do Not Publish": [""],
+        "Collecting Event Start": [""],
+        "Collecting Event End": [""],
+        "Date Verbatim": [""],
+        "Remarks Public": [""],
+        "Remarks Private": [""],
+        "Catalogued Date": [datetime.now().strftime("%m/%d/%Y")],
+        "Cataloguer First": [""],
+        "Cataloguer Last": [""],
+        "Prep type 1 Prep number 1": [""],
+        "Prep type 2 Prep number 2": [""],
+        "Prep type 3 Prep number 3": [""],
+        "Other Record Number": [""],
+        "Other Record Source": [""],
+        "Publication": [""],
+    }
+    mdf = pd.DataFrame(metadata)  # mdf = metadataframe
+    print("mdf:\n", mdf)
+
+    return render_template("output_gallery.html", images=images, dataframe=mdf, datafrane=df)
 
 if __name__ == "__main__":
     app.run(debug=True)
