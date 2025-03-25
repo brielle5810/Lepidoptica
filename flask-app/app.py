@@ -306,61 +306,23 @@ def apply_processing_strength(image_np, strength):
 
 @app.route("/output", methods=["GET"])
 def output():
-    #view the images in a galley
+    #view the images
     images = os.listdir(app.config["PREPROCESS_FOLDER"])
 
     print(images)
-    print("====================================")
     pd.set_option('display.max_columns', None)
 
     ### USE THIS FOR THE FINAL VERSION
     df = pd.read_csv(os.path.join(OCR_OUTPUT, "data.csv"))
-    print("df:\n", df)
+    # print("df:\n", df)
+    df_list = df.values.tolist()
+    print("df_list:\n", df_list, "\n")
+    print("====================================")
 
-    ### THIS IS BAD VERSION
-    metadata = {
-        "Image": [""],
-        "Catalog Number": ["#########"],
-        "Specimen Voucher": ["MGCL "],
-        "Family": [""],
-        "Genus": [""],
-        "Species": [""],
-        "Subspecies": [""],
-        "Sex": [""],
-        "Country": [""],
-        "State": [""],
-        "County": [""],
-        "Locality Name": [""],
-        "Elevation Min": [""],
-        "Elevation Max": [""],
-        "Elevation Unit": [""],
-        "Collectors": [""],
-        "Image Name": [""],
-        "Latitude": [""],
-        "Longitude": [""],
-        "Geo-referencing Source": [""],
-        "Geo-referencing Precision": [""],
-        "Questionable Label Data": [""],
-        "Do Not Publish": [""],
-        "Collecting Event Start": [""],
-        "Collecting Event End": [""],
-        "Date Verbatim": [""],
-        "Remarks Public": [""],
-        "Remarks Private": [""],
-        "Catalogued Date": [datetime.now().strftime("%m/%d/%Y")],
-        "Cataloguer First": [""],
-        "Cataloguer Last": [""],
-        "Prep type 1 Prep number 1": [""],
-        "Prep type 2 Prep number 2": [""],
-        "Prep type 3 Prep number 3": [""],
-        "Other Record Number": [""],
-        "Other Record Source": [""],
-        "Publication": [""],
-    }
-    mdf = pd.DataFrame(metadata)  # mdf = metadataframe
-    print("mdf:\n", mdf)
+    for item1, item2 in zip(images, df_list):
+        print(item1, item2)
 
-    return render_template("output_gallery.html", images=images, dataframe=mdf, datafrane=df)
+    return render_template("output_gallery.html", images_and_data=zip(images, df_list), headings=df.columns.tolist())
 
 if __name__ == "__main__":
     app.run(debug=True)

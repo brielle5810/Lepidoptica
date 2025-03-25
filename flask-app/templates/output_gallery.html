@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Gallery</title>
+    <title>Output Gallery</title>
      <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
      <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
@@ -19,7 +19,7 @@
         <style>
             table {
                 margin-left: 40px;
-                margin-right: 12px
+                margin-right: 12px;
             }
             td, th {
                 border: 1px solid #ddd;
@@ -69,100 +69,28 @@
 
     <body>
     <form action="{{ url_for('reprocess_page') }}" method="POST">
-    <div style="overflow:auto">
-        <h1 style="padding-left: 10px; color: #006666"><b>DATA EXTRACTION OUTPUT:</b></h1>
+    <h1 style="padding-left: 10px; color: #006666"><b>DATA EXTRACTION OUTPUT:</b></h1>
+    <div style="overflow-x:auto">
         <table id="dataTable">
             <!--? Category names: -->
             <tr style="position: sticky">
                 <th>Image</th>
-                <th>Catalog Number</th>
-                <th>Specimen Voucher</th>
-                <th>Family</th>
-                <th>Genus</th>
-                <th>Species</th>
-                <th>Subspecies</th>
-                <th>Sex</th>
-                <th>Country</th>
-                <th>State</th>
-                <th>County</th>
-                <th>Locality Name</th>
-                <th>Elevation Min</th>
-                <th>Elevation Max</th>
-                <th>Elevation Unit</th>
-                <th>Collectors</th>
-                <th>Image Name</th>
-                <th>Latitude</th>
-                <th>Longitude</th>
-                <th>Geo-referencing Source</th>
-                <th>Geo-referencing Precision</th>
-                <th>Questionable Label Data</th>
-                <th>Do Not Publish</th>
-                <th>Collecting Event Start</th>
-                <th>Collecting Event End</th>
-                <th>Date Verbatim</th>
-                <th>Remarks Public</th>
-                <th>Remarks Private</th>
-                <th>Catalogued Date</th>
-                <th>Cataloguer First</th>
-                <th>Cataloguer Last</th>
-                <th>Prep type 1</th>
-                <th>Prep number 1</th>
-                <th>Prep type 2</th>
-                <th>Prep number 2</th>
-                <th>Prep type 3</th>
-                <th>Prep number 3</th>
-                <th>Other Record Number</th>
-                <th>Other Record Source</th>
-                <th>Publication</th>
-                <th>Publication</th>
+                {% for header in headings %}
+                    <th>{{ header }}</th>
+                {% endfor %}
             </tr>
-            {% for image in images %}
+
+            <!--? Rows of Data: -->
+            {% for image, row in images_and_data: %}
             <tr>
                 <td>
-                    <div class="zoom-img">
+                    <span class="zoom-img">
                         <img src="{{ url_for('download_preprocessed_file', name=image) }}" alt="{{ image }}">
-                    </div>
+                    </span>
                 </td>
-                <td contenteditable>########</td>   <!--? catalog number -->
-                <td contenteditable>MGCL 0000000</td>   <!--? specimen voucher -->
-                <td contenteditable></td>   <!--? family -->
-                <td contenteditable></td>   <!--? genus -->
-                <td contenteditable></td>   <!--? species -->
-                <td contenteditable></td>   <!--? subspecies -->
-                <td contenteditable></td>   <!--? sex -->
-                <td contenteditable></td>   <!--? country -->
-                <td contenteditable></td>   <!--? state -->
-                <td contenteditable></td>   <!--? county -->
-                <td contenteditable></td>   <!--? locality name -->
-                <td contenteditable></td>   <!--? elevation min -->
-                <td contenteditable></td>   <!--? elevation max -->
-                <td contenteditable></td>   <!--? elevation unit -->
-                <td contenteditable></td>   <!--? collectors -->
-                <td>{{ image }}</td>        <!--? image name -->
-                <td contenteditable></td>   <!--? latitude -->
-                <td contenteditable></td>   <!--? longitude -->
-                <td contenteditable></td>   <!--? georeferencing source -->
-                <td contenteditable></td>   <!--? georeferencing precision -->
-                <td contenteditable></td>   <!--? questionable label data -->
-                <td contenteditable></td>   <!--? do not publish -->
-                <td contenteditable></td>   <!--? collecting event start -->
-                <td contenteditable></td>   <!--? collecting event end -->
-                <td contenteditable></td>   <!--? date verbatim -->
-                <td contenteditable></td>   <!--? remarks public -->
-                <td contenteditable></td>   <!--? remarks private -->
-                <td contenteditable></td>   <!--? catalogued date -->
-                <td contenteditable></td>   <!--? cataloguer first -->
-                <td contenteditable></td>   <!--? cataloguer last -->
-                <td contenteditable></td>   <!--? prep type 1 -->
-                <td contenteditable></td>   <!--? prep number 1 -->
-                <td contenteditable></td>   <!--? prep type 2 -->
-                <td contenteditable></td>   <!--? prep number 2 -->
-                <td contenteditable></td>   <!--? prep type 3 -->
-                <td contenteditable></td>   <!--? prep number 3 -->
-                <td contenteditable></td>   <!--? other record number -->
-                <td contenteditable></td>   <!--? other record source -->
-                <td contenteditable></td>   <!--? publication -->
-                <td contenteditable></td>   <!--? publication -->
+                {% for cell in row %}
+                <td contenteditable>{{ cell }}</td>
+                {% endfor %}
             </tr>
             {% endfor %}
         </table>
@@ -179,3 +107,44 @@
     </body>
 
 </html>
+
+<!--?                <th>Image</th>-->
+<!--?                <th>Catalog Number</th>-->
+<!--?                <th>Specimen Voucher</th>-->
+<!--?                <th>Family</th>-->
+<!--?                <th>Genus</th>-->
+<!--?                <th>Species</th>-->
+<!--?                <th>Subspecies</th>-->
+<!--?                <th>Sex</th>-->
+<!--?                <th>Country</th>-->
+<!--?                <th>State</th>-->
+<!--?                <th>County</th>-->
+<!--?                <th>Locality Name</th>-->
+<!--?                <th>Elevation Min</th>-->
+<!--?                <th>Elevation Max</th>-->
+<!--?                <th>Elevation Unit</th>-->
+<!--?                <th>Collectors</th>-->
+<!--?                <th>Latitude</th>-->
+<!--?                <th>Longitude</th>-->
+<!--?                <th>Geo-referencing Source</th>-->
+<!--?                <th>Geo-referencing Precision</th>-->
+<!--?                <th>Questionable Label Data</th>-->
+<!--?                <th>Do Not Publish</th>-->
+<!--?                <th>Collecting Event Start</th>-->
+<!--?                <th>Collecting Event End</th>-->
+<!--?                <th>Date Verbatim</th>-->
+<!--?                <th>Remarks Public</th>-->
+<!--?                <th>Remarks Private</th>-->
+<!--?                <th>Catalogued Date</th>-->
+<!--?                <th>Cataloguer First</th>-->
+<!--?                <th>Cataloguer Last</th>-->
+<!--?                <th>Prep type 1</th>-->
+<!--?                <th>Prep number 1</th>-->
+<!--?                <th>Prep type 2</th>-->
+<!--?                <th>Prep number 2</th>-->
+<!--?                <th>Prep type 3</th>-->
+<!--?                <th>Prep number 3</th>-->
+<!--?                <th>Other Record Number</th>-->
+<!--?                <th>Other Record Source</th>-->
+<!--?                <th>Publication</th>-->
+<!--?                <th>Publication</th>-->
