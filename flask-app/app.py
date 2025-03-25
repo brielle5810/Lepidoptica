@@ -324,5 +324,11 @@ def output():
 
     return render_template("output_gallery.html", images_and_data=zip(images, df_list), headings=df.columns.tolist())
 
+@app.route("/finished", methods=["GET"])
+def finished():
+    #Tell user their file is downloading
+    return render_template('finished.html')
+
+
 if __name__ == "__main__":
     app.run(debug=True)
