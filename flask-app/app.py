@@ -91,7 +91,7 @@ def edit():
 
 @app.route("/preprocess", methods=["GET", "POST"])
 def preprocess():
-    # edited for bath uoloads/processing
+    # edited for bath uploads/processing
     filenames = os.listdir(app.config["UPLOAD_FOLDER"])
 
     if not filenames:
