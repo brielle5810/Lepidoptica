@@ -329,6 +329,11 @@ def finished():
     #Tell user their file is downloading
     return render_template('finished.html')
 
+@app.route("/about", methods=["GET"])
+def about():
+    #About us page
+    return render_template('about.html')
+
 
 if __name__ == "__main__":
     app.run(debug=True)

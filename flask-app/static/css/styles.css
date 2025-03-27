@@ -4,6 +4,17 @@ html, body {
     overflow: hidden;
 }
 
+.upload-container {
+    position: relative;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10%;
+    align-items: center;
+    justify-content: center;
+    width: 60%;
+    height: 40%;
+}
 .container {
     display: flex;
     flex-direction: column;
@@ -78,6 +89,26 @@ html, body {
     background-color: #d6e6f3;
     border-radius: 14px;
 }
+
+.nav-container {
+    background-color: #018550;
+    padding-top: 20px;
+    padding-bottom: 20px;
+
+}
+
+.nav-container a {
+    color: white;
+    text-decoration: none;
+    font-size: 20px;
+    font-family: Arial;
+    padding: 20px;
+}
+
+a:hover {
+    border-bottom: black 5px solid;
+}
+
 
 /*.custom-scrollbar-js,*/
 /*.custom-scrollbar-css {*/

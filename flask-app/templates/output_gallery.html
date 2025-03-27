@@ -13,7 +13,7 @@
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
 </head>
 
-<html>
+{% include "nav.html" %}
 <div id="tableContainer"></div>
     <head>
         <style>
@@ -139,7 +139,7 @@
     </head>
 
     <body style="overflow: scroll">
-    <h1 style="padding-left: 10px; color: #006666"><b>DATA EXTRACTION OUTPUT:</b></h1>
+    <h1 style="padding-left: 3%; margin-top: 1%; margin-bottom: 1%; color: #006666"><b>DATA EXTRACTION OUTPUT:</b></h1>
     <div style="overflow-x:auto">
         <table id="dataTable">
             <!--? Category names: -->
@@ -183,7 +183,7 @@
     </div>
 
     <div class="wrapper">
-        <button class="button" onclick="tableToCSV()">
+        <button class="button" style="margin-top: 2%;" onclick="tableToCSV()">
             <a href="/finished" style="all: unset;"><b>GET CSV</b></a>
         </button>
     </div>
