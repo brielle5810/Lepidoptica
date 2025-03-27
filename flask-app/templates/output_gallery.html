@@ -37,22 +37,93 @@
             tr:nth-child(even){background-color: #f3f7e9;}
             td:hover {background-color: #d6dbcc;}
 
-            .zoom-img img {
-                max-width: 40%;
-                max-height: 40%;
+            #myImg {
+                max-width: 100px;
                 transition: transform .2s; /* Animation */
                 margin: 0 auto;
+                cursor: pointer;
             }
-            .zoom-img img:hover {
-                transform: scale(175%); /* (175% zoom) */
+            #myImg:hover {
+                transform: scale(150%); /* (150% zoom) */
                 border: 2px solid #3b7548;
+            }
+
+            /* The Modal (background) */
+            .modal {
+              display: none; /* Hidden by default */
+              position: fixed; /* Stay in place */
+              z-index: 1; /* Sit on top */
+              padding-top: 100px; /* Location of the box */
+              left: 0;
+              top: 0;
+              width: 100%; /* Full width */
+              height: 100%; /* Full height */
+              overflow: auto; /* Enable scroll if needed */
+              background-color: rgb(13, 35, 40, 0.9);
+            }
+
+            /* Modal Content (Image) */
+            .modal-content {
+                margin: auto;
+                display: block;
+                height: 100%;
+                width: auto
+            }
+
+            /* Caption of Modal Image (Image Text) - Same Width as the Image */
+            #caption {
+              margin: auto;
+              display: block;
+              width: 80%;
+              max-width: 700px;
+              text-align: center;
+              color: #e0ffbb;
+              padding: 10px 0;
+              height: 150px;
+            }
+
+            /* Add Animation - Zoom in the Modal */
+            .modal-content, #caption {
+              animation-name: zoom;
+              animation-duration: 0.6s;
+            }
+
+            @keyframes zoom {
+              from {transform:scale(0)}
+              to {transform:scale(1)}
+            }
+
+            /* The Close Button */
+            .close {
+                position: absolute;
+                top: 25px;
+                left: 50px;
+                color: #d5ff3b;
+                font-size: 60px;
+                font-weight: bold;
+                transition: 0.3s;
+            }
+
+            .close:hover, .close:focus {
+              color: #e9ffcc;
+                text-decoration: none;
+                cursor: pointer;
+                border-color: #d5ff3b;
+                border-width: 10px;
+            }
+
+            /* 100% Image Width on Smaller Screens */
+            @media only screen and (max-width: 700px){
+              .modal-content {
+                width: 100%;
+              }
             }
             .wrapper {
                 text-align: center;
             }
             .button {
                 position: sticky;
-                bottom: 30%;
+                bottom: 0;
                 background-color: #cad99a;
                 border: 3px solid #004954; border-radius: 10px;
                 font-size: 24px; color: #004954;
@@ -67,7 +138,7 @@
         </style>
     </head>
 
-    <body>
+    <body style="overflow: scroll">
     <h1 style="padding-left: 10px; color: #006666"><b>DATA EXTRACTION OUTPUT:</b></h1>
     <div style="overflow-x:auto">
         <table id="dataTable">
@@ -80,13 +151,29 @@
             </tr>
 
             <!--? Rows of Data: -->
+            <!--? IMAGE: -->
             {% for image, row in images_and_data: %}
             <tr>
                 <td>
-                    <span class="zoom-img">
-                        <img src="{{ url_for('download_preprocessed_file', name=image) }}" alt="{{ image }}">
+                    <span>
+                        <img id = "myImg" src="{{ url_for('download_preprocessed_file', name=image) }}" alt="{{ image }}">
+                        <span class="desc">{{ image }}</span>
                     </span>
                 </td>
+                <!-- The Modal -->
+                <div id="myModal" class="modal">
+
+                    <!-- The Close Button -->
+                    <div class="close">&times;</div>
+
+                    <!-- Modal Content (The Image) -->
+                    <img class="modal-content" id="img01">
+
+                    <!-- Modal Caption (Image Text) -->
+                    <div id="caption"></div>
+                </div>
+
+                <!--? DATA: -->
                 {% for cell in row %}
                 <td contenteditable>{{ cell }}</td>
                 {% endfor %}
@@ -96,52 +183,98 @@
     </div>
 
     <div class="wrapper">
-        <button class="button">
+        <button class="button" onclick="tableToCSV()">
             <a href="/finished" style="all: unset;"><b>GET CSV</b></a>
         </button>
     </div>
 
+    <!--?  MODAL SCRIPT-->
+    <script>
+        // Get the modal
+        var modal = document.getElementById('myModal');
+
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close")[0];
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+          modal.style.display = "none";
+        }
+
+        // Get all images and insert the clicked image inside the modal
+        // Get the content of the image description and insert it inside the modal image caption
+        var images = document.getElementsByTagName('img');
+        var modalImg = document.getElementById("img01");
+        var captionText = document.getElementById("caption");
+        for (var i = 0; i < images.length; i++) {
+          images[i].onclick = function(){
+              modal.style.display = "block";
+              modalImg.src = this.src;
+              modalImg.alt = this.alt;
+              captionText.innerHTML = this.nextElementSibling.innerHTML;
+          }
+        }
+    </script>
+
+    <script type="text/javascript">
+        function tableToCSV() {
+
+            // Variable to store the final csv data
+            let csv_data = [];
+
+            // Get each row data
+            let rows = document.getElementsByTagName('tr');
+            for (let i = 0; i < rows.length; i++) {
+
+                // Get each column data
+                let cols = rows[i].querySelectorAll('td,th');
+
+                // Stores each csv row data
+                let csvrow = [];
+                for (let j = 1; j < cols.length; j++) { // Skip the image row
+
+                    // Get the text data of each cell
+                    // of a row and push it to csvrow
+                    csvrow.push(cols[j].innerHTML);
+                }
+
+                // Combine each column value with comma
+                csv_data.push(csvrow.join(","));
+            }
+
+            // Combine each row data with new line character
+            csv_data = csv_data.join('\n');
+
+            // Call this function to download csv file
+            downloadCSVFile(csv_data);
+        }
+
+        function downloadCSVFile(csv_data) {
+            // Create CSV file object and feed
+            // our csv_data into it
+            CSVFile = new Blob([csv_data], {
+                type: "text/csv"
+            });
+
+            // Create to temporary link to initiate
+            // download process
+            let temp_link = document.createElement('a');
+
+            // Download csv file
+            temp_link.download = "metadata.csv";
+            let url = window.URL.createObjectURL(CSVFile);
+            temp_link.href = url;
+
+            // This link should not be displayed
+            temp_link.style.display = "none";
+            document.body.appendChild(temp_link);
+
+            // Automatically click the link to
+            // trigger download
+            temp_link.click();
+            document.body.removeChild(temp_link);
+        }
+    </script>
+
     </body>
-
 </html>
-
-<!--?                <th>Image</th>-->
-<!--?                <th>Catalog Number</th>-->
-<!--?                <th>Specimen Voucher</th>-->
-<!--?                <th>Family</th>-->
-<!--?                <th>Genus</th>-->
-<!--?                <th>Species</th>-->
-<!--?                <th>Subspecies</th>-->
-<!--?                <th>Sex</th>-->
-<!--?                <th>Country</th>-->
-<!--?                <th>State</th>-->
-<!--?                <th>County</th>-->
-<!--?                <th>Locality Name</th>-->
-<!--?                <th>Elevation Min</th>-->
-<!--?                <th>Elevation Max</th>-->
-<!--?                <th>Elevation Unit</th>-->
-<!--?                <th>Collectors</th>-->
-<!--?                <th>Latitude</th>-->
-<!--?                <th>Longitude</th>-->
-<!--?                <th>Geo-referencing Source</th>-->
-<!--?                <th>Geo-referencing Precision</th>-->
-<!--?                <th>Questionable Label Data</th>-->
-<!--?                <th>Do Not Publish</th>-->
-<!--?                <th>Collecting Event Start</th>-->
-<!--?                <th>Collecting Event End</th>-->
-<!--?                <th>Date Verbatim</th>-->
-<!--?                <th>Remarks Public</th>-->
-<!--?                <th>Remarks Private</th>-->
-<!--?                <th>Catalogued Date</th>-->
-<!--?                <th>Cataloguer First</th>-->
-<!--?                <th>Cataloguer Last</th>-->
-<!--?                <th>Prep type 1</th>-->
-<!--?                <th>Prep number 1</th>-->
-<!--?                <th>Prep type 2</th>-->
-<!--?                <th>Prep number 2</th>-->
-<!--?                <th>Prep type 3</th>-->
-<!--?                <th>Prep number 3</th>-->
-<!--?                <th>Other Record Number</th>-->
-<!--?                <th>Other Record Source</th>-->
-<!--?                <th>Publication</th>-->
-<!--?                <th>Publication</th>-->
