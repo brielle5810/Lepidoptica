@@ -13,7 +13,6 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import shutil
 from datetime import datetime
-
 import easyocr
 
 app = Flask(__name__)
@@ -27,6 +26,7 @@ OCR_OUTPUT = "ocr_output"
 
 for folder in [UPLOAD_FOLDER, STAGE1_FOLDER, PREPROCESS_FOLDER, SAVED_ORIGINALS]:
     os.makedirs(folder, exist_ok=True)
+
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["STAGE1_FOLDER"] = STAGE1_FOLDER
 app.config["PREPROCESS_FOLDER"] = PREPROCESS_FOLDER
@@ -183,7 +183,6 @@ def reprocess_page():
 
 @app.route("/image_gallery", methods=["GET"])
 def image_gallery():
-    #preprocess()
     images = os.listdir(app.config["PREPROCESS_FOLDER"])
     print(images)
     print("====================================")
@@ -254,6 +253,7 @@ def apply_reprocessing():
 
     return redirect(url_for("loading_reprocess"))
 
+
 @app.route("/start_reprocessing", methods=["POST"])
 def start_reprocessing():
     #processes images after loading screen is shown
@@ -290,6 +290,7 @@ def start_reprocessing():
 
     return jsonify({"message": "Reprocessing complete"}), 200
 
+
 def apply_processing_strength(image_np, strength):
 
     kernel_three = np.ones((3, 3), np.uint8) #from open!
@@ -325,6 +326,7 @@ def apply_processing_strength(image_np, strength):
         eroded = cv2.erode(gray, kernel_two, iterations=1) 
     return eroded
 
+
 @app.route("/output", methods=["GET"])
 def output():
     #view the images
@@ -345,10 +347,12 @@ def output():
 
     return render_template("output_gallery.html", images_and_data=zip(images, df_list), headings=df.columns.tolist())
 
+
 @app.route("/finished", methods=["GET"])
 def finished():
     #Tell user their file is downloading
     return render_template('finished.html')
+
 
 @app.route("/about", methods=["GET"])
 def about():

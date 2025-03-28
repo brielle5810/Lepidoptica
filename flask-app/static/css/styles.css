@@ -20,7 +20,8 @@ html, body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 700px;
+    height: 850px;
+
 }
 
 .loading-container {
@@ -46,8 +47,8 @@ html, body {
   }
   
 .gallery-container {
-    width: 90%;
-    max-height: 700px;
+    width: 100%;
+    /*max-height: 700px;*/
     overflow-y: auto;
     border: 2px solid #ddd;
     padding: 10px;
@@ -73,11 +74,44 @@ html, body {
 .card {
     border: none;
 }
+.selectable-card {
+    position: relative;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border 0.3s, box-shadow 0.3s;
+    padding: 10px;
+    text-align: center;
+}
+
+.selectable-card:hover {
+    border: 2px solid #007bff;
+}
+
+.selectable-card.selected {
+    border: 3px solid #007bff;
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+}
+
+.hidden-checkbox {
+    display: none;
+}
+
+.selected-text {
+    display: none;
+    font-weight: bold;
+    color: #007bff;
+    text-align: center;
+}
+
+.selectable-card.selected .selected-text {
+    display: block;
+}
+
 
 .card-img-top {
     width: 100%;
     object-fit: cover;
-    border-radius: 5px;
+    /*border-radius: 5px;*/
 }
 
 .gallery-container::-webkit-scrollbar {
