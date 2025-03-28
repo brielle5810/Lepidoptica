@@ -201,22 +201,21 @@ def ocr():
     print("do ocr")
     for filename in os.listdir(PREPROCESS_FOLDER):
         name = filename.split(".")[0]
-        print(name)
         image_path = os.path.join(PREPROCESS_FOLDER, filename)
         final_path = os.path.join(OCR_OUTPUT, name + ".csv")
-        print("image_path is " + image_path)
-        print("final_path is " + final_path)
 
         try:
             image = Image.open(image_path)
             image_np = np.array(image)
             results = reader.readtext(image_np)
-            ocrDF = pd.DataFrame(results, columns=['bbox', 'text', 'confidence'])
-            print(ocrDF)
-            ocrDF.to_csv(final_path)
+            ocr_df = pd.DataFrame(results, columns=['bbox', 'text', 'confidence'])
+            ocr_df.to_csv(final_path)
+            print(final_path + " saved")
 
         except Exception as e:
             print(f"Error preprocessing {filename}: {e}")
+
+    return jsonify({"success": True, "message": f"OCR Complete"})
 
 @app.route("/reprocess", methods=["POST"])
 def reprocess_page():

@@ -42,7 +42,7 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        console.log(`Doing ocr now`);
+                        console.log(data);
                         window.location.href = '/output';
                     } else {
                         alert(`Error: ${data.error}`);
