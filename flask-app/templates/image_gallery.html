@@ -37,13 +37,6 @@
                     }
                 });
         }
-
-        function toggleSelection(card) {
-              let checkbox = card.querySelector("input[type='checkbox']");
-              checkbox.checked = !checkbox.checked;
-              card.classList.toggle("selected", checkbox.checked);
-        }
-
         function ocr() {
             fetch('/ocr', { method: 'POST' })
                 .then(response => response.json())
@@ -56,18 +49,23 @@
                     }
                 });
         }
+
+        function toggleSelection(card) {
+                let checkbox = card.querySelector("input[type='checkbox']");
+                checkbox.checked = !checkbox.checked;
+                card.classList.toggle("selected", checkbox.checked);
+          }
     </script>
 <body class="">
-    <form action="{{ url_for('reprocess_page') }}" method="POST">
     {% if images %}
         <div class="container mt-4">
-        <!-- <h2 class="mb-4">Uploaded Images</h2> -->
-        <h2 class="text-center mb-4">Preprocessed Images</h2>
+            <!-- <h2 class="mb-4">Uploaded Images</h2> -->
+            <h2 class="text-center mb-4">Preprocessed Images</h2>
 
-            <div class="gallery-container p-5 border-2 border-dark">
-                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4">
-                {% for image in images %}
-                    <div class="col border border-success">
+                <div class="gallery-container p-5 border-2 border-dark">
+                    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4">
+                    {% for image in images %}
+                        <div class="col border border-success">
                             <div class="card p-2 border-0">
 {#                                <img src="{{ url_for('download_preprocessed_file', name=image) }}" class="card-img-top" alt="Processed Image">#}
 {#                                <div class="card-body text-center">#}
@@ -97,8 +95,7 @@
         <button class="mb-2" onclick="ocr()">EXTRACT DATA</button>
         <br>
         <br>
-        </div>
-    </form>
+    </div>
 </body>
 
 
