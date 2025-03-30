@@ -44,6 +44,18 @@
               card.classList.toggle("selected", checkbox.checked);
         }
 
+        function ocr() {
+            fetch('/ocr', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log(data);
+                        window.location.href = '/output';
+                    } else {
+                        alert(`Error: ${data.error}`);
+                    }
+                });
+        }
     </script>
 <body class="">
     <form action="{{ url_for('reprocess_page') }}" method="POST">
@@ -82,7 +94,7 @@
         <button type="submit" class="mb-2">REPROCESS SELECTED</button>
         <button class="mb-2"> <a href="/" style="all: unset;">UPLOAD MORE</a></button>
         <button class="mb-2" onclick="deleteAll()">DELETE ALL IMAGES</button>
-        <button class="mb-2"> <a href="/output" style="all: unset;">EXTRACT DATA</a></button>
+        <button class="mb-2" onclick="ocr()">EXTRACT DATA</button>
         <br>
         <br>
         </div>
