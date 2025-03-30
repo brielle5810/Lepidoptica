@@ -220,14 +220,21 @@ def ocr():
 
     #Delete data.csv if it exists
     final_path = os.path.join(OCR_OUTPUT, "data.csv")
+    confidence_path = os.path.join(OCR_OUTPUT, "confidence.csv")
     for filename in os.listdir(OCR_OUTPUT):
         if filename == "data.csv":
             os.remove(final_path)
+        if filename == "confidence.csv":
+            os.remove(confidence_path)
 
     #Create data.csv
     data = open(final_path, "w")
     data.write("CatalogNumber,Specimen_voucher,Family,Genus,Species,Subspecies,Sex,Country,State,County,Locality name,Elevation min,Elevation max,Elevation unit,Collectors,Latitude,Longitude,Georeferencing source,Georeferencing precision,Questionable label data,Do not publish,Collecting event start,Collecting event end,Date verbatim,Remarks public,Remarks private,Cataloged date,Cataloger First,Cataloger last,Prep type 1,Prep count 1,Prep type 2,Prep number 2,Prep type 3,Prep number 3,Other record number,Other record source,publication,publication")
+    data.close()
 
+    confidence = open(confidence_path, "w")
+    confidence.write("CatalogNumber,Specimen_voucher,Family,Genus,Species,Subspecies,Sex,Country,State,County,Locality name,Elevation min,Elevation max,Elevation unit,Collectors,Latitude,Longitude,Georeferencing source,Georeferencing precision,Questionable label data,Do not publish,Collecting event start,Collecting event end,Date verbatim,Remarks public,Remarks private,Cataloged date,Cataloger First,Cataloger last,Prep type 1,Prep count 1,Prep type 2,Prep number 2,Prep type 3,Prep number 3,Other record number,Other record source,publication,publication")
+    confidence.close()
     #Write data to csv
     #Confidence shown every other row
     #Maybe we can also store confidence intervals in a separate csv file?
@@ -268,10 +275,16 @@ def ocr():
                     confidence_lines = confidence_lines + ","
 
             transcription_lines = transcription_lines + "\""
-            data.write(transcription_lines)
-            data.write(confidence_lines)
 
-        #print(final_path + " saved")
+            data = open(final_path, "a")
+            data.write(transcription_lines)
+            data.close()
+
+            confidence = open(confidence_path, "a")
+            confidence.write(confidence_lines)
+            confidence.close()
+
+            print(name + " processed")
 
         except Exception as e:
             print(f"Error preprocessing {filename}: {e}")
