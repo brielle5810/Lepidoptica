@@ -49,6 +49,12 @@
                     }
                 });
         }
+
+        function toggleSelection(card) {
+                let checkbox = card.querySelector("input[type='checkbox']");
+                checkbox.checked = !checkbox.checked;
+                card.classList.toggle("selected", checkbox.checked);
+          }
     </script>
 <body class="">
     <div class="container mt-4">
@@ -56,13 +62,19 @@
         <h2 class="text-center mb-4">Preprocessed Images</h2>
 
             <div class="gallery-container p-5 border-2 border-dark">
-                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
+                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4">
                 {% for image in images %}
-                    <div class="col">
-                            <div class="card p-2">
-                                <img src="{{ url_for('download_preprocessed_file', name=image) }}" class="card-img-top" alt="Processed Image">
-                                <div class="card-body text-center">
-                                    <input type="checkbox" name="selected_images" value="{{ image }}">
+                    <div class="col border border-success">
+                            <div class="card p-2 border-0">
+{#                                <img src="{{ url_for('download_preprocessed_file', name=image) }}" class="card-img-top" alt="Processed Image">#}
+{#                                <div class="card-body text-center">#}
+{#                                    <input type="checkbox" name="selected_images" value="{{ image }}">#}
+{#                                </div>#}
+
+                                <div class="selectable-card" onclick="toggleSelection(this)">
+                                    <img src="{{ url_for('download_preprocessed_file', name=image) }}" class="card-img-top" alt="Processed Image">
+                                    <input type="checkbox" name="selected_images" value="{{ image }}" class="hidden-checkbox">
+                                    <p class="selected-text mt-3 mb-1">Selected</p>
                                 </div>
                                 <button onclick="deleteImage('{{ image }}')">Delete Image</button>
                             </div>
@@ -70,6 +82,9 @@
                 {% endfor %}
                 </div>
             </div>
+        {% else %}
+            <h2 class="text-center">No images available</h2>
+        {% endif %}
 
         <br>
         <!--    #removed link styling-->

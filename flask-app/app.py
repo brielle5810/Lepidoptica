@@ -1,8 +1,10 @@
 import os
+import secrets
 
 import cv2
 import numpy as np
-from flask import Flask, request, send_file, jsonify, render_template, flash, request, redirect, url_for, send_from_directory
+from flask import Flask, request, send_file, jsonify, render_template, flash, request, redirect, url_for, \
+    send_from_directory, session
 import pandas as pd
 from PIL import Image, ImageOps
 import io
@@ -13,7 +15,6 @@ import shutil
 from scipy.ndimage import gaussian_filter
 import easyocr
 from datetime import datetime
-
 import easyocr
 
 app = Flask(__name__)
@@ -29,6 +30,7 @@ reader = easyocr.Reader(['en'], gpu=False)
 
 for folder in [UPLOAD_FOLDER, STAGE1_FOLDER, PREPROCESS_FOLDER, SAVED_ORIGINALS]:
     os.makedirs(folder, exist_ok=True)
+
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["STAGE1_FOLDER"] = STAGE1_FOLDER
 app.config["PREPROCESS_FOLDER"] = PREPROCESS_FOLDER
@@ -228,11 +230,14 @@ def reprocess_page():
 
 @app.route("/image_gallery", methods=["GET"])
 def image_gallery():
-    #preprocess()
     images = os.listdir(app.config["PREPROCESS_FOLDER"])
     print(images)
     print("====================================")
     return render_template("image_gallery.html", images=images)
+
+@app.route("/loading_reprocess", methods=["GET"])
+def loading_reprocess():
+    return render_template("loading_reprocess.html")
 
 
 @app.route("/preprocessed/<path:name>")
@@ -242,9 +247,6 @@ def download_preprocessed_file(name):
 @app.route('/uploads/<name>')
 def download_file(name):
     return send_from_directory(app.config["UPLOAD_FOLDER"], name)
-# app.add_url_rule(
-#     "/uploads/<name>", endpoint="download_file", build_only=True
-# )
 
 @app.route("/delete/<filename>", methods=["DELETE"])
 def delete_file(filename):
@@ -286,12 +288,29 @@ def download():
 
 @app.route("/apply_reprocessing", methods=["POST"])
 def apply_reprocessing():
-    """Reprocess selected images based on new user settings."""
+    #redirects to loading screen before/while reprocessing.
     selected_images = request.form.getlist("selected_images")
 
+    # store selected images and settings w/ session
+    session["selected_images"] = selected_images
+    session["reprocess_settings"] = {img: {
+        "crop_factor": request.form[f"crop_factor_{img}"],
+        "processing_strength": request.form[f"processing_strength_{img}"]
+    } for img in selected_images}
+
+    return redirect(url_for("loading_reprocess"))
+
+
+@app.route("/start_reprocessing", methods=["POST"])
+def start_reprocessing():
+    #processes images after loading screen is shown
+    selected_images = session.get("selected_images", [])
+    reprocess_settings = session.get("reprocess_settings", {})
+
     for image_name in selected_images:
-        crop_factor = float(request.form[f"crop_factor_{image_name}"])  
-        processing_strength = request.form[f"processing_strength_{image_name}"]  
+        settings = reprocess_settings.get(image_name, {})
+        crop_factor = float(settings.get("crop_factor", 0.4))  # Default to 0.4 (2/5)
+        processing_strength = settings.get("processing_strength", "medium")
 
         original_path = os.path.join(SAVED_ORIGINALS, image_name)
         preprocessed_path = os.path.join(PREPROCESS_FOLDER, image_name)
@@ -301,19 +320,23 @@ def apply_reprocessing():
             continue
 
         image = Image.open(original_path)
+        image = ImageOps.exif_transpose(image)
         width, height = image.size
         new_width = int(width * crop_factor)
         cropped_image = image.crop((0, 0, new_width, height))
 
         processed_np = np.array(cropped_image)
 
-        # process according to strength selected
         processed_np = apply_processing_strength(processed_np, processing_strength)
 
         processed_pil = Image.fromarray(processed_np)
-        processed_pil.save(preprocessed_path)  
+        processed_pil.save(preprocessed_path)
 
-    return redirect(url_for("image_gallery"))
+    # clear session data
+    session.pop("selected_images", None)
+    session.pop("reprocess_settings", None)
+
+    return jsonify({"message": "Reprocessing complete"}), 200
 
 
 def apply_processing_strength(image_np, strength):
@@ -351,6 +374,7 @@ def apply_processing_strength(image_np, strength):
         eroded = cv2.erode(gray, kernel_two, iterations=1) 
     return eroded
 
+
 @app.route("/output", methods=["GET"])
 def output():
     #view the images
@@ -371,10 +395,12 @@ def output():
 
     return render_template("output_gallery.html", images_and_data=zip(images, df_list), headings=df.columns.tolist())
 
+
 @app.route("/finished", methods=["GET"])
 def finished():
     #Tell user their file is downloading
     return render_template('finished.html')
+
 
 @app.route("/about", methods=["GET"])
 def about():
@@ -383,4 +409,5 @@ def about():
 
 
 if __name__ == "__main__":
+    app.secret_key = secrets.token_hex(32)
     app.run(debug=True)
