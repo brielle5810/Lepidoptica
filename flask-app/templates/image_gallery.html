@@ -12,6 +12,7 @@
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
 </head>
 {% include "nav.html" %}
+<div id="content"></div>
  <script>
         function deleteImage(filename) {
             fetch(`/delete/${filename}`, { method: 'DELETE' })

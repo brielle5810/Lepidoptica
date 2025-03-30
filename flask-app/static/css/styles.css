@@ -126,8 +126,13 @@ html, body {
 
 .nav-container {
     background-color: #018550;
-    padding-top: 20px;
-    padding-bottom: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
 
 }
 
@@ -141,6 +146,10 @@ html, body {
 
 a:hover {
     border-bottom: black 5px solid;
+}
+
+#content {
+    margin-top: 80px
 }
 
 
