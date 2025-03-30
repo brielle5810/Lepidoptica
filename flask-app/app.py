@@ -262,7 +262,7 @@ def start_reprocessing():
 
     for image_name in selected_images:
         settings = reprocess_settings.get(image_name, {})
-        crop_factor = float(settings.get("crop_factor", 0.4))  # Default to 0.4
+        crop_factor = float(settings.get("crop_factor", 0.4))  # Default to 0.4 (2/5)
         processing_strength = settings.get("processing_strength", "medium")
 
         original_path = os.path.join(SAVED_ORIGINALS, image_name)
@@ -273,6 +273,7 @@ def start_reprocessing():
             continue
 
         image = Image.open(original_path)
+        image = ImageOps.exif_transpose(image)
         width, height = image.size
         new_width = int(width * crop_factor)
         cropped_image = image.crop((0, 0, new_width, height))
