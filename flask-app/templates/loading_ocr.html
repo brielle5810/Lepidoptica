@@ -5,6 +5,20 @@
     <title>Reprocessing...</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
+<script>
+function ocr() {
+    fetch('/ocr', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log(data);
+                window.location.href = '/output';
+            } else {
+                alert(`Error: ${data.error}`);
+            }
+        });
+}
+</script>
 <body>
     {% include "nav.html" %}
     <div class="loading-container">
@@ -17,7 +31,7 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        fetch('/start_reprocessing', {
+        fetch('/ocr', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         })

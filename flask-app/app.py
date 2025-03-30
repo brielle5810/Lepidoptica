@@ -201,18 +201,77 @@ def preprocess_images_in_batch():
 @app.route("/ocr", methods=["POST"])
 def ocr():
     print("do ocr")
+
+    #This version creates individual .csv files for each image
+    # for filename in os.listdir(PREPROCESS_FOLDER):
+    #     name = filename.split(".")[0]
+    #     image_path = os.path.join(PREPROCESS_FOLDER, filename)
+    #     final_path = os.path.join(OCR_OUTPUT, name + ".csv")
+    #
+    #     try:
+    #         image = Image.open(image_path)
+    #         image_np = np.array(image)
+    #         results = reader.readtext(image_np)
+    #         ocr_df = pd.DataFrame(results, columns=['bbox', 'text', 'confidence'])
+    #         ocr_df.to_csv(final_path)
+    #         print(final_path + " saved")
+
+    #Attempting to create a version that just fills data in data.csv
+
+    #Delete data.csv if it exists
+    final_path = os.path.join(OCR_OUTPUT, "data.csv")
+    for filename in os.listdir(OCR_OUTPUT):
+        if filename == "data.csv":
+            os.remove(final_path)
+
+    #Create data.csv
+    data = open(final_path, "w")
+    data.write("CatalogNumber,Specimen_voucher,Family,Genus,Species,Subspecies,Sex,Country,State,County,Locality name,Elevation min,Elevation max,Elevation unit,Collectors,Latitude,Longitude,Georeferencing source,Georeferencing precision,Questionable label data,Do not publish,Collecting event start,Collecting event end,Date verbatim,Remarks public,Remarks private,Cataloged date,Cataloger First,Cataloger last,Prep type 1,Prep count 1,Prep type 2,Prep number 2,Prep type 3,Prep number 3,Other record number,Other record source,publication,publication")
+
+    #Write data to csv
+    #Confidence shown every other row
+    #Maybe we can also store confidence intervals in a separate csv file?
+
     for filename in os.listdir(PREPROCESS_FOLDER):
         name = filename.split(".")[0]
         image_path = os.path.join(PREPROCESS_FOLDER, filename)
-        final_path = os.path.join(OCR_OUTPUT, name + ".csv")
 
         try:
             image = Image.open(image_path)
             image_np = np.array(image)
             results = reader.readtext(image_np)
             ocr_df = pd.DataFrame(results, columns=['bbox', 'text', 'confidence'])
-            ocr_df.to_csv(final_path)
-            print(final_path + " saved")
+            #ocr_df.to_csv(final_path)
+
+            transcription_lines = "\n\""
+            confidence_lines = "\n"
+
+            num_cols = len(ocr_df)
+            column_counter = 0
+            for i in range(num_cols):
+                #If there are more sections of data in the dataframe than fields in the csv, start lumping data together in the last column
+                #Note: This will not update the confidence for that column with the current implementation
+                if column_counter >= 38:
+                    #transcription_lines = transcription_lines + ocr_df[line][1]
+                    transcription_lines = transcription_lines + str(ocr_df.loc[i].at["text"])
+                elif column_counter == 0:
+                    transcription_lines = transcription_lines + str(ocr_df.loc[i].at["text"])
+                    confidence_lines = confidence_lines + str(ocr_df.loc[i].at["confidence"])
+                else:
+                    transcription_lines = transcription_lines + "\",\"" + str(ocr_df.loc[i].at["text"])
+                    confidence_lines = confidence_lines + "," + str(ocr_df.loc[i].at["confidence"])
+                column_counter = column_counter + 1
+
+            if column_counter < 38:
+                for i in range (38 - column_counter):
+                    transcription_lines = transcription_lines + "\",\""
+                    confidence_lines = confidence_lines + ","
+
+            transcription_lines = transcription_lines + "\""
+            data.write(transcription_lines)
+            data.write(confidence_lines)
+
+        #print(final_path + " saved")
 
         except Exception as e:
             print(f"Error preprocessing {filename}: {e}")
@@ -238,6 +297,10 @@ def image_gallery():
 @app.route("/loading_reprocess", methods=["GET"])
 def loading_reprocess():
     return render_template("loading_reprocess.html")
+
+@app.route("/loading_ocr", methods=["GET"])
+def loading_ocr():
+    return render_template("loading_ocr.html")
 
 
 @app.route("/preprocessed/<path:name>")
