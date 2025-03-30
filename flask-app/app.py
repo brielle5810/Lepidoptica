@@ -12,6 +12,8 @@ from flask_cors import CORS
 #from flask_table import Table, Col
 from werkzeug.utils import secure_filename
 import shutil
+from scipy.ndimage import gaussian_filter
+import easyocr
 from datetime import datetime
 import easyocr
 
@@ -23,6 +25,8 @@ PREPROCESS_FOLDER = "preprocess"
 STAGE1_FOLDER = "stage1_crop"
 SAVED_ORIGINALS = "saved_originals"
 OCR_OUTPUT = "ocr_output"
+
+reader = easyocr.Reader(['en'], gpu=False)
 
 for folder in [UPLOAD_FOLDER, STAGE1_FOLDER, PREPROCESS_FOLDER, SAVED_ORIGINALS]:
     os.makedirs(folder, exist_ok=True)
@@ -118,7 +122,7 @@ def crop_images_in_batch(filenames):
             image = Image.open(image_path)
             image = ImageOps.exif_transpose(image)
             width, height = image.size
-            new_width = int(width * (2 / 5))
+            new_width = int(width * (1 / 3))
             cropped_image = image.crop((0, 0, new_width, height))
 
             cropped_image.save(cropped_path)
@@ -139,24 +143,50 @@ def preprocess_images_in_batch():
 
         try:
             image = Image.open(image_path)
+            image = image.convert("RGB")
             image_np = np.array(image)
 
-            # normalize image
-            image_np = cv2.normalize(image_np, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+            # ### Alexia's Work
+            # greyscale image
+            image_np = cv2.cvtColor(image_np, cv2.COLOR_BGR2GRAY)
 
-            # noise removal
-            opening = cv2.morphologyEx(image_np, cv2.MORPH_OPEN, kernel_open, iterations=2)
-            opening = cv2.fastNlMeansDenoisingColored(opening, None, 10, 10, 7, 15)
+            # blurring image
+            sigma = 0.5
+            image_np = gaussian_filter(image_np, sigma=sigma)
 
-            # grayscale
-            gray = cv2.cvtColor(opening, cv2.COLOR_BGR2GRAY)
-            gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+            # thickening the font
+            image_np = cv2.bitwise_not(image_np)
+            kernal = np.ones((2, 2), np.uint8)
+            image_np = cv2.dilate(image_np, kernal, iterations=2)
+            image_np = cv2.bitwise_not(image_np)
 
-            processed_image = cv2.erode(gray, kernel_erode, iterations=1)
+            # image binarization
+            _, image_np = cv2.threshold(image_np, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
             # save in preprocess folder
-            processed_pil = Image.fromarray(processed_image)
-            processed_pil.save(final_path)  
+            processed_pil = Image.fromarray(image_np)
+            processed_pil.save(final_path)
+
+            # ### OLD PREPROCESSING
+            # image = Image.open(image_path)
+            # image_np = np.array(image)
+
+            # normalize image
+            # image_np = cv2.normalize(image_np, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+            #
+            # # noise removal
+            # opening = cv2.morphologyEx(image_np, cv2.MORPH_OPEN, kernel_open, iterations=2)
+            # opening = cv2.fastNlMeansDenoisingColored(opening, None, 10, 10, 7, 15)
+            #
+            # # grayscale
+            # gray = cv2.cvtColor(opening, cv2.COLOR_BGR2GRAY)
+            # gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+            #
+            # processed_image = cv2.erode(gray, kernel_erode, iterations=1)
+            #
+            # # save in preprocess folder
+            # processed_pil = Image.fromarray(processed_image)
+            # processed_pil.save(final_path)
 
         except Exception as e:
             print(f"Error preprocessing {filename}: {e}")
@@ -171,6 +201,23 @@ def preprocess_images_in_batch():
 @app.route("/ocr", methods=["POST"])
 def ocr():
     print("do ocr")
+    for filename in os.listdir(PREPROCESS_FOLDER):
+        name = filename.split(".")[0]
+        image_path = os.path.join(PREPROCESS_FOLDER, filename)
+        final_path = os.path.join(OCR_OUTPUT, name + ".csv")
+
+        try:
+            image = Image.open(image_path)
+            image_np = np.array(image)
+            results = reader.readtext(image_np)
+            ocr_df = pd.DataFrame(results, columns=['bbox', 'text', 'confidence'])
+            ocr_df.to_csv(final_path)
+            print(final_path + " saved")
+
+        except Exception as e:
+            print(f"Error preprocessing {filename}: {e}")
+
+    return jsonify({"success": True, "message": f"OCR Complete"})
 
 @app.route("/reprocess", methods=["POST"])
 def reprocess_page():
