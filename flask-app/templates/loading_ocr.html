@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reprocessing...</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    {% include "nav.html" %}
+    <div class="loading-container">
+        <h1>Transcribing...</h1>
+        <h2>Image transcription is taking place.</h2>
+        <h2>This may take some time...</h2>
+        <div class="loader"></div>
+    </div>
+</body>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        fetch('/start_reprocessing', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("OCR complete:", data);
+            window.location.href = '/output'; // Redirect when done
+        })
+        .catch(error => {
+            console.error("Error during OCR transcription:", error);
+        });
+    });
+</script>
+</html>
