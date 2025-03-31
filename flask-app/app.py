@@ -297,7 +297,17 @@ def reprocess_page():
     if not selected_images:
         return redirect(url_for("image_gallery"))
 
-    return render_template("reprocess.html", images=selected_images)
+    session['reprocess_images'] = selected_images
+    return jsonify({"redirect": url_for("reprocess_page_render")})
+    #return render_template("reprocess.html", images=selected_images)
+
+@app.route("/reprocess_view")
+def reprocess_page_render():
+    images = session.get('reprocess_images', [])
+    if not images:
+        return redirect(url_for("image_gallery"))
+
+    return render_template("reprocess.html", images=images)
 
 @app.route("/image_gallery", methods=["GET"])
 def image_gallery():
