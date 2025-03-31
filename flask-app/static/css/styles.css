@@ -152,6 +152,32 @@ a:hover {
     margin-top: 80px
 }
 
+#progress-box-container {
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+  align-items: center;
+  text-align: center;
+  height: 100%;
+  margin-top: 10%
+}
+
+#progress-box {
+  width: 60%;
+  background-color: #737373;
+  border: 3px solid #1a1a1a;
+  padding: 10px;
+  text-align: inherit;
+}
+
+#progress-bar {
+  width: 0%;
+  background-color: #018550;
+  border: 1px solid #1a1a1a;
+  /*text-align: center;  To center it horizontally (if you want) */
+  line-height: 300%; /* To center it vertically */
+  color: white;
+}
 
 /*.custom-scrollbar-js,*/
 /*.custom-scrollbar-css {*/

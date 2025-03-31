@@ -2,36 +2,37 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Reprocessing...</title>
+    <title>Loading OCR...</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
-<script>
-function ocr() {
-    fetch('/ocr', { method: 'POST' })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                console.log(data);
-                window.location.href = '/output';
-            } else {
-                alert(`Error: ${data.error}`);
-            }
-        });
-}
-</script>
+
 <body>
     {% include "nav.html" %}
     <div id="content"></div>
-    <div class="loading-container">
+
+
+    <div id="progress-box-container">
+
         <h1>Transcribing...</h1>
         <h2>Image transcription is taking place.</h2>
         <h2>This may take some time...</h2>
-        <div class="loader"></div>
+
+        <div style="margin-top: 5%" id="progress-box">
+            <div id="progress-bar">0%</div></div>
     </div>
+
+
+
+
+
 </body>
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        //console.log("Page Loaded");
+
+        const updateInterval = setInterval(updateBar, 200);     //Updates progress bar 5 times per second
+
         fetch('/ocr', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
@@ -39,11 +40,39 @@ function ocr() {
         .then(response => response.json())
         .then(data => {
             console.log("OCR complete:", data);
+            clearInterval(updateInterval);
             window.location.href = '/output'; // Redirect when done
         })
         .catch(error => {
+            clearInterval(updateInterval);
             console.error("Error during OCR transcription:", error);
         });
+
     });
+
+    var i = 0;
+    var width = 0;
+    function updateBar() {
+        //console.log("width:", width);
+
+        if (i == 0) {
+            i = 1;
+            var elem = document.getElementById("progress-bar");
+        //}
+            fetch('/progress')
+            .then(response => response.json())
+            .then(data => {
+                console.log("Update:", data);
+                width = data;
+            })
+            .catch(error => {
+                console.error("Error with updating progress bar:", error);
+            });
+            elem.style.width = width + "%";
+            elem.innerHTML = width + "%";
+            //}
+            i = 0;
+        }
+    }
 </script>
 </html>

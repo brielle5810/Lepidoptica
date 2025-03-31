@@ -26,6 +26,9 @@ STAGE1_FOLDER = "stage1_crop"
 SAVED_ORIGINALS = "saved_originals"
 OCR_OUTPUT = "ocr_output"
 
+num_files = 0
+num_processed = 0
+
 reader = easyocr.Reader(['en'], gpu=False)
 
 for folder in [UPLOAD_FOLDER, STAGE1_FOLDER, PREPROCESS_FOLDER, SAVED_ORIGINALS]:
@@ -198,6 +201,23 @@ def preprocess_images_in_batch():
     clear_folder(UPLOAD_FOLDER) #also everytime we preprocess, we process ALL in these, so clear it !
     print("All images preprocessed successfully!")
 
+#Attempting new method to fetch number of remaining files to be processed by OCR for progres bar
+#Resources used:
+#https://www.w3schools.com/howto/howto_js_progressbar.asp
+#https://stackoverflow.com/questions/58996870/update-flask-web-page-with-python-script
+
+@app.route('/progress')
+def progress():
+    # Send the number of files currently done processing out of the total
+    global num_processed
+    global num_files
+    if num_files != 0:
+        return str(int(float(num_processed) * 100.0 / float(num_files)))
+        #return str(num_files)
+    else:
+        return "0"
+
+
 @app.route("/ocr", methods=["POST"])
 def ocr():
     print("do ocr")
@@ -214,9 +234,15 @@ def ocr():
     #         results = reader.readtext(image_np)
     #         ocr_df = pd.DataFrame(results, columns=['bbox', 'text', 'confidence'])
     #         ocr_df.to_csv(final_path)
-    #         print(final_path + " saved")
+    #         print(final_path + " saved
 
     #Attempting to create a version that just fills data in data.csv
+
+    #Update global vars
+    global num_processed
+    global num_files
+    num_files = len(os.listdir(PREPROCESS_FOLDER))
+    num_processed = 0
 
     #Delete data.csv if it exists
     final_path = os.path.join(OCR_OUTPUT, "data.csv")
@@ -283,6 +309,7 @@ def ocr():
             confidence.write(confidence_lines)
             confidence.close()
 
+            num_processed = num_processed + 1
             print(name + " processed")
 
         except Exception as e:
