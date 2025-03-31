@@ -56,6 +56,33 @@
                 checkbox.checked = !checkbox.checked;
                 card.classList.toggle("selected", checkbox.checked);
           }
+
+        function submitSelected() {
+            const selected = [];
+            document.querySelectorAll("input[name='selected_images']:checked").forEach(cb => {
+                selected.push(cb.value);
+            });
+
+            if (selected.length === 0) {
+                alert("No images selected for reprocess.");
+                return;
+            }
+
+            const formData = new FormData();
+            selected.forEach(img => formData.append("selected_images", img));
+
+            fetch("{{ url_for('reprocess_page') }}", {
+                method: "POST",
+                body: formData
+            }).then(response => response.json())
+                .then(data => {
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    }
+            }).catch(error => {
+                console.error("Error:", error);
+            });
+        }
     </script>
 <body class="">
     {% if images %}
@@ -90,7 +117,7 @@
 
         <br>
             <!--    #removed link styling-->
-            <button type="submit" class="mb-2">REPROCESS SELECTED</button>
+            <button class="mb-2" onclick="submitSelected()">REPROCESS SELECTED</button>
             <button class="mb-2"> <a href="/" style="all: unset;">UPLOAD MORE</a></button>
             <button class="mb-2" onclick="deleteAll()">DELETE ALL IMAGES</button>
             <!--<button class="mb-2"> <a href="/output" style="all: unset;">EXTRACT DATA</a></button>-->
