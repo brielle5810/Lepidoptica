@@ -183,6 +183,26 @@ a.nav-a:hover {
   color: white;
 }
 
+.table-header-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 100%;
+
+}
+
+.table-header-offset {
+  position: absolute;
+  left: 0;
+  white-space: nowrap;
+}
+
+.download-button {
+  position: relative;
+  margin: auto;
+}
+
 /*.custom-scrollbar-js,*/
 /*.custom-scrollbar-css {*/
 /*  height: 200px;*/
