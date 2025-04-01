@@ -212,8 +212,11 @@ def progress():
     global num_processed
     global num_files
     if num_files != 0:
-        return str(int(float(num_processed) * 100.0 / float(num_files)))
+        #return str(int(float(num_processed) * 100.0 / float(num_files)))
+        packaged_data = {'num_processed':num_processed, 'num_files':num_files}
+        return jsonify(packaged_data)
         #return str(num_files)
+
     else:
         return "0"
 

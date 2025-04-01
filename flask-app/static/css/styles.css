@@ -78,6 +78,7 @@ html, body {
     position: relative;
     cursor: pointer;
     border: 2px solid transparent;
+    /*border: 2px solid  #1a1a1a;*/
     transition: border 0.3s, box-shadow 0.3s;
     padding: 10px;
     text-align: center;
@@ -150,6 +151,7 @@ a:hover {
 
 #content {
     margin-top: 80px
+    background-color: white;
 }
 
 #progress-box-container {
@@ -158,8 +160,8 @@ a:hover {
   margin: auto;
   align-items: center;
   text-align: center;
-  height: 100%;
-  margin-top: 10%
+  /*height: 100%;*/
+  margin-top: 10%;
 }
 
 #progress-box {
@@ -168,6 +170,8 @@ a:hover {
   border: 3px solid #1a1a1a;
   padding: 10px;
   text-align: inherit;
+  margin-top: 5%
+  margin-bottom: 5%
 }
 
 #progress-bar {

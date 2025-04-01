@@ -17,10 +17,16 @@
         <h2>Image transcription is taking place.</h2>
         <h2>This may take some time...</h2>
 
-        <div style="margin-top: 5%" id="progress-box">
-            <div id="progress-bar">0%</div></div>
+        <div style="margin-top: 3%" id="progress-box">
+            <div id="progress-bar">0%</div>
+        </div>
+            <div  style="display: flex; flex-direction: row; font-size: 1.5em; margin-top: 0.83em; margin-bottom: 0.83em; margin-left: 0; margin-right: 0; font-weight: bold;">
+                <div id="num-processed">0</div>
+                /
+                <div id="num-files">0</div>
+                &nbsp;image files processed
+        </div>
     </div>
-
 
 
 
@@ -31,7 +37,9 @@
     document.addEventListener("DOMContentLoaded", function() {
         //console.log("Page Loaded");
 
-        const updateInterval = setInterval(updateBar, 200);     //Updates progress bar 5 times per second
+        //updateBar();
+        //const updateInterval = setInterval(updateBar, 200);     //Updates progress bar 5 times per second
+        const updateInterval = setInterval(updateBar, 500);     //Updating twice per second should be sufficient? And would cut down on function calls
 
         fetch('/ocr', {
             method: 'POST',
@@ -52,6 +60,8 @@
 
     var i = 0;
     var width = 0;
+    var numProcessed = 0;
+    var numFiles = 0;
     function updateBar() {
         //console.log("width:", width);
 
@@ -63,13 +73,18 @@
             .then(response => response.json())
             .then(data => {
                 console.log("Update:", data);
-                width = data;
+                numProcessed = data.num_processed;
+                numFiles = data.num_files;
+                console.log("Num files:", numFiles);
+                width = Math.floor((numProcessed * 100.0) / numFiles);
             })
             .catch(error => {
                 console.error("Error with updating progress bar:", error);
             });
             elem.style.width = width + "%";
             elem.innerHTML = width + "%";
+            document.getElementById("num-processed").textContent = numProcessed;
+            document.getElementById("num-files").textContent = numFiles;
             //}
             i = 0;
         }
