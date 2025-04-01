@@ -145,7 +145,7 @@ html, body {
     padding: 20px;
 }
 
-a:hover {
+a.nav-a:hover {
     border-bottom: black 5px solid;
 }
 
