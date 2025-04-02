@@ -12,6 +12,7 @@
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
 </head>
 {% include "nav.html" %}
+<div id="content"></div>
 <body>
 
 <form action="{{ url_for('apply_reprocessing') }}" method="POST">
@@ -46,7 +47,6 @@
 
 
         <br>
-{#        <button type="submit" class="btn btn-primary mt-3">Apply Reprocessing</button>#}
         <button type="submit" class="btn btn-primary mt-3" onclick="showLoadingScreen()">Apply Reprocessing</button>
 
         <br>

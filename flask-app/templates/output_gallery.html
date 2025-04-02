@@ -14,6 +14,7 @@
 </head>
 
 {% include "nav.html" %}
+<div id="content"></div>
 <div id="tableContainer"></div>
     <head>
         <style>
@@ -139,8 +140,17 @@
     </head>
 
     <body style="overflow: scroll">
-    <h1 style="padding-left: 3%; margin-top: 1%; margin-bottom: 1%; color: #006666"><b>DATA EXTRACTION OUTPUT:</b></h1>
-    <div style="overflow-x:auto">
+    <div style="display: flex; flex-direction: row; margin: auto; padding-top: 5%;  padding-bottom: 1%;">
+    <!--<h1 style="padding-left: 3%; padding-top: 5%; margin-top: 1%; margin-bottom: 1%; color: #006666;"><b>DATA EXTRACTION OUTPUT:</b></h1>-->
+        <div class="table-header-wrapper"><div class="table-header-offset">
+    <h1 style="padding-left: 8%; color: #006666;"><b>DATA EXTRACTION OUTPUT:</b></h1></div>
+    <div class="download-button">
+        <button class="button" onclick="tableToCSV()">
+            <!--<a href="/finished" style="all: unset; padding-top: 5%"><b>GET CSV</b></a>--> <!--Realizing it might be best not to redirect on download-->
+            <a style="padding-top: 5%"><b>GET CSV</b></a>
+        </button>
+    </div></div></div>
+    <div style="overflow-x:auto; display: block;">
         <table id="dataTable">
             <!--? Category names: -->
             <tr style="position: sticky">
@@ -182,9 +192,10 @@
         </table>
     </div>
 
-    <div class="wrapper">
+    <div class="wrapper" style="padding-bottom: 5%">
         <button class="button" style="margin-top: 2%;" onclick="tableToCSV()">
-            <a href="/finished" style="all: unset;"><b>GET CSV</b></a>
+            <!--<a href="/finished" style="all: unset; padding-bottom: 5%"><b>GET CSV</b></a>-->
+            <a style="all: unset; padding-top: 5%"><b>GET CSV</b></a>
         </button>
     </div>
 

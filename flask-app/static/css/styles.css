@@ -78,6 +78,7 @@ html, body {
     position: relative;
     cursor: pointer;
     border: 2px solid transparent;
+    /*border: 2px solid  #1a1a1a;*/
     transition: border 0.3s, box-shadow 0.3s;
     padding: 10px;
     text-align: center;
@@ -126,8 +127,13 @@ html, body {
 
 .nav-container {
     background-color: #018550;
-    padding-top: 20px;
-    padding-bottom: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
 
 }
 
@@ -139,10 +145,63 @@ html, body {
     padding: 20px;
 }
 
-a:hover {
+a.nav-a:hover {
     border-bottom: black 5px solid;
 }
 
+#content {
+    margin-top: 80px;
+    background-color: white;
+}
+
+#progress-box-container {
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+  align-items: center;
+  text-align: center;
+  /*height: 100%;*/
+  margin-top: 10%;
+}
+
+#progress-box {
+  width: 60%;
+  background-color: #737373;
+  border: 3px solid #1a1a1a;
+  padding: 10px;
+  text-align: inherit;
+  margin-top: 5%;
+  margin-bottom: 5%
+}
+
+#progress-bar {
+  width: 0%;
+  background-color: #018550;
+  border: 1px solid #1a1a1a;
+  /*text-align: center;  To center it horizontally (if you want) */
+  line-height: 300%; /* To center it vertically */
+  color: white;
+}
+
+.table-header-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 100%;
+
+}
+
+.table-header-offset {
+  position: absolute;
+  left: 0;
+  white-space: nowrap;
+}
+
+.download-button {
+  position: relative;
+  margin: auto;
+}
 
 /*.custom-scrollbar-js,*/
 /*.custom-scrollbar-css {*/

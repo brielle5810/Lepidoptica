@@ -12,6 +12,8 @@ from flask_cors import CORS
 #from flask_table import Table, Col
 from werkzeug.utils import secure_filename
 import shutil
+from scipy.ndimage import gaussian_filter
+import easyocr
 from datetime import datetime
 import easyocr
 
@@ -23,6 +25,11 @@ PREPROCESS_FOLDER = "preprocess"
 STAGE1_FOLDER = "stage1_crop"
 SAVED_ORIGINALS = "saved_originals"
 OCR_OUTPUT = "ocr_output"
+
+num_files = 0
+num_processed = 0
+
+reader = easyocr.Reader(['en'], gpu=False)
 
 for folder in [UPLOAD_FOLDER, STAGE1_FOLDER, PREPROCESS_FOLDER, SAVED_ORIGINALS]:
     os.makedirs(folder, exist_ok=True)
@@ -118,7 +125,7 @@ def crop_images_in_batch(filenames):
             image = Image.open(image_path)
             image = ImageOps.exif_transpose(image)
             width, height = image.size
-            new_width = int(width * (2 / 5))
+            new_width = int(width * (1 / 3))
             cropped_image = image.crop((0, 0, new_width, height))
 
             cropped_image.save(cropped_path)
@@ -139,24 +146,50 @@ def preprocess_images_in_batch():
 
         try:
             image = Image.open(image_path)
+            image = image.convert("RGB")
             image_np = np.array(image)
 
-            # normalize image
-            image_np = cv2.normalize(image_np, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+            # ### Alexia's Work
+            # greyscale image
+            image_np = cv2.cvtColor(image_np, cv2.COLOR_BGR2GRAY)
 
-            # noise removal
-            opening = cv2.morphologyEx(image_np, cv2.MORPH_OPEN, kernel_open, iterations=2)
-            opening = cv2.fastNlMeansDenoisingColored(opening, None, 10, 10, 7, 15)
+            # blurring image
+            sigma = 0.5
+            image_np = gaussian_filter(image_np, sigma=sigma)
 
-            # grayscale
-            gray = cv2.cvtColor(opening, cv2.COLOR_BGR2GRAY)
-            gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+            # thickening the font
+            image_np = cv2.bitwise_not(image_np)
+            kernal = np.ones((2, 2), np.uint8)
+            image_np = cv2.dilate(image_np, kernal, iterations=2)
+            image_np = cv2.bitwise_not(image_np)
 
-            processed_image = cv2.erode(gray, kernel_erode, iterations=1)
+            # image binarization
+            _, image_np = cv2.threshold(image_np, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
             # save in preprocess folder
-            processed_pil = Image.fromarray(processed_image)
-            processed_pil.save(final_path)  
+            processed_pil = Image.fromarray(image_np)
+            processed_pil.save(final_path)
+
+            # ### OLD PREPROCESSING
+            # image = Image.open(image_path)
+            # image_np = np.array(image)
+
+            # normalize image
+            # image_np = cv2.normalize(image_np, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+            #
+            # # noise removal
+            # opening = cv2.morphologyEx(image_np, cv2.MORPH_OPEN, kernel_open, iterations=2)
+            # opening = cv2.fastNlMeansDenoisingColored(opening, None, 10, 10, 7, 15)
+            #
+            # # grayscale
+            # gray = cv2.cvtColor(opening, cv2.COLOR_BGR2GRAY)
+            # gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+            #
+            # processed_image = cv2.erode(gray, kernel_erode, iterations=1)
+            #
+            # # save in preprocess folder
+            # processed_pil = Image.fromarray(processed_image)
+            # processed_pil.save(final_path)
 
         except Exception as e:
             print(f"Error preprocessing {filename}: {e}")
@@ -168,9 +201,124 @@ def preprocess_images_in_batch():
     clear_folder(UPLOAD_FOLDER) #also everytime we preprocess, we process ALL in these, so clear it !
     print("All images preprocessed successfully!")
 
+#Attempting new method to fetch number of remaining files to be processed by OCR for progres bar
+#Resources used:
+#https://www.w3schools.com/howto/howto_js_progressbar.asp
+#https://stackoverflow.com/questions/58996870/update-flask-web-page-with-python-script
+
+@app.route('/progress')
+def progress():
+    # Send the number of files currently done processing out of the total
+    global num_processed
+    global num_files
+    if num_files != 0:
+        #return str(int(float(num_processed) * 100.0 / float(num_files)))
+        packaged_data = {'num_processed':num_processed, 'num_files':num_files}
+        return jsonify(packaged_data)
+        #return str(num_files)
+
+    else:
+        return "0"
+
+
 @app.route("/ocr", methods=["POST"])
 def ocr():
     print("do ocr")
+
+    #This version creates individual .csv files for each image
+    # for filename in os.listdir(PREPROCESS_FOLDER):
+    #     name = filename.split(".")[0]
+    #     image_path = os.path.join(PREPROCESS_FOLDER, filename)
+    #     final_path = os.path.join(OCR_OUTPUT, name + ".csv")
+    #
+    #     try:
+    #         image = Image.open(image_path)
+    #         image_np = np.array(image)
+    #         results = reader.readtext(image_np)
+    #         ocr_df = pd.DataFrame(results, columns=['bbox', 'text', 'confidence'])
+    #         ocr_df.to_csv(final_path)
+    #         print(final_path + " saved
+
+    #Attempting to create a version that just fills data in data.csv
+
+    #Update global vars
+    global num_processed
+    global num_files
+    num_files = len(os.listdir(PREPROCESS_FOLDER))
+    num_processed = 0
+
+    #Delete data.csv if it exists
+    final_path = os.path.join(OCR_OUTPUT, "data.csv")
+    confidence_path = os.path.join(OCR_OUTPUT, "confidence.csv")
+    for filename in os.listdir(OCR_OUTPUT):
+        if filename == "data.csv":
+            os.remove(final_path)
+        if filename == "confidence.csv":
+            os.remove(confidence_path)
+
+    #Create data.csv
+    data = open(final_path, "w")
+    data.write("CatalogNumber,Specimen_voucher,Family,Genus,Species,Subspecies,Sex,Country,State,County,Locality name,Elevation min,Elevation max,Elevation unit,Collectors,Latitude,Longitude,Georeferencing source,Georeferencing precision,Questionable label data,Do not publish,Collecting event start,Collecting event end,Date verbatim,Remarks public,Remarks private,Cataloged date,Cataloger First,Cataloger last,Prep type 1,Prep count 1,Prep type 2,Prep number 2,Prep type 3,Prep number 3,Other record number,Other record source,publication,publication")
+    data.close()
+
+    confidence = open(confidence_path, "w")
+    confidence.write("CatalogNumber,Specimen_voucher,Family,Genus,Species,Subspecies,Sex,Country,State,County,Locality name,Elevation min,Elevation max,Elevation unit,Collectors,Latitude,Longitude,Georeferencing source,Georeferencing precision,Questionable label data,Do not publish,Collecting event start,Collecting event end,Date verbatim,Remarks public,Remarks private,Cataloged date,Cataloger First,Cataloger last,Prep type 1,Prep count 1,Prep type 2,Prep number 2,Prep type 3,Prep number 3,Other record number,Other record source,publication,publication")
+    confidence.close()
+    #Write data to csv
+    #Confidence for each data point stored in confidence.csv
+
+    for filename in os.listdir(PREPROCESS_FOLDER):
+        name = filename.split(".")[0]
+        image_path = os.path.join(PREPROCESS_FOLDER, filename)
+
+        try:
+            image = Image.open(image_path)
+            image_np = np.array(image)
+            results = reader.readtext(image_np)
+            ocr_df = pd.DataFrame(results, columns=['bbox', 'text', 'confidence'])
+            #ocr_df.to_csv(final_path)
+
+            transcription_lines = "\n\""
+            confidence_lines = "\n"
+
+            num_cols = len(ocr_df)
+            column_counter = 0
+            for i in range(num_cols):
+                #If there are more sections of data in the dataframe than fields in the csv, start lumping data together in the last column
+                #Note: This will not update the confidence for that column with the current implementation
+                if column_counter >= 38:
+                    #transcription_lines = transcription_lines + ocr_df[line][1]
+                    transcription_lines = transcription_lines + str(ocr_df.loc[i].at["text"])
+                elif column_counter == 0:
+                    transcription_lines = transcription_lines + str(ocr_df.loc[i].at["text"])
+                    confidence_lines = confidence_lines + str(ocr_df.loc[i].at["confidence"])
+                else:
+                    transcription_lines = transcription_lines + "\",\"" + str(ocr_df.loc[i].at["text"])
+                    confidence_lines = confidence_lines + "," + str(ocr_df.loc[i].at["confidence"])
+                column_counter = column_counter + 1
+
+            if column_counter < 38:
+                for i in range (38 - column_counter):
+                    transcription_lines = transcription_lines + "\",\""
+                    confidence_lines = confidence_lines + ","
+
+            transcription_lines = transcription_lines + "\""
+
+            data = open(final_path, "a")
+            data.write(transcription_lines)
+            data.close()
+
+            confidence = open(confidence_path, "a")
+            confidence.write(confidence_lines)
+            confidence.close()
+
+            num_processed = num_processed + 1
+            print(name + " processed")
+
+        except Exception as e:
+            print(f"Error preprocessing {filename}: {e}")
+
+    return jsonify({"success": True, "message": f"OCR Complete"})
 
 @app.route("/reprocess", methods=["POST"])
 def reprocess_page():
@@ -179,7 +327,17 @@ def reprocess_page():
     if not selected_images:
         return redirect(url_for("image_gallery"))
 
-    return render_template("reprocess.html", images=selected_images)
+    session['reprocess_images'] = selected_images
+    return jsonify({"redirect": url_for("reprocess_page_render")})
+    #return render_template("reprocess.html", images=selected_images)
+
+@app.route("/reprocess_view")
+def reprocess_page_render():
+    images = session.get('reprocess_images', [])
+    if not images:
+        return redirect(url_for("image_gallery"))
+
+    return render_template("reprocess.html", images=images)
 
 @app.route("/image_gallery", methods=["GET"])
 def image_gallery():
@@ -191,6 +349,10 @@ def image_gallery():
 @app.route("/loading_reprocess", methods=["GET"])
 def loading_reprocess():
     return render_template("loading_reprocess.html")
+
+@app.route("/loading_ocr", methods=["GET"])
+def loading_ocr():
+    return render_template("loading_ocr.html")
 
 
 @app.route("/preprocessed/<path:name>")
