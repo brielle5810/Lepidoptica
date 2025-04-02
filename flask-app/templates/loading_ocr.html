@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Loading OCR...</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+
+<body>
+    {% include "nav.html" %}
+    <div id="content"></div>
+
+
+    <div id="progress-box-container">
+
+        <h1>Transcribing...</h1>
+        <h2>Image transcription is taking place.</h2>
+        <h2>This may take some time...</h2>
+
+        <div style="margin-top: 3%" id="progress-box">
+            <div id="progress-bar">0%</div>
+        </div>
+            <div  style="display: flex; flex-direction: row; font-size: 1.5em; margin-top: 0.83em; margin-bottom: 0.83em; margin-left: 0; margin-right: 0; font-weight: bold;">
+                <div id="num-processed">-</div>
+                &nbsp;/&nbsp;
+                <div id="num-files">-</div>
+                &nbsp;image files processed
+        </div>
+    </div>
+
+
+
+
+</body>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        //console.log("Page Loaded");
+
+        //updateBar();
+        //const updateInterval = setInterval(updateBar, 200);     //Updates progress bar 5 times per second
+        const updateInterval = setInterval(updateBar, 500);     //Updating twice per second should be sufficient? And would cut down on function calls
+
+        fetch('/ocr', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("OCR complete:", data);
+            clearInterval(updateInterval);
+            window.location.href = '/output'; // Redirect when done
+        })
+        .catch(error => {
+            clearInterval(updateInterval);
+            console.error("Error during OCR transcription:", error);
+        });
+
+    });
+
+    var i = 0;
+    var width = 0;
+    var numProcessed = 0;
+    var numFiles = 0;
+    function updateBar() {
+        //console.log("width:", width);
+
+        if (i == 0) {
+            i = 1;
+            var elem = document.getElementById("progress-bar");
+        //}
+            fetch('/progress')
+            .then(response => response.json())
+            .then(data => {
+                console.log("Update:", data);
+                numProcessed = data.num_processed;
+                numFiles = data.num_files;
+                console.log("Num files:", numFiles);
+                width = Math.floor((numProcessed * 100.0) / numFiles);
+            })
+            .catch(error => {
+                console.error("Error with updating progress bar:", error);
+            });
+            elem.style.width = width + "%";
+            elem.innerHTML = width + "%";
+            document.getElementById("num-processed").textContent = numProcessed;
+            document.getElementById("num-files").textContent = numFiles;
+            //}
+            i = 0;
+        }
+    }
+</script>
+</html>
