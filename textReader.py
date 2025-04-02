@@ -9,6 +9,18 @@ import locationtagger
 import re
 import roman
 import datefinder
+import rapidfuzz
+from rapidfuzz import process
+
+# def fuzzy_match...
+
+
+
+def load_genus_vocab(file_path):
+    with open(file_path, 'r') as f:
+        lines = f.readlines()
+    genus_list = [line.split('$')[0].strip() for line in lines]
+    return genus_list
 
 
 def find_more_dates(text):
