@@ -33,7 +33,7 @@ def get_best_match(term, spec_list, threshold=80):
 def load_spec_vocab(file_path):
     with open(file_path, 'r') as f:
         lines = f.readlines()
-    spec_list = [line.split('$')[0].strip() for line in lines]
+    spec_list = [line.strip() for line in lines if line.strip()]
     return spec_list
 
 
