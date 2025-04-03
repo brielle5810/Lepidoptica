@@ -24,10 +24,10 @@ def get_best_match(term, spec_list, threshold=80):
     match, score, _ = process.extractOne(term, spec_list)
     if score >= threshold:
         print(f"Trying to match '{term}' | Best match: '{match}' (score: {score})")
-        return match
+        return match, score
     else:
         print(f"Low confidence genus match for '{term}': matched to '{match}' ({score})")
-        return term
+        return term, score
 
 
 def load_spec_vocab(file_path):
@@ -170,15 +170,27 @@ if __name__ == '__main__':
 
     # The order that the categories are filled in is, at first, determined by the order the text is parsed from the photo
     # Some items, (genus, species, and subspecies) always come first
-    # Categories 3 - 6: Genus, Species, and Subspecies
+    # Categories 3 - 6: (family--not often included...), Genus, Species, and Subspecies
     for x in range(3, 6):
         print("Current index: ", currentIndex)
         if listOfStrings[currentIndex] != "UF" and listOfStrings[currentIndex] != "FLMNH":
             word = listOfStrings[0]
-            # if (x == 3), 4, 5, etc:  # separate the genus from the species, subspecies
-            # do this after separating the actual lists
             old_word = listOfStrings[0]
-            word = get_best_match(word, load_spec_vocab("specDict.txt"))
+            ratio = 0
+            #genus
+            if (x == 3): #, 4, 5, etc:  # separate the genus from the species, subspecies
+                #genus dictionaries/
+                word, ratio = get_best_match(word, load_spec_vocab("dictionaries/genusDict.txt"))
+            elif (x == 4):
+                #species
+                word, ratio = get_best_match(word, load_spec_vocab("dictionaries/speciesDict.txt"))
+            elif (x == 5):
+                #subspecies
+                word, ratio = get_best_match(word, load_spec_vocab("dictionaries/subspeciesDict.txt"))
+
+            vagueWord, broadRatio = get_best_match(word, load_spec_vocab("dictionaries/vagueDict.txt"))
+            if (broadRatio > ratio):
+                word = vagueWord
             print(f"Replaced '{old_word}' with '{word}'")
 
             df.iloc[currentIndex, x] = word
