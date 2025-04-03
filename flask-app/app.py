@@ -359,6 +359,10 @@ def loading_ocr():
 def download_preprocessed_file(name):
     return send_from_directory(app.config["PREPROCESS_FOLDER"], name)
 
+@app.route("/output_gallery/<path:name>")
+def download_saved_original_file(name):
+    return send_from_directory(app.config["SAVED_ORIGINALS"], name)
+
 @app.route('/uploads/<name>')
 def download_file(name):
     return send_from_directory(app.config["UPLOAD_FOLDER"], name)
@@ -493,9 +497,11 @@ def apply_processing_strength(image_np, strength):
 @app.route("/output", methods=["GET"])
 def output():
     #view the images
+    og_images = os.listdir(app.config["SAVED_ORIGINALS"])
     images = os.listdir(app.config["PREPROCESS_FOLDER"])
+    imagePairs = list(zip(og_images, images))
 
-    print(images)
+    print(imagePairs)
     pd.set_option('display.max_columns', None)
 
     ### USE THIS FOR THE FINAL VERSION
@@ -508,7 +514,7 @@ def output():
     for item1, item2 in zip(images, df_list):
         print(item1, item2)
 
-    return render_template("output_gallery.html", images_and_data=zip(images, df_list), headings=df.columns.tolist())
+    return render_template("output_gallery.html", images_and_data=zip(imagePairs, df_list), headings=df.columns.tolist())
 
 
 @app.route("/finished", methods=["GET"])
