@@ -61,6 +61,7 @@
               height: 100%; /* Full height */
               overflow: auto; /* Enable scroll if needed */
               background-color: rgb(13, 35, 40, 0.9);
+                /* navbar stuff here??? */
             }
 
             /* Modal Content (Image) */
@@ -97,7 +98,7 @@
             /* The Close Button */
             .close {
                 position: absolute;
-                top: 25px;
+                top: 40px;
                 left: 50px;
                 color: #d5ff3b;
                 font-size: 60px;
@@ -124,6 +125,7 @@
             }
             .button {
                 position: sticky;
+                z-index: 1;
                 bottom: 0;
                 background-color: #cad99a;
                 border: 3px solid #004954; border-radius: 10px;
@@ -154,7 +156,7 @@
         <table id="dataTable">
             <!--? Category names: -->
             <tr style="position: sticky">
-                <th>Image</th>
+                <th colspan="2">Images: Original and Preprocessed</th>
                 {% for header in headings %}
                     <th>{{ header }}</th>
                 {% endfor %}
@@ -165,10 +167,12 @@
             {% for image, row in images_and_data %}
             <tr>
                 <td>
-                    <span>
-                        <img id = "myImg" src="{{ url_for('download_preprocessed_file', name=image) }}" alt="{{ image }}">
-                        <span class="desc">{{ image }}</span>
-                    </span>
+                    <img id = "myImg" src="{{ url_for('download_saved_original_file', name=image[0]) }}" alt="{{ image[0] }}">
+                    <span class="desc">{{ image[0] }}</span>
+                </td>
+                <td>
+                    <img id = "myImg" src="{{ url_for('download_preprocessed_file', name=image[1]) }}" alt="{{ image[1] }}">
+                    <span class="desc">{{ image[1] }}</span>
                 </td>
                 <!-- The Modal -->
                 <div id="myModal" class="modal">
@@ -209,7 +213,9 @@
 
         // When the user clicks on <span> (x), close the modal
         span.onclick = function() {
-          modal.style.display = "none";
+            modal.style.display = "none";
+            navbar.style.visibility = "hidden";
+            navbar.style.display = "none";
         }
 
         // Get all images and insert the clicked image inside the modal
@@ -217,13 +223,101 @@
         var images = document.getElementsByTagName('img');
         var modalImg = document.getElementById("img01");
         var captionText = document.getElementById("caption");
+        var navbar = document.getElementsByClassName("nav-container");
+
         for (var i = 0; i < images.length; i++) {
           images[i].onclick = function(){
               modal.style.display = "block";
               modalImg.src = this.src;
               modalImg.alt = this.alt;
               captionText.innerHTML = this.nextElementSibling.innerHTML;
+              navbar.style.visibility = "hidden";
+              navbar.style.display = "none";
           }
+        }
+
+        let confidenceValues = {{ confidence_list | tojson }};
+        //Adjust cell color depending on confidence
+        var tableContent = document.getElementById('dataTable');
+
+
+        //confidenceValues = confidenceValues.map(Number);
+
+
+        var k = 0;
+        for (let i = 1; i < dataTable.rows.length; i++) {       //Skip header by starting at 1
+            //for (let j = 1; j < dataTable.rows[i].cells.length; j++) {
+            for (let j = 2; j < dataTable.rows[i].cells.length; j++) {        //Start at two to begin past second image
+                let cell = dataTable.rows[i].cells[j];
+                console.log(`Row ${i}, Column ${j}: ${cell.textContent}`);
+                //console.log(confidenceValues[i - 1][j - 1]);
+                let cellConfidence = confidenceValues[i - 1][j - 2];
+                console.log(confidenceValues[i - 1][j - 2]);        //Start at two to begin past second image
+
+                //if (cellConfidence < 0.4) {
+                //    cell.style.backgroundColor = `rgb(255, 155, 155)`;
+                //}
+                //else if (cellConfidence < 0.7) {
+                //    cell.style.backgroundColor = `rgb(255, 255, 155)`;
+                //}
+                let red, green, blue;
+
+                let colorScale = 0.5;
+
+                /*      //might abandon this implementation
+
+                if (cellConfidence >= 0.66) {        //Transition from white to yellow
+                    red = 255;
+                    green = 255;
+                    blue = Math.round(255 - (255 * ((1 - cellConfidence) / colorScale)));
+                } else if (cellConfidence >= 0.33) {                            //Transition from yellow to orange to red
+                    red = 255;
+                    green = Math.round(255 - (255 * ((0.66 - cellConfidence) / colorScale)));
+                    blue = 212.5;
+                } else {                            //Transition from orange to red
+                    red = 255;
+                    green = Math.round(212.5 - (255 * ((0.33 - cellConfidence) / colorScale)));
+                    blue = Math.round(212.5 - (255 * ((0.33 - cellConfidence) / colorScale)));
+                }*/
+
+                //These calculations are sort of jank but I think it looks pretty good
+                //We may want to try a more elegant implementation, or just simply have ~3-5 set colors we assign that vary from yellow to red
+                if (cellConfidence >= 0.66) {
+                    red = 255;
+                    green = 255;
+                    blue = Math.round(255 - (((1 - ((cellConfidence - 0.66) / 0.33)) * 255)) * colorScale);
+                } else if (cellConfidence >= 0.33) {
+                    red = 255;
+                    green = Math.round(255 - (((1 - ((cellConfidence - 0.33) / 0.33)) * 255)) * colorScale);
+                    blue = Math.round(255 * 0.66 - (((1 - ((cellConfidence - 0.33) / 0.33)) * 255)) * colorScale * 0.3);
+                } else {
+                    red = 255;
+                    green = Math.round(255 * 0.66 - (((1 - (cellConfidence / 0.33)) * 255)) * colorScale * 0.6);
+                    blue = Math.round(255 * 0.66 - (((1 - (cellConfidence / 0.33)) * 255)) * colorScale * 0.6);
+                    console.log(blue);
+                }
+
+                cell.style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
+
+                cell.addEventListener("focus", function () {
+                    //cell.dataset.originalContent = cell.textContent.trim(); // Save original text
+                    cell.style.backgroundColor = "white";
+                });
+
+                // Compare original content with new content when user clicks away
+                //cell.addEventListener("blur", function () {
+                //    let originalContent = cell.dataset.originalContent;  // Retrieve stored text
+                //    let newContent = cell.textContent.trim();  // Get current text
+
+                //    if (originalContent == newContent) {
+                //        console.log("Cell content changed from:", originalContent, "to:", newContent);
+                //        cell.style.backgroundColor = "white"; // Reset to white if changed
+                //    }
+                //});
+
+
+
+            }
         }
     </script>
 
