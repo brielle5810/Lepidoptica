@@ -15,12 +15,26 @@ from rapidfuzz import process
 # def fuzzy_match...
 
 
+# def get_best_match(term, spec_list):
+#     match, score, _ = process.extractOne(term, spec_list)
+#     print(f"Trying to match '{term}' | Best match: '{match}' (score: {score})")
+#     return match
 
-def load_genus_vocab(file_path):
+def get_best_match(term, spec_list, threshold=80):
+    match, score, _ = process.extractOne(term, spec_list)
+    if score >= threshold:
+        print(f"Trying to match '{term}' | Best match: '{match}' (score: {score})")
+        return match
+    else:
+        print(f"Low confidence genus match for '{term}': matched to '{match}' ({score})")
+        return term
+
+
+def load_spec_vocab(file_path):
     with open(file_path, 'r') as f:
         lines = f.readlines()
-    genus_list = [line.split('$')[0].strip() for line in lines]
-    return genus_list
+    spec_list = [line.split('$')[0].strip() for line in lines]
+    return spec_list
 
 
 def find_more_dates(text):
@@ -136,6 +150,8 @@ if __name__ == '__main__':
 
     ### Can be replaced with output from OCR
     sampleString = "Phoebis sennae\nsennae\nUF\nFLMNH\nMGCL 1163652\nCUBA: GRANMA\nEl Banco, Mpio. Buey Arriba\n1000m, Turquino massif\n'98; L D & J Y Miller\n& L R Hernandez sta. 1994-43\nEX.SA. MAESTRA Allyn Museum Acc. 1994-16"
+    # sampleString = "Phoebis sehnae\nmaycelline\nUF\nFLMNH\nMGCL 1163652\nCUBA: GRANMA\nEl Banco, Mpio. Buey Arriba\n1000m, Turquino massif\n'98; L D & J Y Miller\n& L R Hernandez sta. 1994-43\nEX.SA. MAESTRA Allyn Museum Acc. 1994-16"
+    # Phoebis sehhae maycelline
     print("Sample string:\n", sampleString, "\n")
 
     listOfStrings = sampleString.split()
@@ -156,8 +172,16 @@ if __name__ == '__main__':
     # Some items, (genus, species, and subspecies) always come first
     # Categories 3 - 6: Genus, Species, and Subspecies
     for x in range(3, 6):
+        print("Current index: ", currentIndex)
         if listOfStrings[currentIndex] != "UF" and listOfStrings[currentIndex] != "FLMNH":
-            df.iloc[currentIndex, x] = listOfStrings[0]
+            word = listOfStrings[0]
+            # if (x == 3), 4, 5, etc:  # separate the genus from the species, subspecies
+            # do this after separating the actual lists
+            old_word = listOfStrings[0]
+            word = get_best_match(word, load_spec_vocab("specDict.txt"))
+            print(f"Replaced '{old_word}' with '{word}'")
+
+            df.iloc[currentIndex, x] = word
             listOfStrings.pop(0)
 
     listOfStrings.pop(0)    # Get rid of UF
