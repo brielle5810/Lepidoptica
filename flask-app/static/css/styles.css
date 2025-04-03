@@ -150,7 +150,7 @@ a.nav-a:hover {
 }
 
 #content {
-    margin-top: 80px
+    margin-top: 80px;
     background-color: white;
 }
 
@@ -170,7 +170,7 @@ a.nav-a:hover {
   border: 3px solid #1a1a1a;
   padding: 10px;
   text-align: inherit;
-  margin-top: 5%
+  margin-top: 5%;
   margin-bottom: 5%
 }
 
