@@ -167,11 +167,11 @@
             {% for image, row in images_and_data %}
             <tr>
                 <td>
-                    <img id = "myImg" src="{{ url_for('download_saved_original_file', name=image[0]) }}" alt="{{ image[0] }}">
+                    <img id="myImg" src="{{ url_for('download_saved_original_file', name=image[0]) }}" alt="{{ image[0] }}">
                     <span class="desc">{{ image[0] }}</span>
                 </td>
                 <td>
-                    <img id = "myImg" src="{{ url_for('download_preprocessed_file', name=image[1]) }}" alt="{{ image[1] }}">
+                    <img id="myImg" src="{{ url_for('download_preprocessed_file', name=image[1]) }}" alt="{{ image[1] }}">
                     <span class="desc">{{ image[1] }}</span>
                 </td>
                 <!-- The Modal -->
@@ -252,36 +252,28 @@
                 console.log(`Row ${i}, Column ${j}: ${cell.textContent}`);
                 //console.log(confidenceValues[i - 1][j - 1]);
                 let cellConfidence = confidenceValues[i - 1][j - 2];
+                cell.dataset.baselineColor = cell.style.backgroundColor;
                 console.log(confidenceValues[i - 1][j - 2]);        //Start at two to begin past second image
 
-                //if (cellConfidence < 0.4) {
-                //    cell.style.backgroundColor = `rgb(255, 155, 155)`;
-                //}
-                //else if (cellConfidence < 0.7) {
-                //    cell.style.backgroundColor = `rgb(255, 255, 155)`;
-                //}
+                if (cellConfidence < 0.2) {
+                    cell.style.backgroundColor = `rgb(255, 170, 150)`;
+                }
+                else if (cellConfidence < 0.4) {
+                    cell.style.backgroundColor = `rgb(255, 200, 160)`;
+                }
+                else if (cellConfidence < 0.6) {
+                    cell.style.backgroundColor = `rgb(255, 225, 180)`;
+                }
+                else if (cellConfidence < 0.8) {
+                    cell.style.backgroundColor = `rgb(255, 250, 200)`;
+                }
+
+                /*
                 let red, green, blue;
 
                 let colorScale = 0.5;
 
-                /*      //might abandon this implementation
-
-                if (cellConfidence >= 0.66) {        //Transition from white to yellow
-                    red = 255;
-                    green = 255;
-                    blue = Math.round(255 - (255 * ((1 - cellConfidence) / colorScale)));
-                } else if (cellConfidence >= 0.33) {                            //Transition from yellow to orange to red
-                    red = 255;
-                    green = Math.round(255 - (255 * ((0.66 - cellConfidence) / colorScale)));
-                    blue = 212.5;
-                } else {                            //Transition from orange to red
-                    red = 255;
-                    green = Math.round(212.5 - (255 * ((0.33 - cellConfidence) / colorScale)));
-                    blue = Math.round(212.5 - (255 * ((0.33 - cellConfidence) / colorScale)));
-                }*/
-
-                //These calculations are sort of jank but I think it looks pretty good
-                //We may want to try a more elegant implementation, or just simply have ~3-5 set colors we assign that vary from yellow to red
+                //These calculations are sort of jank but I think it looks pretty good (but too overwhelming)
                 if (cellConfidence >= 0.66) {
                     red = 255;
                     green = 255;
@@ -298,22 +290,24 @@
                 }
 
                 cell.style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
+                */
 
                 cell.addEventListener("focus", function () {
-                    //cell.dataset.originalContent = cell.textContent.trim(); // Save original text
-                    cell.style.backgroundColor = "white";
+                    cell.dataset.originalContent = cell.textContent.trim(); // Save original text
+                    cell.dataset.originalColor = cell.style.backgroundColor; // Save original text
+                    cell.style.backgroundColor = cell.dataset.baselineColor;
                 });
 
-                // Compare original content with new content when user clicks away
-                //cell.addEventListener("blur", function () {
-                //    let originalContent = cell.dataset.originalContent;  // Retrieve stored text
-                //    let newContent = cell.textContent.trim();  // Get current text
+                //Compare original content with new content when user clicks away
+                cell.addEventListener("blur", function () {
+                    let originalContent = cell.dataset.originalContent;  // Retrieve stored text
+                    let newContent = cell.textContent.trim();  // Get current text
 
-                //    if (originalContent == newContent) {
-                //        console.log("Cell content changed from:", originalContent, "to:", newContent);
-                //        cell.style.backgroundColor = "white"; // Reset to white if changed
-                //    }
-                //});
+                    if (originalContent == newContent) {
+                        console.log("Cell content changed from:", originalContent, "to:", newContent);
+                        cell.style.backgroundColor = cell.dataset.originalColor; // Reset to white if changed
+                    }
+                });
 
 
 
