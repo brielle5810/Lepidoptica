@@ -500,8 +500,17 @@ def apply_processing_strength(image_np, strength):
 def output():
     #view the images
     og_images = os.listdir(app.config["SAVED_ORIGINALS"])
+    saved_images = []
     images = os.listdir(app.config["PREPROCESS_FOLDER"])
-    imagePairs = list(zip(og_images, images))
+    print("IMAGES: ", images)
+    print("SAVED ORIGINALS: ", og_images)
+
+    for filename in og_images:
+        if filename in images and filename not in saved_images:
+            saved_images.append(filename)
+
+    print("OG IMAGES: ", og_images, "\n")
+    imagePairs = list(zip(saved_images, images))
 
     print(imagePairs)
     pd.set_option('display.max_columns', None)
