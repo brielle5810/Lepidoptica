@@ -234,64 +234,34 @@
         }
 
         let confidenceValues = {{ confidence_list | tojson }};
+
         //Adjust cell color depending on confidence
         var tableContent = document.getElementById('dataTable');
+        for (let i = 1; i < dataTable.rows.length; i++) {   // Skip header by starting at 1
 
-
-        //confidenceValues = confidenceValues.map(Number);
-
-
-        var k = 0;
-        for (let i = 1; i < dataTable.rows.length; i++) {       //Skip header by starting at 1
-            //for (let j = 1; j < dataTable.rows[i].cells.length; j++) {
-            for (let j = 2; j < dataTable.rows[i].cells.length; j++) {        //Start at two to begin past second image
+            for (let j = 2; j < dataTable.rows[i].cells.length; j++) {  // Start at two to begin past second image
                 let cell = dataTable.rows[i].cells[j];
-                console.log(`Row ${i}, Column ${j}: ${cell.textContent}`);
-                //console.log(confidenceValues[i - 1][j - 1]);
+                //console.log(`Row ${i}, Column ${j}: ${cell.textContent}`);
+
                 let cellConfidence = confidenceValues[i - 1][j - 2];
                 cell.dataset.baselineColor = cell.style.backgroundColor;
-                console.log(confidenceValues[i - 1][j - 2]);        //Start at two to begin past second image
 
-                if (cellConfidence < 0.2) {
-                    cell.style.backgroundColor = `rgb(255, 170, 150)`;
+                //console.log(confidenceValues[i - 1][j - 2]);
+
+                if (cellConfidence < 0.25) {
+                    cell.style.backgroundColor = `rgb(255, 140, 140)`;
                 }
-                else if (cellConfidence < 0.4) {
-                    cell.style.backgroundColor = `rgb(255, 200, 160)`;
+                else if (cellConfidence < 0.5) {
+                    cell.style.backgroundColor = `rgb(255, 190, 155)`;
                 }
-                else if (cellConfidence < 0.6) {
-                    cell.style.backgroundColor = `rgb(255, 225, 180)`;
-                }
-                else if (cellConfidence < 0.8) {
-                    cell.style.backgroundColor = `rgb(255, 250, 200)`;
+                else if (cellConfidence < 0.75) {
+                    cell.style.backgroundColor = `rgb(255, 230, 170)`;
                 }
 
-                /*
-                let red, green, blue;
-
-                let colorScale = 0.5;
-
-                //These calculations are sort of jank but I think it looks pretty good (but too overwhelming)
-                if (cellConfidence >= 0.66) {
-                    red = 255;
-                    green = 255;
-                    blue = Math.round(255 - (((1 - ((cellConfidence - 0.66) / 0.33)) * 255)) * colorScale);
-                } else if (cellConfidence >= 0.33) {
-                    red = 255;
-                    green = Math.round(255 - (((1 - ((cellConfidence - 0.33) / 0.33)) * 255)) * colorScale);
-                    blue = Math.round(255 * 0.66 - (((1 - ((cellConfidence - 0.33) / 0.33)) * 255)) * colorScale * 0.3);
-                } else {
-                    red = 255;
-                    green = Math.round(255 * 0.66 - (((1 - (cellConfidence / 0.33)) * 255)) * colorScale * 0.6);
-                    blue = Math.round(255 * 0.66 - (((1 - (cellConfidence / 0.33)) * 255)) * colorScale * 0.6);
-                    console.log(blue);
-                }
-
-                cell.style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
-                */
-
+                //Change to white when user selects cell
                 cell.addEventListener("focus", function () {
                     cell.dataset.originalContent = cell.textContent.trim(); // Save original text
-                    cell.dataset.originalColor = cell.style.backgroundColor; // Save original text
+                    cell.dataset.originalColor = cell.style.backgroundColor; // Save original color
                     cell.style.backgroundColor = cell.dataset.baselineColor;
                 });
 
@@ -301,8 +271,8 @@
                     let newContent = cell.textContent.trim();  // Get current text
 
                     if (originalContent == newContent) {
-                        console.log("Cell content changed from:", originalContent, "to:", newContent);
-                        cell.style.backgroundColor = cell.dataset.originalColor; // Reset to white if changed
+                        //console.log("Cell content changed from:", originalContent, "to:", newContent);
+                        cell.style.backgroundColor = cell.dataset.originalColor; // Reset to red/yellow if cell contents were not changed and cell was red/yellow when the user selected it
                     }
                 });
 
