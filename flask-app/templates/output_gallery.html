@@ -53,7 +53,7 @@
             .modal {
               display: none; /* Hidden by default */
               position: fixed; /* Stay in place */
-              z-index: 1; /* Sit on top */
+              z-index: 2; /* Sit on top */
               padding-top: 100px; /* Location of the box */
               left: 0;
               top: 0;
@@ -98,7 +98,8 @@
             /* The Close Button */
             .close {
                 position: absolute;
-                top: 40px;
+                z-index: 3;
+                top: 25px;
                 left: 50px;
                 color: #d5ff3b;
                 font-size: 60px;
@@ -124,35 +125,31 @@
                 text-align: center;
             }
             .button {
-                position: sticky;
+                position: fixed;
+                bottom: 30px;
                 z-index: 1;
-                bottom: 0;
                 background-color: #cad99a;
-                border: 3px solid #004954; border-radius: 10px;
-                font-size: 24px; color: #004954;
+                border: 5px solid #004954; border-radius: 20px;
+                font-size: 30px; color: #004954;
                 transition: transform .3s
             }
             .button:hover {
                 background-color: #004954;
-                border-radius: 10px;
                 color: #cad99a;
-                transform: scale(115%);
+                transform: scale(120%);
             }
         </style>
     </head>
 
-    <body style="overflow: scroll">
+    <body>
     <div style="display: flex; flex-direction: row; margin: auto; padding-top: 5%;  padding-bottom: 1%;">
     <!--<h1 style="padding-left: 3%; padding-top: 5%; margin-top: 1%; margin-bottom: 1%; color: #006666;"><b>DATA EXTRACTION OUTPUT:</b></h1>-->
         <div class="table-header-wrapper"><div class="table-header-offset">
-    <h1 style="padding-left: 8%; color: #006666;"><b>DATA EXTRACTION OUTPUT:</b></h1></div>
-    <div class="download-button">
-        <button class="button" onclick="tableToCSV()">
-            <!--<a href="/finished" style="all: unset; padding-top: 5%"><b>GET CSV</b></a>--> <!--Realizing it might be best not to redirect on download-->
-            <a style="padding-top: 5%"><b>GET CSV</b></a>
-        </button>
-    </div></div></div>
-    <div style="overflow-x:auto; display: block;">
+            <h1 style="padding-left: 8%; padding-bottom: 8%; color: #006666;"><b>DATA EXTRACTION OUTPUT:</b></h1></div>
+        </div>
+    </div>
+
+    <div style="overflow-x:auto; display: block; overflow: scroll">
         <table id="dataTable">
             <!--? Category names: -->
             <tr style="position: sticky">
@@ -237,64 +234,34 @@
         }
 
         let confidenceValues = {{ confidence_list | tojson }};
+
         //Adjust cell color depending on confidence
         var tableContent = document.getElementById('dataTable');
+        for (let i = 1; i < dataTable.rows.length; i++) {   // Skip header by starting at 1
 
-
-        //confidenceValues = confidenceValues.map(Number);
-
-
-        var k = 0;
-        for (let i = 1; i < dataTable.rows.length; i++) {       //Skip header by starting at 1
-            //for (let j = 1; j < dataTable.rows[i].cells.length; j++) {
-            for (let j = 2; j < dataTable.rows[i].cells.length; j++) {        //Start at two to begin past second image
+            for (let j = 2; j < dataTable.rows[i].cells.length; j++) {  // Start at two to begin past second image
                 let cell = dataTable.rows[i].cells[j];
-                console.log(`Row ${i}, Column ${j}: ${cell.textContent}`);
-                //console.log(confidenceValues[i - 1][j - 1]);
+                //console.log(`Row ${i}, Column ${j}: ${cell.textContent}`);
+
                 let cellConfidence = confidenceValues[i - 1][j - 2];
                 cell.dataset.baselineColor = cell.style.backgroundColor;
-                console.log(confidenceValues[i - 1][j - 2]);        //Start at two to begin past second image
 
-                if (cellConfidence < 0.2) {
-                    cell.style.backgroundColor = `rgb(255, 170, 150)`;
+                //console.log(confidenceValues[i - 1][j - 2]);
+
+                if (cellConfidence < 0.25) {
+                    cell.style.backgroundColor = `rgb(255, 140, 140)`;
                 }
-                else if (cellConfidence < 0.4) {
-                    cell.style.backgroundColor = `rgb(255, 200, 160)`;
+                else if (cellConfidence < 0.5) {
+                    cell.style.backgroundColor = `rgb(255, 190, 155)`;
                 }
-                else if (cellConfidence < 0.6) {
-                    cell.style.backgroundColor = `rgb(255, 225, 180)`;
-                }
-                else if (cellConfidence < 0.8) {
-                    cell.style.backgroundColor = `rgb(255, 250, 200)`;
+                else if (cellConfidence < 0.75) {
+                    cell.style.backgroundColor = `rgb(255, 230, 170)`;
                 }
 
-                /*
-                let red, green, blue;
-
-                let colorScale = 0.5;
-
-                //These calculations are sort of jank but I think it looks pretty good (but too overwhelming)
-                if (cellConfidence >= 0.66) {
-                    red = 255;
-                    green = 255;
-                    blue = Math.round(255 - (((1 - ((cellConfidence - 0.66) / 0.33)) * 255)) * colorScale);
-                } else if (cellConfidence >= 0.33) {
-                    red = 255;
-                    green = Math.round(255 - (((1 - ((cellConfidence - 0.33) / 0.33)) * 255)) * colorScale);
-                    blue = Math.round(255 * 0.66 - (((1 - ((cellConfidence - 0.33) / 0.33)) * 255)) * colorScale * 0.3);
-                } else {
-                    red = 255;
-                    green = Math.round(255 * 0.66 - (((1 - (cellConfidence / 0.33)) * 255)) * colorScale * 0.6);
-                    blue = Math.round(255 * 0.66 - (((1 - (cellConfidence / 0.33)) * 255)) * colorScale * 0.6);
-                    console.log(blue);
-                }
-
-                cell.style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
-                */
-
+                //Change to white when user selects cell
                 cell.addEventListener("focus", function () {
                     cell.dataset.originalContent = cell.textContent.trim(); // Save original text
-                    cell.dataset.originalColor = cell.style.backgroundColor; // Save original text
+                    cell.dataset.originalColor = cell.style.backgroundColor; // Save original color
                     cell.style.backgroundColor = cell.dataset.baselineColor;
                 });
 
@@ -304,8 +271,8 @@
                     let newContent = cell.textContent.trim();  // Get current text
 
                     if (originalContent == newContent) {
-                        console.log("Cell content changed from:", originalContent, "to:", newContent);
-                        cell.style.backgroundColor = cell.dataset.originalColor; // Reset to white if changed
+                        //console.log("Cell content changed from:", originalContent, "to:", newContent);
+                        cell.style.backgroundColor = cell.dataset.originalColor; // Reset to red/yellow if cell contents were not changed and cell was red/yellow when the user selected it
                     }
                 });
 
@@ -330,7 +297,7 @@
 
                 // Stores each csv row data
                 let csvrow = [];
-                for (let j = 1; j < cols.length; j++) { // Skip the image row
+                for (let j = 2; j < cols.length; j++) { // Skip the image rows
 
                     // Get the text data of each cell
                     // of a row and push it to csvrow
