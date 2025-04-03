@@ -368,6 +368,7 @@ def delete_file(filename):
     file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
     preprocessed_path = os.path.join(app.config["PREPROCESS_FOLDER"], filename)
     stage1_path = os.path.join(app.config["STAGE1_FOLDER"], filename)
+    saved_originals_path = os.path.join(app.config["SAVED_ORIGINALS"], filename)
 
     if os.path.exists(file_path):
         os.remove(file_path)
@@ -375,7 +376,8 @@ def delete_file(filename):
         os.remove(preprocessed_path)
     if os.path.exists(stage1_path):
         os.remove(stage1_path)
-
+    if os.path.exists(saved_originals_path):
+        os.remove(saved_originals_path)
     return jsonify({"success": True, "message": f"{filename} deleted"})
 
 @app.route("/delete_all", methods=["DELETE"])
@@ -383,7 +385,7 @@ def delete_all():
     #file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
     #preprocessed_path = os.path.join(app.config["PREPROCESS_FOLDER"], filename)
     #stage1_path = os.path.join(app.config["STAGE1_FOLDER"], filename)
-    for folder in [UPLOAD_FOLDER, PREPROCESS_FOLDER, STAGE1_FOLDER]:
+    for folder in [UPLOAD_FOLDER, PREPROCESS_FOLDER, STAGE1_FOLDER, SAVED_ORIGINALS]:
         for filename in os.listdir(folder):
             file_path = os.path.join(folder, filename)
             if os.path.exists(file_path):
