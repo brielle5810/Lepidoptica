@@ -514,7 +514,16 @@ def output():
     for item1, item2 in zip(images, df_list):
         print(item1, item2)
 
-    return render_template("output_gallery.html", images_and_data=zip(imagePairs, df_list), headings=df.columns.tolist())
+    confidences = pd.read_csv(os.path.join(OCR_OUTPUT, "confidence.csv"), dtype=float).fillna(value = 100)
+    print("confidence_list:\n", df_list, "\n")
+    print("====================================")
+
+    for item3 in confidences.values.tolist():
+        print(item3)
+
+    # print("df:\n", df)
+
+    return render_template("output_gallery.html", images_and_data=zip(imagePairs, df_list), headings=df.columns.tolist(), confidence_list=confidences.values.tolist())
 
 
 @app.route("/finished", methods=["GET"])
