@@ -23,10 +23,10 @@ from rapidfuzz import process
 def get_best_match(term, spec_list, threshold=80):
     match, score, _ = process.extractOne(term, spec_list)
     if score >= threshold:
-        print(f"Trying to match '{term}' | Best match: '{match}' (score: {score})")
+        print(f"Trying to match '{term}' | Best match: '{match}' (score: {score})!")
         return match, score
     else:
-        print(f"Low confidence genus match for '{term}': matched to '{match}' ({score})")
+        print(f"Low confidence genus match for '{term}': matched to '{match}' ({score})!")
         return term, score
 
 
