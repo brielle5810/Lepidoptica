@@ -36,6 +36,23 @@ def load_spec_vocab(file_path):
     spec_list = [line.strip() for line in lines if line.strip()]
     return spec_list
 
+def get_ngrams(words, max_n=5): # get ngrams from a list of words
+    # used for fuzzy matching
+    #why ngram? -> many countries, states, counties are made of Multiple words
+    ngrams = []
+    for n in range(1, max_n + 1):
+        for i in range(len(words) - n + 1):
+            ngram = " ".join(words[i:i + n])
+            ngrams.append(ngram)
+    return ngrams
+
+def get_best_match_from_ngrams(ngrams, vocab_list, threshold=80):
+    best_match, best_score = None, 0
+    for ngram in ngrams:
+        match, score = get_best_match(ngram, vocab_list, threshold=80)
+        if score > best_score:
+            best_match, best_score = match, score
+    return (best_match, best_score) if best_score >= threshold else (None, 0)
 
 def find_more_dates(text):
     date_patterns = [
@@ -210,14 +227,43 @@ if __name__ == '__main__':
     joinedStrings = " ".join(listOfStrings)
     placeEntity = locationtagger.find_locations(text=joinedStrings)
 
+    # split all words into ngrams to test against the dictionaries
+    words = [t for t in joinedStrings.split() if len(t) > 2]
+    ngrams = get_ngrams(words, 3) #heres the thing... so few have 5 words
+
+    # load dictionaries
+    countryList = load_spec_vocab("dictionaries/countryDict.txt")
+    stateList = load_spec_vocab("dictionaries/stateDict.txt")
+    countyList = load_spec_vocab("dictionaries/countyDict.txt")
+
     # Getting all countries
     print("The countries in text : ")
     print(placeEntity.countries)
     df.loc[currentIndex, 'Country'] = ", ".join(placeEntity.countries)
+    if not placeEntity.countries:
+        # if location tagger doesn't find a country, try to find one using fuzzy matching
+        best_match, score = get_best_match_from_ngrams(ngrams, countryList)
+        if best_match:
+            df.loc[currentIndex, 'Country'] = best_match
+        else:
+            print("No country found")
 
     # Getting all states
     print("The states in text : ")
     print(placeEntity.regions)
+    df.loc[currentIndex, 'State'] = ", ".join(placeEntity.regions)
+    if not placeEntity.regions:
+        best_match, score = get_best_match_from_ngrams(ngrams, stateList)
+        if best_match:
+            df.loc[currentIndex, 'State'] = best_match
+        else:
+            print("No state found")
+
+    best_match, score = get_best_match_from_ngrams(ngrams, countyList)
+    df.loc[currentIndex, 'County'] = best_match
+    if not best_match:
+        df.loc[currentIndex, 'County'] = 'nan'
+        # use city ?
 
     # Getting all cities
     print("The cities in text : ")
