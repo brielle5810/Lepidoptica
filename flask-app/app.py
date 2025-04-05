@@ -402,6 +402,15 @@ def delete_all():
     #
     # return jsonify({"success": True, "message": "All files deleted"})
 
+
+# @app.before_request
+# def clear_on_new_session():
+#     if "visited" not in session:
+#         session["visited"] = True
+#         print("clearing it all!")
+#         delete_all()
+
+
 @app.route("/download", methods=["GET"])
 def download():
     return send_file("output.csv", as_attachment=True)
