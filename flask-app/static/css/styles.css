@@ -216,7 +216,7 @@ a.nav-a:hover {
 }
 
 #dataTable tr>td.drag-over {
-    background-color: #ffeeba;
+    /*background-color: #b0ddb0;*//*This line messes with confidence depictions. Might be a way to fix?*/
 }
 
 #dataTable tr>td.dragging {
