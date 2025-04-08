@@ -294,12 +294,12 @@ def ocr():
                 #Note: This will not update the confidence for that column with the current implementation
                 if column_counter >= 38:
                     #transcription_lines = transcription_lines + ocr_df[line][1]
-                    transcription_lines = transcription_lines + str(ocr_df.loc[i].at["text"])
+                    transcription_lines = transcription_lines + str(ocr_df.loc[i].at["text"].replace("\"", "\"\""))
                 elif column_counter == 0:
-                    transcription_lines = transcription_lines + str(ocr_df.loc[i].at["text"])
+                    transcription_lines = transcription_lines + str(ocr_df.loc[i].at["text"].replace("\"", "\"\""))
                     confidence_lines = confidence_lines + str(ocr_df.loc[i].at["confidence"])
                 else:
-                    transcription_lines = transcription_lines + "\",\"" + str(ocr_df.loc[i].at["text"])
+                    transcription_lines = transcription_lines + "\",\"" + str(ocr_df.loc[i].at["text"].replace("\"", "\"\""))
                     confidence_lines = confidence_lines + "," + str(ocr_df.loc[i].at["confidence"])
                 column_counter = column_counter + 1
 
