@@ -164,11 +164,11 @@
             {% for image, row in images_and_data %}
             <tr>
                 <td>
-                    <img id="myImg" src="{{ url_for('download_saved_original_file', name=image[0]) }}" alt="{{ image[0] }}">
+                    <img id="myImg" src="{{ url_for('download_saved_original_file', name=image[0]) }}" alt="{{ image[0] }}" style="max-height: 120px; width: auto; height: auto; max-width: 100%;">
                     <span class="desc">{{ image[0] }}</span>
                 </td>
                 <td>
-                    <img id="myImg" src="{{ url_for('download_preprocessed_file', name=image[1]) }}" alt="{{ image[1] }}">
+                    <img id="myImg" src="{{ url_for('download_preprocessed_file', name=image[1]) }}" alt="{{ image[1] }}" style="max-height: 120px; width: auto; height: auto; max-width: 100%;">
                     <span class="desc">{{ image[1] }}</span>
                 </td>
                 <!-- The Modal -->
@@ -291,9 +291,13 @@
                     // Use the calculated click offset
                     e.dataTransfer.setDragImage(dragGhost, offsetX + 15, offsetY + 15);
                 
-                    e.target.addEventListener('dragend', () => {
+                    // Cleanup: remove ghost after it has been used by setDragImage
+                    setTimeout(() => {
                         document.body.removeChild(dragGhost);
-                    }, { once: true });
+                    }, 0);
+
+                    // Required for Firefox compatibility
+                    e.dataTransfer.setData("text/plain", "");
                 });
 
                 //Add dragend event
