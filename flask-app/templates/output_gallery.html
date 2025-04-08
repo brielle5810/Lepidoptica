@@ -252,12 +252,48 @@
 
                 //Drag and drop
                 
-                //Add dragstart event on the drag handle
+
                 cell.querySelector('.drag-handle').addEventListener('dragstart', (e) => {
-                    draggedCell = cell; // Store the current dragged cell
+                    draggedCell = cell;
                     console.log("Dragged Cell: ", draggedCell);
-                    console.log("Target Cell: ", cell);
+                
+                    // Get click offset relative to the cell
+                    const rect = cell.getBoundingClientRect();
+                    const offsetX = e.clientX - rect.left;
+                    const offsetY = e.clientY - rect.top;
+                
                     e.dataTransfer.setData("text/plain", ""); // For Firefox compatibility
+                
+                    // Create custom drag ghost
+                    const dragGhost = cell.cloneNode(true);
+                    dragGhost.style.position = 'absolute';
+                    dragGhost.style.top = '-9999px';
+                    dragGhost.style.left = '-9999px';
+                    dragGhost.style.width = `${cell.offsetWidth}px`;
+                    dragGhost.style.height = `${cell.offsetHeight}px`;
+                
+                    // Copy current background color
+                    dragGhost.style.background = cell.style.backgroundColor || '#fff';
+                    dragGhost.style.border = '1px solid #ccc';
+                    dragGhost.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
+                    dragGhost.style.zIndex = '1000';
+
+                    dragGhost.style.display = 'flex';
+                    dragGhost.style.alignItems = 'center';
+                    dragGhost.style.justifyContent = 'center';
+                    dragGhost.style.textAlign = 'center';
+
+                    dragGhost.style.font = window.getComputedStyle(cell).font;
+                    dragGhost.style.padding = window.getComputedStyle(cell).padding;
+                
+                    document.body.appendChild(dragGhost);
+                
+                    // Use the calculated click offset
+                    e.dataTransfer.setDragImage(dragGhost, offsetX + 15, offsetY + 15);
+                
+                    e.target.addEventListener('dragend', () => {
+                        document.body.removeChild(dragGhost);
+                    }, { once: true });
                 });
 
                 //Add dragend event
@@ -265,16 +301,21 @@
                     console.log("Drag Ended");
                     draggedCell = null;
                 });
-
+                
                 //Add dragover event to allow for valid drop target
                 cell.addEventListener('dragover', (e) => {
                     e.preventDefault();
-                    cell.classList.add('drag-over'); // Add styling for the hovered target
+                    
+                    cell.style.outline = '2px dashed #3399ff';
+                    cell.style.outlineOffset = '-2px';  // Keeps the outline snug within the cell
+                    //cell.style.backgroundColor = '#d0eaff'; // light blue highlight
+                    //cell.classList.add('drag-over'); // Add styling for the hovered target
                 });
 
-                //Add dragleave event to remove drag-over styling
+                //Remove highlight on drag leave
                 cell.addEventListener('dragleave', () => {
-                    cell.classList.remove('drag-over');
+                    //cell.style.backgroundColor = cell.dataset.originalColor;
+                    cell.style.outline = '';
                 });
 
                 // Add drop event to swap content
@@ -308,10 +349,8 @@
 
                     }
 
-                    // Clean up the drag-over styling after the drop
-                    document.querySelectorAll('#myTable td').forEach(c => {
-                        c.classList.remove('drag-over');
-                    });
+                    cell.style.outline = '';
+                    //cell.style.backgroundColor = cell.dataset.originalColor;
 
                     draggedCell = null;
                 });

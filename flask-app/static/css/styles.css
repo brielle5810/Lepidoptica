@@ -215,29 +215,21 @@ a.nav-a:hover {
     user-select: text;
 }
 
-#dataTable tr>td.drag-over {
-    /*background-color: #b0ddb0;*//*This line messes with confidence depictions. Might be a way to fix?*/
-}
-
 #dataTable tr>td.dragging {
     opacity: 0.6;
 }
 
 .drag-handle {
     position: absolute; /* Position it absolutely within the cell */
-    top: 5px;
+    top: 0px;
     right: 5px;
     max-width: 16px; /* Maximum width */
     max-height: 16px;
+    font-size: 20px;
     cursor: move; /* Change cursor to move when hovering over the drag handle */
+    padding: 3px;
 }
 
-.drag-handle img {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    object-fit: contain; /* Make sure the image scales correctly */
-}
 
 /*.custom-scrollbar-js,*/
 /*.custom-scrollbar-css {*/
