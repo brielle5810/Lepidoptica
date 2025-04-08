@@ -203,6 +203,42 @@ a.nav-a:hover {
   margin: auto;
 }
 
+#dataTable tr>td {
+    position: relative;
+    user-select: none;
+}
+
+#dataTable tr>td .cell-content {
+    position: relative;
+    display: inline-block;
+    width: 90%;
+    user-select: text;
+}
+
+#dataTable tr>td.drag-over {
+    background-color: #ffeeba;
+}
+
+#dataTable tr>td.dragging {
+    opacity: 0.6;
+}
+
+.drag-handle {
+    position: absolute; /* Position it absolutely within the cell */
+    top: 5px;
+    right: 5px;
+    max-width: 16px; /* Maximum width */
+    max-height: 16px;
+    cursor: move; /* Change cursor to move when hovering over the drag handle */
+}
+
+.drag-handle img {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    object-fit: contain; /* Make sure the image scales correctly */
+}
+
 /*.custom-scrollbar-js,*/
 /*.custom-scrollbar-css {*/
 /*  height: 200px;*/

@@ -186,7 +186,12 @@
 
                 <!--? DATA: -->
                 {% for cell in row %}
-                <td contenteditable>{{ cell }}</td>
+                <td>
+                    <div class="drag-handle" contenteditable="false" draggable="true">⠿</div>
+                    <div class="cell-content" contenteditable="true">{{ cell }}</div>
+                    
+                    
+                </td>
                 {% endfor %}
             </tr>
             {% endfor %}
@@ -235,13 +240,83 @@
 
         let confidenceValues = {{ confidence_list | tojson }};
 
-        //Adjust cell color depending on confidence
+        //Drag and drop
+        let draggedCell = null;
+
         var tableContent = document.getElementById('dataTable');
         for (let i = 1; i < dataTable.rows.length; i++) {   // Skip header by starting at 1
 
             for (let j = 2; j < dataTable.rows[i].cells.length; j++) {  // Start at two to begin past second image
                 let cell = dataTable.rows[i].cells[j];
                 //console.log(`Row ${i}, Column ${j}: ${cell.textContent}`);
+
+                //Drag and drop
+                
+                //Add dragstart event on the drag handle
+                cell.querySelector('.drag-handle').addEventListener('dragstart', (e) => {
+                    draggedCell = cell; // Store the current dragged cell
+                    console.log("Dragged Cell: ", draggedCell);
+                    console.log("Target Cell: ", cell);
+                    e.dataTransfer.setData("text/plain", ""); // For Firefox compatibility
+                });
+
+                //Add dragend event
+                cell.querySelector('.drag-handle').addEventListener('dragend', () => {
+                    console.log("Drag Ended");
+                    draggedCell = null;
+                });
+
+                //Add dragover event to allow for valid drop target
+                cell.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    cell.classList.add('drag-over'); // Add styling for the hovered target
+                });
+
+                //Add dragleave event to remove drag-over styling
+                cell.addEventListener('dragleave', () => {
+                    cell.classList.remove('drag-over');
+                });
+
+                // Add drop event to swap content
+                cell.addEventListener('drop', (e) => {
+                    console.log("Dragged Cell: ", draggedCell);
+                    console.log("Target Cell: ", cell);
+
+                    e.preventDefault();
+
+                    console.log("Drop Event Triggered");
+
+                    if (draggedCell && draggedCell !== cell) {
+                        const sourceContent = draggedCell.querySelector('.cell-content');
+                        const targetContent = cell.querySelector('.cell-content');
+                        const sourceColor = draggedCell.style.backgroundColor; // Save original text
+                        const targetColor = cell.style.backgroundColor; // Save original color
+                        const originalTextContent = draggedCell.dataset.originalContent;
+
+                        console.log("Source Content:", sourceContent.innerHTML);
+                        console.log("Target Content:", targetContent.innerHTML);
+
+                        //Swap the content between the source and target cells
+                        const temp = sourceContent.innerHTML;
+                        sourceContent.innerHTML = targetContent.innerHTML;
+                        targetContent.innerHTML = temp;
+
+                        draggedCell.style.backgroundColor = targetColor;
+                        cell.style.backgroundColor = sourceColor;
+                        draggedCell.dataset.originalContent = cell.dataset.originalContent;
+                        cell.dataset.originalContent = originalTextContent;
+
+                    }
+
+                    // Clean up the drag-over styling after the drop
+                    document.querySelectorAll('#myTable td').forEach(c => {
+                        c.classList.remove('drag-over');
+                    });
+
+                    draggedCell = null;
+                });
+
+                //Confidence representation
 
                 let cellConfidence = confidenceValues[i - 1][j - 2];
                 cell.dataset.baselineColor = cell.style.backgroundColor;
@@ -258,20 +333,23 @@
                     cell.style.backgroundColor = `rgb(255, 230, 170)`;
                 }
 
+                "cell-content"
+
                 //Change to white when user selects cell
-                cell.addEventListener("focus", function () {
+                cell.querySelector('.cell-content').addEventListener("focus", function () {
+                    console.log("working?");
                     cell.dataset.originalContent = cell.textContent.trim(); // Save original text
                     cell.dataset.originalColor = cell.style.backgroundColor; // Save original color
                     cell.style.backgroundColor = cell.dataset.baselineColor;
                 });
 
                 //Compare original content with new content when user clicks away
-                cell.addEventListener("blur", function () {
+                cell.querySelector('.cell-content').addEventListener("blur", function () {
                     let originalContent = cell.dataset.originalContent;  // Retrieve stored text
                     let newContent = cell.textContent.trim();  // Get current text
 
                     if (originalContent == newContent) {
-                        //console.log("Cell content changed from:", originalContent, "to:", newContent);
+                        console.log("Cell content changed from:", originalContent, "to:", newContent);
                         cell.style.backgroundColor = cell.dataset.originalColor; // Reset to red/yellow if cell contents were not changed and cell was red/yellow when the user selected it
                     }
                 });
@@ -290,7 +368,16 @@
 
             // Get each row data
             let rows = document.getElementsByTagName('tr');
-            for (let i = 0; i < rows.length; i++) {
+
+            let cols = rows[0].querySelectorAll('td,th');
+
+            // Stores each csv row data
+            let csvrow = [];
+            for (let j = 2; j < cols.length; j++) {
+                csvrow.push(cols[j].innerHTML);
+            }
+            csv_data.push(csvrow.join(","));
+            for (let i = 1; i < rows.length; i++) {
 
                 // Get each column data
                 let cols = rows[i].querySelectorAll('td,th');
@@ -301,7 +388,8 @@
 
                     // Get the text data of each cell
                     // of a row and push it to csvrow
-                    csvrow.push(cols[j].innerHTML);
+                    //csvrow.push(cols[j].innerHTML);
+                    csvrow.push(dataTable.rows[i].cells[j].querySelector('.cell-content').textContent.trim());
                 }
 
                 // Combine each column value with comma

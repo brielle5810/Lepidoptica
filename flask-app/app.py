@@ -281,6 +281,8 @@ def ocr():
             transcription_lines = "\n\""
             confidence_lines = "\n"
 
+            #num_processed = num_processed + 0.5
+
             num_cols = len(ocr_df)
             column_counter = 0
             for i in range(num_cols):
