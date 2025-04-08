@@ -29,9 +29,9 @@ OCR_OUTPUT = "ocr_output"
 num_files = 0
 num_processed = 0
 
-reader = easyocr.Reader(['en'], gpu=False)
+reader = easyocr.Reader(['en'], gpu=False, recog_network="fine_tuning1")
 
-for folder in [UPLOAD_FOLDER, STAGE1_FOLDER, PREPROCESS_FOLDER, SAVED_ORIGINALS]:
+for folder in [UPLOAD_FOLDER, STAGE1_FOLDER, PREPROCESS_FOLDER, SAVED_ORIGINALS, OCR_OUTPUT]:
     os.makedirs(folder, exist_ok=True)
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
@@ -237,7 +237,10 @@ def ocr():
     #         results = reader.readtext(image_np)
     #         ocr_df = pd.DataFrame(results, columns=['bbox', 'text', 'confidence'])
     #         ocr_df.to_csv(final_path)
-    #         print(final_path + " saved
+    #         print(final_path + " saved")
+    #
+    #     except Exception as e:
+    #         print(f"Error preprocessing {filename}: {e}")
 
     #Attempting to create a version that just fills data in data.csv
 
@@ -250,6 +253,7 @@ def ocr():
     #Delete data.csv if it exists
     final_path = os.path.join(OCR_OUTPUT, "data.csv")
     confidence_path = os.path.join(OCR_OUTPUT, "confidence.csv")
+
     for filename in os.listdir(OCR_OUTPUT):
         if filename == "data.csv":
             os.remove(final_path)
