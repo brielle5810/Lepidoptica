@@ -262,7 +262,7 @@ if __name__ == '__main__':
     best_match, score = get_best_match_from_ngrams(ngrams, countyList)
     df.loc[currentIndex, 'County'] = best_match
     if not best_match:
-        df.loc[currentIndex, 'County'] = 'nan'
+        df.loc[currentIndex, 'County'] = 'Nan'
         # use city ?
 
     # Getting all cities

@@ -38,6 +38,10 @@
             }
             tr:nth-child(even){background-color: #f3f7e9;}
             td:hover {background-color: #d6dbcc;}
+            tr.htmx-swapping td {
+              opacity: 0;
+              transition: opacity 1s ease-out;
+            }
 
             #myImg {
                 max-width: 100px;
@@ -158,6 +162,7 @@
         <table class="fake-header-table" style="z-index: 1;">
         <thead id="stickyTableHeader" style="background-color: #8ea34e; z-index: 1;">
             <tr>
+                <th>Remove Row?</th>
             <th colspan="2">Images: Original and Preprocessed</th>
             {% for header in headings %}
                 <th>{{ header }}</th>
@@ -172,6 +177,7 @@
         <table id="dataTable">
         <thead style="visibility: collapse;"> <!-- Hide the original header -->
             <tr>
+                <th>Remove Row</th>
             <th colspan="2">Images: Original and Preprocessed</th>
             {% for header in headings %}
                 <th>{{ header }}</th>
@@ -181,9 +187,13 @@
 
         <tbody>
             <!--? Rows of Data: -->
-            <!--? IMAGE: -->
             {% for image, row in images_and_data %}
             <tr>
+                <!--? DELETE BUTTON: -->
+                <td>
+                    <button class="btn danger" hx-delete="/contact/1" style="font-size:60px; font-weight:bold; color:#8a2129">&times;</button>
+                </td>
+                <!--? IMAGE: -->
                 <td>
                     <img id="myImg" src="{{ url_for('download_saved_original_file', name=image[0]) }}" alt="{{ image[0] }}" style="max-height: 120px; width: auto; height: auto; max-width: 100%; z-index: 2;">
                     <span class="desc">{{ image[0] }}</span>
@@ -210,14 +220,13 @@
                 <td>
                     <div class="drag-handle" contenteditable="false" draggable="true">⠿</div>
                     <div class="cell-content" contenteditable="true">{{ cell }}</div>
-
-
                 </td>
 
-    {% endfor %}
-      </tr>
-      {% endfor %}
-    </tbody>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+            <tbody hx-confirm="Are you sure?" hx-target="closest tr" hx-swap="outerHTML swap:1s"></tbody>
   </table>
 </div>
 
@@ -310,7 +319,7 @@
         var tableContent = document.getElementById('dataTable');
         for (let i = 1; i < dataTable.rows.length; i++) {   // Skip header by starting at 1
 
-            for (let j = 2; j < dataTable.rows[i].cells.length; j++) {  // Start at two to begin past second image
+            for (let j = 3; j < dataTable.rows[i].cells.length; j++) {  // Start at three to begin past second image
                 let cell = dataTable.rows[i].cells[j];
                 //console.log(`Row ${i}, Column ${j}: ${cell.textContent}`);
 
