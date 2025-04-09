@@ -1,1 +1,6 @@
+/flask-app/preprocess
+/flask-app/saved_originals/
+/flask-app/ocr_output/
+/flask-app/stage1_crop/
 /.idea/workspace.xml
+
