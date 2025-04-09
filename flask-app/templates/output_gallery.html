@@ -26,11 +26,12 @@
                 border: 1px solid #ddd;
                 padding: 8px;
             }
-            th{
+            th {
                 text-align: left;
                 background-color: #8ea34e;
                 color: white;
                 min-width: 150px;
+                z-index: 1;
             }
             td {
                 text-align: center;
@@ -43,10 +44,12 @@
                 transition: transform .2s; /* Animation */
                 margin: 0 auto;
                 cursor: pointer;
+                z-index: 2;
             }
             #myImg:hover {
                 transform: scale(150%); /* (150% zoom) */
                 border: 2px solid #3b7548;
+                z-index: 2;
             }
 
             /* The Modal (background) */
@@ -69,7 +72,8 @@
                 margin: auto;
                 display: block;
                 height: 100%;
-                width: auto
+                width: auto;
+                z-index: 3;
             }
 
             /* Caption of Modal Image (Image Text) - Same Width as the Image */
@@ -129,7 +133,7 @@
                 bottom: 30px;
                 z-index: 1;
                 background-color: #cad99a;
-                border: 5px solid #004954; border-radius: 20px;
+                border: 4px solid #004954; border-radius: 20px;
                 font-size: 30px; color: #004954;
                 transition: transform .3s
             }
@@ -150,9 +154,9 @@
     </div>
 
     <!-- Sticky Header Container -->
-    <div class="sticky-header-container">
-        <table class="fake-header-table">
-        <thead id="stickyTableHeader" style="background-color: #8ea34e;">
+    <div class="sticky-header-container" style="z-index: 1;">
+        <table class="fake-header-table" style="z-index: 1;">
+        <thead id="stickyTableHeader" style="background-color: #8ea34e; z-index: 1;">
             <tr>
             <th colspan="2">Images: Original and Preprocessed</th>
             {% for header in headings %}
@@ -181,11 +185,11 @@
             {% for image, row in images_and_data %}
             <tr>
                 <td>
-                    <img id="myImg" src="{{ url_for('download_saved_original_file', name=image[0]) }}" alt="{{ image[0] }}" style="max-height: 120px; width: auto; height: auto; max-width: 100%;">
+                    <img id="myImg" src="{{ url_for('download_saved_original_file', name=image[0]) }}" alt="{{ image[0] }}" style="max-height: 120px; width: auto; height: auto; max-width: 100%; z-index: 2;">
                     <span class="desc">{{ image[0] }}</span>
                 </td>
                 <td>
-                    <img id="myImg" src="{{ url_for('download_preprocessed_file', name=image[1]) }}" alt="{{ image[1] }}" style="max-height: 120px; width: auto; height: auto; max-width: 100%;">
+                    <img id="myImg" src="{{ url_for('download_preprocessed_file', name=image[1]) }}" alt="{{ image[1] }}" style="max-height: 120px; width: auto; height: auto; max-width: 100%; z-index: 2;">
                     <span class="desc">{{ image[1] }}</span>
                 </td>
                 <!-- The Modal -->
