@@ -252,7 +252,8 @@
 
                 //Drag and drop
                 
-
+                //Click on the handle to drag contents
+                //Also displays ghost image of cell contents below cursor
                 cell.querySelector('.drag-handle').addEventListener('dragstart', (e) => {
                     draggedCell = cell;
                     console.log("Dragged Cell: ", draggedCell);
@@ -296,8 +297,6 @@
                         document.body.removeChild(dragGhost);
                     }, 0);
 
-                    // Required for Firefox compatibility
-                    e.dataTransfer.setData("text/plain", "");
                 });
 
                 //Add dragend event
@@ -395,6 +394,7 @@
                     }
                 });
 
+                //This event listener will automatically focus the text box of a current cell if you click inside the cell but outside the text box
                 cell.addEventListener('click', (e) => {
                     const textBox = cell.querySelector('.cell-content');
                     const dragHandle = cell.querySelector('.drag-handle');
