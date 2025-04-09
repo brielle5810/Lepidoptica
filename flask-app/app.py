@@ -40,6 +40,8 @@ app.config["PREPROCESS_FOLDER"] = PREPROCESS_FOLDER
 app.config["SAVED_ORIGINALS"] = SAVED_ORIGINALS
 app.config["OCR_OUTPUT"] = OCR_OUTPUT
 
+app.secret_key = secrets.token_hex(32)
+
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "tiff"}
 
 def allowed_file(filename):
@@ -125,7 +127,7 @@ def crop_images_in_batch(filenames):
             image = Image.open(image_path)
             image = ImageOps.exif_transpose(image)
             width, height = image.size
-            new_width = int(width * (1 / 3))
+            new_width = int(width * 0.3)
             cropped_image = image.crop((0, 0, new_width, height))
 
             cropped_image.save(cropped_path)
@@ -153,15 +155,15 @@ def preprocess_images_in_batch():
             # greyscale image
             image_np = cv2.cvtColor(image_np, cv2.COLOR_BGR2GRAY)
 
+            # thickening the font
+            image_np = cv2.bitwise_not(image_np)
+            kernal = np.ones((2, 2), np.uint8)
+            image_np = cv2.dilate(image_np, kernal, iterations=1)
+            image_np = cv2.bitwise_not(image_np)
+
             # blurring image
             sigma = 0.5
             image_np = gaussian_filter(image_np, sigma=sigma)
-
-            # thickening the font
-            # image_np = cv2.bitwise_not(image_np)
-            # kernal = np.ones((2, 2), np.uint8)
-            # image_np = cv2.dilate(image_np, kernal, iterations=2)
-            # image_np = cv2.bitwise_not(image_np)
 
             # image binarization
             _, image_np = cv2.threshold(image_np, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
@@ -169,27 +171,6 @@ def preprocess_images_in_batch():
             # save in preprocess folder
             processed_pil = Image.fromarray(image_np)
             processed_pil.save(final_path)
-
-            # ### OLD PREPROCESSING
-            # image = Image.open(image_path)
-            # image_np = np.array(image)
-
-            # normalize image
-            # image_np = cv2.normalize(image_np, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-            #
-            # # noise removal
-            # opening = cv2.morphologyEx(image_np, cv2.MORPH_OPEN, kernel_open, iterations=2)
-            # opening = cv2.fastNlMeansDenoisingColored(opening, None, 10, 10, 7, 15)
-            #
-            # # grayscale
-            # gray = cv2.cvtColor(opening, cv2.COLOR_BGR2GRAY)
-            # gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
-            #
-            # processed_image = cv2.erode(gray, kernel_erode, iterations=1)
-            #
-            # # save in preprocess folder
-            # processed_pil = Image.fromarray(processed_image)
-            # processed_pil.save(final_path)
 
         except Exception as e:
             print(f"Error preprocessing {filename}: {e}")
@@ -504,14 +485,32 @@ def apply_processing_strength(image_np, strength):
 
     else:  # strong -> default
         print("Applying strong processing")
+
+        # greyscale image
+        # image_np = cv2.cvtColor(image_np, cv2.COLOR_BGR2GRAY)
+        #
+        # # thickening the font
+        # image_np = cv2.bitwise_not(image_np)
+        # kernal = np.ones((2, 2), np.uint8)
+        # image_np = cv2.dilate(image_np, kernal, iterations=1)
+        # image_np = cv2.bitwise_not(image_np)
+        #
+        # # blurring image
+        # sigma = 0.5
+        # image_np = gaussian_filter(image_np, sigma=sigma)
+        #
+        # # image binarization
+        # _, eroded = cv2.threshold(image_np, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+        # Old Strong:
         image_np = cv2.normalize(image_np, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
         opening = cv2.morphologyEx(image_np, cv2.MORPH_OPEN, kernel_three, iterations=2)
         opening = cv2.fastNlMeansDenoisingColored(opening, None, 10, 10, 7, 15)
 
         gray = cv2.cvtColor(opening, cv2.COLOR_BGR2GRAY)
         gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
-        
-        eroded = cv2.erode(gray, kernel_two, iterations=1) 
+
+        eroded = cv2.erode(gray, kernel_two, iterations=1)
     return eroded
 
 
@@ -570,5 +569,4 @@ def about():
 
 
 if __name__ == "__main__":
-    app.secret_key = secrets.token_hex(32)
     app.run(debug=True)
