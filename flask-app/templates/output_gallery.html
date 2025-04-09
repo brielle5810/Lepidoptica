@@ -43,14 +43,14 @@
               transition: opacity 1s ease-out;
             }
 
-            #myImg {
+            .myImg {
                 max-width: 100px;
                 transition: transform .2s; /* Animation */
                 margin: 0 auto;
                 cursor: pointer;
                 z-index: 2;
             }
-            #myImg:hover {
+            .myImg:hover {
                 transform: scale(150%); /* (150% zoom) */
                 border: 2px solid #3b7548;
                 z-index: 2;
@@ -195,11 +195,11 @@
                 </td>
                 <!--? IMAGE: -->
                 <td>
-                    <img id="myImg" src="{{ url_for('download_saved_original_file', name=image[0]) }}" alt="{{ image[0] }}" style="max-height: 120px; width: auto; height: auto; max-width: 100%; z-index: 2;">
+                    <img class="myImg" src="{{ url_for('download_saved_original_file', name=image[0]) }}" alt="{{ image[0] }}" style="max-height: 120px; width: auto; height: auto; max-width: 100%; z-index: 2;">
                     <span class="desc">{{ image[0] }}</span>
                 </td>
                 <td>
-                    <img id="myImg" src="{{ url_for('download_preprocessed_file', name=image[1]) }}" alt="{{ image[1] }}" style="max-height: 120px; width: auto; height: auto; max-width: 100%; z-index: 2;">
+                    <img class="myImg" src="{{ url_for('download_preprocessed_file', name=image[1]) }}" alt="{{ image[1] }}" style="max-height: 120px; width: auto; height: auto; max-width: 100%; z-index: 2;">
                     <span class="desc">{{ image[1] }}</span>
                 </td>
                 <!-- The Modal -->
@@ -289,12 +289,9 @@
 
         // Get all images and insert the clicked image inside the modal
         // Get the content of the image description and insert it inside the modal image caption
-        var images = document.getElementsByTagName('img');
+        var images = document.getElementsByClassName('myImg');
         var modalImg = document.getElementById("img01");
         var captionText = document.getElementById("caption");
-        var navbar = document.getElementsByClassName("nav-container");
-        //var theadElement = document.getElementsByClassName("sticky-header-container");
-        //var theadElement = document.getElementById('stickyTableHeader')
 
         for (var i = 0; i < images.length; i++) {
           images[i].onclick = function(){
