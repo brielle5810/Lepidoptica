@@ -142,23 +142,40 @@
     </head>
 
     <body>
-    <div style="display: flex; flex-direction: row; margin: auto; padding-top: 5%;  padding-bottom: 1%;">
+    <div style="display: flex; flex-direction: row; margin: auto; padding-top: 3%;  padding-bottom: 1%;">
     <!--<h1 style="padding-left: 3%; padding-top: 5%; margin-top: 1%; margin-bottom: 1%; color: #006666;"><b>DATA EXTRACTION OUTPUT:</b></h1>-->
         <div class="table-header-wrapper"><div class="table-header-offset">
             <h1 style="padding-left: 8%; padding-bottom: 8%; color: #006666;"><b>DATA EXTRACTION OUTPUT:</b></h1></div>
         </div>
     </div>
 
-    <div style="overflow-x:auto; display: block; overflow: scroll">
-        <table id="dataTable">
-            <!--? Category names: -->
-            <tr style="position: sticky">
-                <th colspan="2">Images: Original and Preprocessed</th>
-                {% for header in headings %}
-                    <th>{{ header }}</th>
-                {% endfor %}
+    <!-- Sticky Header Container -->
+    <div class="sticky-header-container">
+        <table class="fake-header-table">
+        <thead style="background-color: #8ea34e;">
+            <tr>
+            <th colspan="2">Images: Original and Preprocessed</th>
+            {% for header in headings %}
+                <th>{{ header }}</th>
+            {% endfor %}
             </tr>
+        </thead>
+        </table>
+    </div>
+    
+    <!-- Scrollable Table Container -->
+    <div class="table-scroll-wrapper" id="tableScrollWrapper">
+        <table id="dataTable">
+        <thead style="visibility: collapse; background-color: #8ea34e;"> <!-- Hide the original header -->
+            <tr>
+            <th colspan="2">Images: Original and Preprocessed</th>
+            {% for header in headings %}
+                <th>{{ header }}</th>
+            {% endfor %}
+            </tr>
+        </thead>
 
+        <tbody>
             <!--? Rows of Data: -->
             <!--? IMAGE: -->
             {% for image, row in images_and_data %}
@@ -189,14 +206,17 @@
                 <td>
                     <div class="drag-handle" contenteditable="false" draggable="true">⠿</div>
                     <div class="cell-content" contenteditable="true">{{ cell }}</div>
-                    
-                    
+
+
                 </td>
-                {% endfor %}
-            </tr>
-            {% endfor %}
-        </table>
-    </div>
+
+    {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
 
     <div class="wrapper" style="padding-bottom: 5%">
         <button class="button" style="margin-top: 2%;" onclick="tableToCSV()">
@@ -204,6 +224,41 @@
             <a style="all: unset; padding-top: 5%"><b>GET CSV</b></a>
         </button>
     </div>
+
+    <script>
+      function syncHeaderWidths() {
+        const realHeader = document.querySelector('#dataTable thead tr');
+        const fakeHeader = document.querySelector('.fake-header-table thead tr');
+
+        const realCells = realHeader ? realHeader.children : [];
+        const fakeCells = fakeHeader ? fakeHeader.children : [];
+
+        for (let i = 0; i < realCells.length; i++) {
+          const realWidth = realCells[i].getBoundingClientRect().width;
+          fakeCells[i].style.width = `${realWidth}px`;
+        }
+      }
+
+      // Sync on load and whenever window resizes
+      window.addEventListener('load', syncHeaderWidths);
+      window.addEventListener('resize', syncHeaderWidths);
+
+      // Optional: also sync periodically in case of dynamic content updates
+      const observer = new MutationObserver(syncHeaderWidths);
+      observer.observe(document.querySelector('#dataTable'), {
+        childList: true,
+        subtree: true,
+        attributes: true
+      });
+
+      // Sync horizontal scroll
+      const scrollWrapper = document.getElementById('tableScrollWrapper');
+      const stickyHeader = document.querySelector('.sticky-header-container');
+
+      scrollWrapper.addEventListener('scroll', () => {
+        stickyHeader.scrollLeft = scrollWrapper.scrollLeft;
+      });
+    </script>
 
     <!--?  MODAL SCRIPT-->
     <script>
@@ -251,112 +306,114 @@
                 //console.log(`Row ${i}, Column ${j}: ${cell.textContent}`);
 
                 //Drag and drop
-                
-                //Click on the handle to drag contents
-                //Also displays ghost image of cell contents below cursor
-                cell.querySelector('.drag-handle').addEventListener('dragstart', (e) => {
-                    draggedCell = cell;
-                    console.log("Dragged Cell: ", draggedCell);
-                
-                    // Get click offset relative to the cell
-                    const rect = cell.getBoundingClientRect();
-                    const offsetX = e.clientX - rect.left;
-                    const offsetY = e.clientY - rect.top;
-                
-                    e.dataTransfer.setData("text/plain", ""); // For Firefox compatibility
-                
-                    // Create custom drag ghost
-                    const dragGhost = cell.cloneNode(true);
-                    dragGhost.style.position = 'absolute';
-                    dragGhost.style.top = '-9999px';
-                    dragGhost.style.left = '-9999px';
-                    dragGhost.style.width = `${cell.offsetWidth}px`;
-                    dragGhost.style.height = `${cell.offsetHeight}px`;
-                
-                    // Copy current background color
-                    dragGhost.style.background = cell.style.backgroundColor || '#fff';
-                    dragGhost.style.border = '1px solid #ccc';
-                    dragGhost.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
-                    dragGhost.style.zIndex = '1000';
+                const handle = cell.querySelector('.drag-handle');
+                if (handle) {
+                    //Click on the handle to drag contents
+                    //Also displays ghost image of cell contents below cursor
+                    cell.querySelector('.drag-handle').addEventListener('dragstart', (e) => {
+                        draggedCell = cell;
+                        console.log("Dragged Cell: ", draggedCell);
 
-                    dragGhost.style.display = 'flex';
-                    dragGhost.style.alignItems = 'center';
-                    dragGhost.style.justifyContent = 'center';
-                    dragGhost.style.textAlign = 'center';
+                        // Get click offset relative to the cell
+                        const rect = cell.getBoundingClientRect();
+                        const offsetX = e.clientX - rect.left;
+                        const offsetY = e.clientY - rect.top;
 
-                    dragGhost.style.font = window.getComputedStyle(cell).font;
-                    dragGhost.style.padding = window.getComputedStyle(cell).padding;
-                
-                    document.body.appendChild(dragGhost);
-                
-                    // Use the calculated click offset
-                    e.dataTransfer.setDragImage(dragGhost, offsetX + 15, offsetY + 15);
-                
-                    // Cleanup: remove ghost after it has been used by setDragImage
-                    setTimeout(() => {
-                        document.body.removeChild(dragGhost);
-                    }, 0);
+                        e.dataTransfer.setData("text/plain", ""); // For Firefox compatibility
 
-                });
+                        // Create custom drag ghost
+                        const dragGhost = cell.cloneNode(true);
+                        dragGhost.style.position = 'absolute';
+                        dragGhost.style.top = '-9999px';
+                        dragGhost.style.left = '-9999px';
+                        dragGhost.style.width = `${cell.offsetWidth}px`;
+                        dragGhost.style.height = `${cell.offsetHeight}px`;
 
-                //Add dragend event
-                cell.querySelector('.drag-handle').addEventListener('dragend', () => {
-                    console.log("Drag Ended");
-                    draggedCell = null;
-                });
-                
-                //Add dragover event to allow for valid drop target
-                cell.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    
-                    cell.style.outline = '2px dashed #3399ff';
-                    cell.style.outlineOffset = '-2px';  // Keeps the outline snug within the cell
-                    //cell.style.backgroundColor = '#d0eaff'; // light blue highlight
-                    //cell.classList.add('drag-over'); // Add styling for the hovered target
-                });
+                        // Copy current background color
+                        dragGhost.style.background = cell.style.backgroundColor || '#fff';
+                        dragGhost.style.border = '1px solid #ccc';
+                        dragGhost.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
+                        dragGhost.style.zIndex = '1000';
 
-                //Remove highlight on drag leave
-                cell.addEventListener('dragleave', () => {
-                    //cell.style.backgroundColor = cell.dataset.originalColor;
-                    cell.style.outline = '';
-                });
+                        dragGhost.style.display = 'flex';
+                        dragGhost.style.alignItems = 'center';
+                        dragGhost.style.justifyContent = 'center';
+                        dragGhost.style.textAlign = 'center';
 
-                // Add drop event to swap content
-                cell.addEventListener('drop', (e) => {
-                    console.log("Dragged Cell: ", draggedCell);
-                    console.log("Target Cell: ", cell);
+                        dragGhost.style.font = window.getComputedStyle(cell).font;
+                        dragGhost.style.padding = window.getComputedStyle(cell).padding;
 
-                    e.preventDefault();
+                        document.body.appendChild(dragGhost);
 
-                    console.log("Drop Event Triggered");
+                        // Use the calculated click offset
+                        e.dataTransfer.setDragImage(dragGhost, offsetX + 15, offsetY + 15);
 
-                    if (draggedCell && draggedCell !== cell) {
-                        const sourceContent = draggedCell.querySelector('.cell-content');
-                        const targetContent = cell.querySelector('.cell-content');
-                        const sourceColor = draggedCell.style.backgroundColor; // Save original text
-                        const targetColor = cell.style.backgroundColor; // Save original color
-                        const originalTextContent = draggedCell.dataset.originalContent;
+                        // Cleanup: remove ghost after it has been used by setDragImage
+                        setTimeout(() => {
+                            document.body.removeChild(dragGhost);
+                        }, 0);
 
-                        console.log("Source Content:", sourceContent.innerHTML);
-                        console.log("Target Content:", targetContent.innerHTML);
+                    });
 
-                        //Swap the content between the source and target cells
-                        const temp = sourceContent.innerHTML;
-                        sourceContent.innerHTML = targetContent.innerHTML;
-                        targetContent.innerHTML = temp;
+                    //Add dragend event
+                    cell.querySelector('.drag-handle').addEventListener('dragend', () => {
+                        console.log("Drag Ended");
+                        draggedCell = null;
+                    });
 
-                        draggedCell.style.backgroundColor = targetColor;
-                        cell.style.backgroundColor = sourceColor;
-                        draggedCell.dataset.originalContent = cell.dataset.originalContent;
-                        cell.dataset.originalContent = originalTextContent;
+                    //Add dragover event to allow for valid drop target
+                    cell.addEventListener('dragover', (e) => {
+                        e.preventDefault();
 
-                    }
+                        cell.style.outline = '2px dashed #3399ff';
+                        cell.style.outlineOffset = '-2px';  // Keeps the outline snug within the cell
+                        //cell.style.backgroundColor = '#d0eaff'; // light blue highlight
+                        //cell.classList.add('drag-over'); // Add styling for the hovered target
+                    });
 
-                    cell.style.outline = '';
-                    //cell.style.backgroundColor = cell.dataset.originalColor;
+                    //Remove highlight on drag leave
+                    cell.addEventListener('dragleave', () => {
+                        //cell.style.backgroundColor = cell.dataset.originalColor;
+                        cell.style.outline = '';
+                    });
 
-                    draggedCell = null;
-                });
+                    // Add drop event to swap content
+                    cell.addEventListener('drop', (e) => {
+                        console.log("Dragged Cell: ", draggedCell);
+                        console.log("Target Cell: ", cell);
+
+                        e.preventDefault();
+
+                        console.log("Drop Event Triggered");
+
+                        if (draggedCell && draggedCell !== cell) {
+                            const sourceContent = draggedCell.querySelector('.cell-content');
+                            const targetContent = cell.querySelector('.cell-content');
+                            const sourceColor = draggedCell.style.backgroundColor; // Save original text
+                            const targetColor = cell.style.backgroundColor; // Save original color
+                            const originalTextContent = draggedCell.dataset.originalContent;
+
+                            console.log("Source Content:", sourceContent.innerHTML);
+                            console.log("Target Content:", targetContent.innerHTML);
+
+                            //Swap the content between the source and target cells
+                            const temp = sourceContent.innerHTML;
+                            sourceContent.innerHTML = targetContent.innerHTML;
+                            targetContent.innerHTML = temp;
+
+                            draggedCell.style.backgroundColor = targetColor;
+                            cell.style.backgroundColor = sourceColor;
+                            draggedCell.dataset.originalContent = cell.dataset.originalContent;
+                            cell.dataset.originalContent = originalTextContent;
+
+                        }
+
+                        cell.style.outline = '';
+                        //cell.style.backgroundColor = cell.dataset.originalColor;
+
+                        draggedCell = null;
+                    });
+                }
 
                 //Confidence representation
 

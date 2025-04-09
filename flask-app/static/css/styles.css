@@ -234,6 +234,40 @@ a.nav-a:hover {
     padding: 3px;
 }
 
+.sticky-header-container {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: white;
+  overflow-x: hidden;
+}
+
+.fake-header-table {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.fake-header-table th {
+  background: #f2f2f2;
+  text-align: center;
+  padding: 8px;
+  border: 1px solid #ccc;
+}
+
+/* Scrollable wrapper for the actual data table */
+.table-scroll-wrapper {
+  overflow: auto;
+  max-height: 600px; /* Set to whatever makes sense for your page */
+}
+
+.fake-header-table td,
+.fake-header-table th,
+.fake-header-table tr {
+  background-color: transparent !important; /* Or transparent */
+  pointer-events: none;
+}
+
 
 /*.custom-scrollbar-js,*/
 /*.custom-scrollbar-css {*/
