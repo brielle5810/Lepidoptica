@@ -152,7 +152,7 @@
     <!-- Sticky Header Container -->
     <div class="sticky-header-container">
         <table class="fake-header-table">
-        <thead style="background-color: #8ea34e;">
+        <thead id="stickyTableHeader" style="background-color: #8ea34e;">
             <tr>
             <th colspan="2">Images: Original and Preprocessed</th>
             {% for header in headings %}
@@ -166,7 +166,7 @@
     <!-- Scrollable Table Container -->
     <div class="table-scroll-wrapper" id="tableScrollWrapper">
         <table id="dataTable">
-        <thead style="visibility: collapse; background-color: #8ea34e;"> <!-- Hide the original header -->
+        <thead style="visibility: collapse;"> <!-- Hide the original header -->
             <tr>
             <th colspan="2">Images: Original and Preprocessed</th>
             {% for header in headings %}
@@ -271,8 +271,7 @@
         // When the user clicks on <span> (x), close the modal
         span.onclick = function() {
             modal.style.display = "none";
-            navbar.style.visibility = "hidden";
-            navbar.style.display = "none";
+            
         }
 
         // Get all images and insert the clicked image inside the modal
@@ -281,6 +280,8 @@
         var modalImg = document.getElementById("img01");
         var captionText = document.getElementById("caption");
         var navbar = document.getElementsByClassName("nav-container");
+        //var theadElement = document.getElementsByClassName("sticky-header-container");
+        //var theadElement = document.getElementById('stickyTableHeader')
 
         for (var i = 0; i < images.length; i++) {
           images[i].onclick = function(){
@@ -288,8 +289,12 @@
               modalImg.src = this.src;
               modalImg.alt = this.alt;
               captionText.innerHTML = this.nextElementSibling.innerHTML;
-              navbar.style.visibility = "hidden";
-              navbar.style.display = "none";
+              
+              //theadElement.style.visibility = "hidden";
+              //console.log(theadElement.style.display);
+              //theadElement.style.display = "none";
+              //theadElement.style.border = 'none';
+
           }
         }
 

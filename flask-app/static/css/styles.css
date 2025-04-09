@@ -230,7 +230,6 @@ a.nav-a:hover {
     right: 5px;
     font-size: 20px;
     cursor: grab; /* Indicate that it's draggable */
-    z-index: 10;
     padding: 3px;
 }
 
@@ -258,7 +257,7 @@ a.nav-a:hover {
 /* Scrollable wrapper for the actual data table */
 .table-scroll-wrapper {
   overflow: auto;
-  max-height: 600px; /* Set to whatever makes sense for your page */
+  height: 73vh;
 }
 
 .fake-header-table td,
