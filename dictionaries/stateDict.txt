@@ -282,7 +282,6 @@ Chantaburi
 Turks
 North Caicos
 Caicos
-Wyoming
 St. Peter
 Bonaire
 St. Lucy
@@ -382,3 +381,5 @@ Santo Domingo
 Distrito Nacional
 Guantanamo
 Puerto Rico
+Rhode Island
+Washington, D. C.
