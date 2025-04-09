@@ -15,11 +15,6 @@ from rapidfuzz import process
 # def fuzzy_match...
 
 
-# def get_best_match(term, spec_list):
-#     match, score, _ = process.extractOne(term, spec_list)
-#     print(f"Trying to match '{term}' | Best match: '{match}' (score: {score})")
-#     return match
-
 def get_best_match(term, spec_list, threshold=80):
     match, score, _ = process.extractOne(term, spec_list)
     if score >= threshold:
@@ -198,16 +193,20 @@ if __name__ == '__main__':
             if (x == 3): #, 4, 5, etc:  # separate the genus from the species, subspecies
                 #genus dictionaries/
                 word, ratio = get_best_match(word, load_spec_vocab("dictionaries/genusDict.txt"))
+                # change estimate = ratio
             elif (x == 4):
                 #species
                 word, ratio = get_best_match(word, load_spec_vocab("dictionaries/speciesDict.txt"))
+                # change estimate = ratio
             elif (x == 5):
                 #subspecies
                 word, ratio = get_best_match(word, load_spec_vocab("dictionaries/subspeciesDict.txt"))
+                # change estimate = ratio
 
             vagueWord, broadRatio = get_best_match(word, load_spec_vocab("dictionaries/vagueDict.txt"))
             if (broadRatio > ratio):
                 word = vagueWord
+                # change estimate = broadRatio
             print(f"Replaced '{old_word}' with '{word}'")
 
             df.iloc[currentIndex, x] = word
@@ -244,6 +243,7 @@ if __name__ == '__main__':
         # if location tagger doesn't find a country, try to find one using fuzzy matching
         best_match, score = get_best_match_from_ngrams(ngrams, countryList)
         if best_match:
+            # change the correspinding estimate = score
             df.loc[currentIndex, 'Country'] = best_match
         else:
             print("No country found")
@@ -255,14 +255,16 @@ if __name__ == '__main__':
     if not placeEntity.regions:
         best_match, score = get_best_match_from_ngrams(ngrams, stateList)
         if best_match:
+            # change the correspinding estimate = score
             df.loc[currentIndex, 'State'] = best_match
         else:
             print("No state found")
 
     best_match, score = get_best_match_from_ngrams(ngrams, countyList)
+    # change the correspinding estimate = score
     df.loc[currentIndex, 'County'] = best_match
     if not best_match:
-        df.loc[currentIndex, 'County'] = 'nan'
+        df.loc[currentIndex, 'County'] = 'Nan'
         # use city ?
 
     # Getting all cities
