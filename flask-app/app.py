@@ -29,9 +29,9 @@ OCR_OUTPUT = "ocr_output"
 num_files = 0
 num_processed = 0
 
-reader = easyocr.Reader(['en'], gpu=False)
+reader = easyocr.Reader(['en'], gpu=False, recog_network="fine_tuning1")
 
-for folder in [UPLOAD_FOLDER, STAGE1_FOLDER, PREPROCESS_FOLDER, SAVED_ORIGINALS]:
+for folder in [UPLOAD_FOLDER, STAGE1_FOLDER, PREPROCESS_FOLDER, SAVED_ORIGINALS, OCR_OUTPUT]:
     os.makedirs(folder, exist_ok=True)
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
@@ -158,10 +158,10 @@ def preprocess_images_in_batch():
             image_np = gaussian_filter(image_np, sigma=sigma)
 
             # thickening the font
-            image_np = cv2.bitwise_not(image_np)
-            kernal = np.ones((2, 2), np.uint8)
-            image_np = cv2.dilate(image_np, kernal, iterations=2)
-            image_np = cv2.bitwise_not(image_np)
+            # image_np = cv2.bitwise_not(image_np)
+            # kernal = np.ones((2, 2), np.uint8)
+            # image_np = cv2.dilate(image_np, kernal, iterations=2)
+            # image_np = cv2.bitwise_not(image_np)
 
             # image binarization
             _, image_np = cv2.threshold(image_np, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
@@ -237,7 +237,10 @@ def ocr():
     #         results = reader.readtext(image_np)
     #         ocr_df = pd.DataFrame(results, columns=['bbox', 'text', 'confidence'])
     #         ocr_df.to_csv(final_path)
-    #         print(final_path + " saved
+    #         print(final_path + " saved")
+    #
+    #     except Exception as e:
+    #         print(f"Error preprocessing {filename}: {e}")
 
     #Attempting to create a version that just fills data in data.csv
 
@@ -250,6 +253,7 @@ def ocr():
     #Delete data.csv if it exists
     final_path = os.path.join(OCR_OUTPUT, "data.csv")
     confidence_path = os.path.join(OCR_OUTPUT, "confidence.csv")
+
     for filename in os.listdir(OCR_OUTPUT):
         if filename == "data.csv":
             os.remove(final_path)
@@ -257,11 +261,11 @@ def ocr():
             os.remove(confidence_path)
 
     #Create data.csv
-    data = open(final_path, "w")
+    data = open(final_path, "w", encoding="utf8")
     data.write("CatalogNumber,Specimen_voucher,Family,Genus,Species,Subspecies,Sex,Country,State,County,Locality name,Elevation min,Elevation max,Elevation unit,Collectors,Latitude,Longitude,Georeferencing source,Georeferencing precision,Questionable label data,Do not publish,Collecting event start,Collecting event end,Date verbatim,Remarks public,Remarks private,Cataloged date,Cataloger First,Cataloger last,Prep type 1,Prep count 1,Prep type 2,Prep number 2,Prep type 3,Prep number 3,Other record number,Other record source,publication,publication")
     data.close()
 
-    confidence = open(confidence_path, "w")
+    confidence = open(confidence_path, "w", encoding="utf8")
     confidence.write("CatalogNumber,Specimen_voucher,Family,Genus,Species,Subspecies,Sex,Country,State,County,Locality name,Elevation min,Elevation max,Elevation unit,Collectors,Latitude,Longitude,Georeferencing source,Georeferencing precision,Questionable label data,Do not publish,Collecting event start,Collecting event end,Date verbatim,Remarks public,Remarks private,Cataloged date,Cataloger First,Cataloger last,Prep type 1,Prep count 1,Prep type 2,Prep number 2,Prep type 3,Prep number 3,Other record number,Other record source,publication,publication")
     confidence.close()
     #Write data to csv
@@ -281,19 +285,25 @@ def ocr():
             transcription_lines = "\n\""
             confidence_lines = "\n"
 
+            #num_processed = num_processed + 0.5
+
             num_cols = len(ocr_df)
             column_counter = 0
             for i in range(num_cols):
                 #If there are more sections of data in the dataframe than fields in the csv, start lumping data together in the last column
                 #Note: This will not update the confidence for that column with the current implementation
+                #temp_str = ""
+                #if str(ocr_df.loc[i].at["text"]) != "nan":
+                temp_str = str(ocr_df.loc[i].at["text"]).replace("\"", "\"\"")
+
                 if column_counter >= 38:
                     #transcription_lines = transcription_lines + ocr_df[line][1]
-                    transcription_lines = transcription_lines + str(ocr_df.loc[i].at["text"])
+                    transcription_lines = transcription_lines + temp_str
                 elif column_counter == 0:
-                    transcription_lines = transcription_lines + str(ocr_df.loc[i].at["text"])
+                    transcription_lines = transcription_lines + temp_str
                     confidence_lines = confidence_lines + str(ocr_df.loc[i].at["confidence"])
                 else:
-                    transcription_lines = transcription_lines + "\",\"" + str(ocr_df.loc[i].at["text"])
+                    transcription_lines = transcription_lines + "\",\"" + temp_str
                     confidence_lines = confidence_lines + "," + str(ocr_df.loc[i].at["confidence"])
                 column_counter = column_counter + 1
 
@@ -304,11 +314,11 @@ def ocr():
 
             transcription_lines = transcription_lines + "\""
 
-            data = open(final_path, "a")
+            data = open(final_path, "a", encoding="utf8")
             data.write(transcription_lines)
             data.close()
 
-            confidence = open(confidence_path, "a")
+            confidence = open(confidence_path, "a", encoding="utf8")
             confidence.write(confidence_lines)
             confidence.close()
 
@@ -526,6 +536,7 @@ def output():
 
     ### USE THIS FOR THE FINAL VERSION
     df = pd.read_csv(os.path.join(OCR_OUTPUT, "data.csv"))
+    df = df.fillna("")
     # print("df:\n", df)
     df_list = df.values.tolist()
     print("df_list:\n", df_list, "\n")

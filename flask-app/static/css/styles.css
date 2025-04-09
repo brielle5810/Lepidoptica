@@ -203,6 +203,71 @@ a.nav-a:hover {
   margin: auto;
 }
 
+#dataTable tr>td {
+
+    position: relative;
+    user-select: none;
+
+}
+
+#dataTable tr>td .cell-content {
+
+    width: 100%; /* Ensure the text box takes up the full width */
+    width: 100%;
+    padding: 0; /* Remove padding */
+    margin: 0; /* Remove margin */
+    box-sizing: border-box; /* Include padding in the width/height calculation */
+    overflow: hidden; /* Prevent content from overflowing */
+}
+
+#dataTable tr>td.dragging {
+    opacity: 0.6;
+}
+
+.drag-handle {
+    position: absolute; /* Position it absolutely within the cell */
+    top: 0px;
+    right: 5px;
+    font-size: 20px;
+    cursor: grab; /* Indicate that it's draggable */
+    padding: 3px;
+}
+
+.sticky-header-container {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: white;
+  overflow-x: hidden;
+}
+
+.fake-header-table {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.fake-header-table th {
+  background: #f2f2f2;
+  text-align: center;
+  padding: 8px;
+  border: 1px solid #ccc;
+}
+
+/* Scrollable wrapper for the actual data table */
+.table-scroll-wrapper {
+  overflow: auto;
+  height: 73vh;
+}
+
+.fake-header-table td,
+.fake-header-table th,
+.fake-header-table tr {
+  background-color: transparent !important; /* Or transparent */
+  pointer-events: none;
+}
+
+
 /*.custom-scrollbar-js,*/
 /*.custom-scrollbar-css {*/
 /*  height: 200px;*/

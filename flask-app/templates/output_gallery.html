@@ -142,33 +142,50 @@
     </head>
 
     <body>
-    <div style="display: flex; flex-direction: row; margin: auto; padding-top: 5%;  padding-bottom: 1%;">
+    <div style="display: flex; flex-direction: row; margin: auto; padding-top: 3%;  padding-bottom: 1%;">
     <!--<h1 style="padding-left: 3%; padding-top: 5%; margin-top: 1%; margin-bottom: 1%; color: #006666;"><b>DATA EXTRACTION OUTPUT:</b></h1>-->
         <div class="table-header-wrapper"><div class="table-header-offset">
             <h1 style="padding-left: 8%; padding-bottom: 8%; color: #006666;"><b>DATA EXTRACTION OUTPUT:</b></h1></div>
         </div>
     </div>
 
-    <div style="overflow-x:auto; display: block; overflow: scroll">
-        <table id="dataTable">
-            <!--? Category names: -->
-            <tr style="position: sticky">
-                <th colspan="2">Images: Original and Preprocessed</th>
-                {% for header in headings %}
-                    <th>{{ header }}</th>
-                {% endfor %}
+    <!-- Sticky Header Container -->
+    <div class="sticky-header-container">
+        <table class="fake-header-table">
+        <thead id="stickyTableHeader" style="background-color: #8ea34e;">
+            <tr>
+            <th colspan="2">Images: Original and Preprocessed</th>
+            {% for header in headings %}
+                <th>{{ header }}</th>
+            {% endfor %}
             </tr>
+        </thead>
+        </table>
+    </div>
+    
+    <!-- Scrollable Table Container -->
+    <div class="table-scroll-wrapper" id="tableScrollWrapper">
+        <table id="dataTable">
+        <thead style="visibility: collapse;"> <!-- Hide the original header -->
+            <tr>
+            <th colspan="2">Images: Original and Preprocessed</th>
+            {% for header in headings %}
+                <th>{{ header }}</th>
+            {% endfor %}
+            </tr>
+        </thead>
 
+        <tbody>
             <!--? Rows of Data: -->
             <!--? IMAGE: -->
             {% for image, row in images_and_data %}
             <tr>
                 <td>
-                    <img id="myImg" src="{{ url_for('download_saved_original_file', name=image[0]) }}" alt="{{ image[0] }}">
+                    <img id="myImg" src="{{ url_for('download_saved_original_file', name=image[0]) }}" alt="{{ image[0] }}" style="max-height: 120px; width: auto; height: auto; max-width: 100%;">
                     <span class="desc">{{ image[0] }}</span>
                 </td>
                 <td>
-                    <img id="myImg" src="{{ url_for('download_preprocessed_file', name=image[1]) }}" alt="{{ image[1] }}">
+                    <img id="myImg" src="{{ url_for('download_preprocessed_file', name=image[1]) }}" alt="{{ image[1] }}" style="max-height: 120px; width: auto; height: auto; max-width: 100%;">
                     <span class="desc">{{ image[1] }}</span>
                 </td>
                 <!-- The Modal -->
@@ -186,12 +203,20 @@
 
                 <!--? DATA: -->
                 {% for cell in row %}
-                <td contenteditable>{{ cell }}</td>
-                {% endfor %}
-            </tr>
-            {% endfor %}
-        </table>
-    </div>
+                <td>
+                    <div class="drag-handle" contenteditable="false" draggable="true">⠿</div>
+                    <div class="cell-content" contenteditable="true">{{ cell }}</div>
+
+
+                </td>
+
+    {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
 
     <div class="wrapper" style="padding-bottom: 5%">
         <button class="button" style="margin-top: 2%;" onclick="tableToCSV()">
@@ -199,6 +224,41 @@
             <a style="all: unset; padding-top: 5%"><b>GET CSV</b></a>
         </button>
     </div>
+
+    <script>
+      function syncHeaderWidths() {
+        const realHeader = document.querySelector('#dataTable thead tr');
+        const fakeHeader = document.querySelector('.fake-header-table thead tr');
+
+        const realCells = realHeader ? realHeader.children : [];
+        const fakeCells = fakeHeader ? fakeHeader.children : [];
+
+        for (let i = 0; i < realCells.length; i++) {
+          const realWidth = realCells[i].getBoundingClientRect().width;
+          fakeCells[i].style.width = `${realWidth}px`;
+        }
+      }
+
+      // Sync on load and whenever window resizes
+      window.addEventListener('load', syncHeaderWidths);
+      window.addEventListener('resize', syncHeaderWidths);
+
+      // Optional: also sync periodically in case of dynamic content updates
+      const observer = new MutationObserver(syncHeaderWidths);
+      observer.observe(document.querySelector('#dataTable'), {
+        childList: true,
+        subtree: true,
+        attributes: true
+      });
+
+      // Sync horizontal scroll
+      const scrollWrapper = document.getElementById('tableScrollWrapper');
+      const stickyHeader = document.querySelector('.sticky-header-container');
+
+      scrollWrapper.addEventListener('scroll', () => {
+        stickyHeader.scrollLeft = scrollWrapper.scrollLeft;
+      });
+    </script>
 
     <!--?  MODAL SCRIPT-->
     <script>
@@ -211,8 +271,7 @@
         // When the user clicks on <span> (x), close the modal
         span.onclick = function() {
             modal.style.display = "none";
-            navbar.style.visibility = "hidden";
-            navbar.style.display = "none";
+            
         }
 
         // Get all images and insert the clicked image inside the modal
@@ -221,6 +280,8 @@
         var modalImg = document.getElementById("img01");
         var captionText = document.getElementById("caption");
         var navbar = document.getElementsByClassName("nav-container");
+        //var theadElement = document.getElementsByClassName("sticky-header-container");
+        //var theadElement = document.getElementById('stickyTableHeader')
 
         for (var i = 0; i < images.length; i++) {
           images[i].onclick = function(){
@@ -228,20 +289,138 @@
               modalImg.src = this.src;
               modalImg.alt = this.alt;
               captionText.innerHTML = this.nextElementSibling.innerHTML;
-              navbar.style.visibility = "hidden";
-              navbar.style.display = "none";
+              
+              //theadElement.style.visibility = "hidden";
+              //console.log(theadElement.style.display);
+              //theadElement.style.display = "none";
+              //theadElement.style.border = 'none';
+
           }
         }
 
         let confidenceValues = {{ confidence_list | tojson }};
 
-        //Adjust cell color depending on confidence
+        //Drag and drop
+        let draggedCell = null;
+
         var tableContent = document.getElementById('dataTable');
         for (let i = 1; i < dataTable.rows.length; i++) {   // Skip header by starting at 1
 
             for (let j = 2; j < dataTable.rows[i].cells.length; j++) {  // Start at two to begin past second image
                 let cell = dataTable.rows[i].cells[j];
                 //console.log(`Row ${i}, Column ${j}: ${cell.textContent}`);
+
+                //Drag and drop
+                const handle = cell.querySelector('.drag-handle');
+                if (handle) {
+                    //Click on the handle to drag contents
+                    //Also displays ghost image of cell contents below cursor
+                    cell.querySelector('.drag-handle').addEventListener('dragstart', (e) => {
+                        draggedCell = cell;
+                        console.log("Dragged Cell: ", draggedCell);
+
+                        // Get click offset relative to the cell
+                        const rect = cell.getBoundingClientRect();
+                        const offsetX = e.clientX - rect.left;
+                        const offsetY = e.clientY - rect.top;
+
+                        e.dataTransfer.setData("text/plain", ""); // For Firefox compatibility
+
+                        // Create custom drag ghost
+                        const dragGhost = cell.cloneNode(true);
+                        dragGhost.style.position = 'absolute';
+                        dragGhost.style.top = '-9999px';
+                        dragGhost.style.left = '-9999px';
+                        dragGhost.style.width = `${cell.offsetWidth}px`;
+                        dragGhost.style.height = `${cell.offsetHeight}px`;
+
+                        // Copy current background color
+                        dragGhost.style.background = cell.style.backgroundColor || '#fff';
+                        dragGhost.style.border = '1px solid #ccc';
+                        dragGhost.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
+                        dragGhost.style.zIndex = '1000';
+
+                        dragGhost.style.display = 'flex';
+                        dragGhost.style.alignItems = 'center';
+                        dragGhost.style.justifyContent = 'center';
+                        dragGhost.style.textAlign = 'center';
+
+                        dragGhost.style.font = window.getComputedStyle(cell).font;
+                        dragGhost.style.padding = window.getComputedStyle(cell).padding;
+
+                        document.body.appendChild(dragGhost);
+
+                        // Use the calculated click offset
+                        e.dataTransfer.setDragImage(dragGhost, offsetX + 15, offsetY + 15);
+
+                        // Cleanup: remove ghost after it has been used by setDragImage
+                        setTimeout(() => {
+                            document.body.removeChild(dragGhost);
+                        }, 0);
+
+                    });
+
+                    //Add dragend event
+                    cell.querySelector('.drag-handle').addEventListener('dragend', () => {
+                        console.log("Drag Ended");
+                        draggedCell = null;
+                    });
+
+                    //Add dragover event to allow for valid drop target
+                    cell.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+
+                        cell.style.outline = '2px dashed #3399ff';
+                        cell.style.outlineOffset = '-2px';  // Keeps the outline snug within the cell
+                        //cell.style.backgroundColor = '#d0eaff'; // light blue highlight
+                        //cell.classList.add('drag-over'); // Add styling for the hovered target
+                    });
+
+                    //Remove highlight on drag leave
+                    cell.addEventListener('dragleave', () => {
+                        //cell.style.backgroundColor = cell.dataset.originalColor;
+                        cell.style.outline = '';
+                    });
+
+                    // Add drop event to swap content
+                    cell.addEventListener('drop', (e) => {
+                        console.log("Dragged Cell: ", draggedCell);
+                        console.log("Target Cell: ", cell);
+
+                        e.preventDefault();
+
+                        console.log("Drop Event Triggered");
+
+                        if (draggedCell && draggedCell !== cell) {
+                            const sourceContent = draggedCell.querySelector('.cell-content');
+                            const targetContent = cell.querySelector('.cell-content');
+                            const sourceColor = draggedCell.style.backgroundColor; // Save original text
+                            const targetColor = cell.style.backgroundColor; // Save original color
+                            const originalTextContent = draggedCell.dataset.originalContent;
+
+                            console.log("Source Content:", sourceContent.innerHTML);
+                            console.log("Target Content:", targetContent.innerHTML);
+
+                            //Swap the content between the source and target cells
+                            const temp = sourceContent.innerHTML;
+                            sourceContent.innerHTML = targetContent.innerHTML;
+                            targetContent.innerHTML = temp;
+
+                            draggedCell.style.backgroundColor = targetColor;
+                            cell.style.backgroundColor = sourceColor;
+                            draggedCell.dataset.originalContent = cell.dataset.originalContent;
+                            cell.dataset.originalContent = originalTextContent;
+
+                        }
+
+                        cell.style.outline = '';
+                        //cell.style.backgroundColor = cell.dataset.originalColor;
+
+                        draggedCell = null;
+                    });
+                }
+
+                //Confidence representation
 
                 let cellConfidence = confidenceValues[i - 1][j - 2];
                 cell.dataset.baselineColor = cell.style.backgroundColor;
@@ -259,20 +438,42 @@
                 }
 
                 //Change to white when user selects cell
-                cell.addEventListener("focus", function () {
+                cell.querySelector('.cell-content').addEventListener("focus", function () {
+                    console.log("working?");
                     cell.dataset.originalContent = cell.textContent.trim(); // Save original text
                     cell.dataset.originalColor = cell.style.backgroundColor; // Save original color
                     cell.style.backgroundColor = cell.dataset.baselineColor;
                 });
 
                 //Compare original content with new content when user clicks away
-                cell.addEventListener("blur", function () {
+                cell.querySelector('.cell-content').addEventListener("blur", function () {
                     let originalContent = cell.dataset.originalContent;  // Retrieve stored text
                     let newContent = cell.textContent.trim();  // Get current text
 
                     if (originalContent == newContent) {
-                        //console.log("Cell content changed from:", originalContent, "to:", newContent);
+                        console.log("Cell content changed from:", originalContent, "to:", newContent);
                         cell.style.backgroundColor = cell.dataset.originalColor; // Reset to red/yellow if cell contents were not changed and cell was red/yellow when the user selected it
+                    }
+                });
+
+                //This event listener will automatically focus the text box of a current cell if you click inside the cell but outside the text box
+                cell.addEventListener('click', (e) => {
+                    const textBox = cell.querySelector('.cell-content');
+                    const dragHandle = cell.querySelector('.drag-handle');
+
+                    // Don't trigger focus if the drag handle is clicked
+                    if (dragHandle && dragHandle.contains(e.target)) return;
+
+                    if (textBox && e.target !== textBox) {
+                        textBox.focus();
+
+                        // Move cursor to the end
+                        const range = document.createRange();
+                        const selection = window.getSelection();
+                        range.selectNodeContents(textBox);
+                        range.collapse(false); // false = to the end
+                        selection.removeAllRanges();
+                        selection.addRange(range);
                     }
                 });
 
@@ -290,6 +491,7 @@
 
             // Get each row data
             let rows = document.getElementsByTagName('tr');
+
             for (let i = 0; i < rows.length; i++) {
 
                 // Get each column data
@@ -301,7 +503,13 @@
 
                     // Get the text data of each cell
                     // of a row and push it to csvrow
-                    csvrow.push(cols[j].innerHTML);
+                    //csvrow.push(cols[j].innerHTML);
+                    if (i == 0) {
+                        csvrow.push(cols[j].innerHTML);
+                    }
+                    else {
+                        csvrow.push(dataTable.rows[i].cells[j].querySelector('.cell-content').textContent.trim());
+                    }
                 }
 
                 // Combine each column value with comma
