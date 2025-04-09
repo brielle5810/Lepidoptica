@@ -1,0 +1,81 @@
+# ### Alexia's Work -> Results in good preprocessing
+# greyscale image
+image_np = cv2.cvtColor(image_np, cv2.COLOR_BGR2GRAY)
+
+# thickening the font ->removed for better results
+# image_np = cv2.bitwise_not(image_np)
+# kernal = np.ones((2, 2), np.uint8)
+# image_np = cv2.dilate(image_np, kernal, iterations=1)
+# image_np = cv2.bitwise_not(image_np)
+
+# blurring image
+sigma = 0.5
+image_np = gaussian_filter(image_np, sigma=sigma)
+
+# image binarization
+_, image_np = cv2.threshold(image_np, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+# save in preprocess folder
+processed_pil = Image.fromarray(image_np)
+processed_pil.save(final_path)
+
+# ### Full attempt:
+# greyscale image
+image_np = cv2.cvtColor(image_np, cv2.COLOR_BGR2GRAY)
+
+# thickening the font
+image_np = cv2.bitwise_not(image_np)
+kernal = np.ones((2, 2), np.uint8)
+image_np = cv2.dilate(image_np, kernal, iterations=1)
+image_np = cv2.bitwise_not(image_np)
+
+# blurring image
+sigma = 0.5
+image_np = gaussian_filter(image_np, sigma=sigma)
+
+# image binarization
+_, image_np = cv2.threshold(image_np, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+# image_np = cv2.adaptiveThreshold(image_np,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,20,8)
+#image_np = cv2.adaptiveThreshold(image_np, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 8)
+
+# thickening the font
+# image_np = cv2.bitwise_not(image_np)
+# kernal = np.ones((2, 2), np.uint8)
+# image_np = cv2.dilate(image_np, kernal, iterations=1)
+# image_np = cv2.bitwise_not(image_np)
+
+# noise removal
+# kernal = np.ones((1, 1), np.uint8)
+# image_np = cv2.dilate(image_np, kernal, iterations=1)
+# kernal = np.ones((1, 1), np.uint8)
+# image_np = cv2.erode(image_np, kernal, iterations=1)
+# image_np = cv2.morphologyEx(image_np, cv2.MORPH_CLOSE, kernal)
+# image_np = cv2.medianBlur(image_np, 3)
+# sigma = 0.5
+# image_np = gaussian_filter(image_np, sigma=sigma)
+
+# image_np = cv2.morphologyEx(image_np, cv2.MORPH_OPEN, kernel_open, iterations=2)
+# image_np = cv2.fastNlMeansDenoisingColored(image_np, None, 10, 10, 7, 15)
+
+# ### OLD PREPROCESSING
+# image = Image.open(image_path)
+# image_np = np.array(image)
+
+# normalize image
+# image_np = cv2.normalize(image_np, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+#
+# # noise removal
+# opening = cv2.morphologyEx(image_np, cv2.MORPH_OPEN, kernel_open, iterations=2)
+# opening = cv2.fastNlMeansDenoisingColored(opening, None, 10, 10, 7, 15)
+#
+# # grayscale
+# gray = cv2.cvtColor(opening, cv2.COLOR_BGR2GRAY)
+# gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+#
+# processed_image = cv2.erode(gray, kernel_erode, iterations=1)
+#
+# # save in preprocess folder
+# processed_pil = Image.fromarray(processed_image)
+# processed_pil.save(final_path)
+
+
