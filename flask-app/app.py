@@ -292,14 +292,18 @@ def ocr():
             for i in range(num_cols):
                 #If there are more sections of data in the dataframe than fields in the csv, start lumping data together in the last column
                 #Note: This will not update the confidence for that column with the current implementation
+                #temp_str = ""
+                #if str(ocr_df.loc[i].at["text"]) != "nan":
+                temp_str = str(ocr_df.loc[i].at["text"]).replace("\"", "\"\"")
+
                 if column_counter >= 38:
                     #transcription_lines = transcription_lines + ocr_df[line][1]
-                    transcription_lines = transcription_lines + str(ocr_df.loc[i].at["text"].replace("\"", "\"\""))
+                    transcription_lines = transcription_lines + temp_str
                 elif column_counter == 0:
-                    transcription_lines = transcription_lines + str(ocr_df.loc[i].at["text"].replace("\"", "\"\""))
+                    transcription_lines = transcription_lines + temp_str
                     confidence_lines = confidence_lines + str(ocr_df.loc[i].at["confidence"])
                 else:
-                    transcription_lines = transcription_lines + "\",\"" + str(ocr_df.loc[i].at["text"].replace("\"", "\"\""))
+                    transcription_lines = transcription_lines + "\",\"" + temp_str
                     confidence_lines = confidence_lines + "," + str(ocr_df.loc[i].at["confidence"])
                 column_counter = column_counter + 1
 
@@ -532,6 +536,7 @@ def output():
 
     ### USE THIS FOR THE FINAL VERSION
     df = pd.read_csv(os.path.join(OCR_OUTPUT, "data.csv"))
+    df = df.fillna("")
     # print("df:\n", df)
     df_list = df.values.tolist()
     print("df_list:\n", df_list, "\n")

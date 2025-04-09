@@ -395,6 +395,26 @@
                     }
                 });
 
+                cell.addEventListener('click', (e) => {
+                    const textBox = cell.querySelector('.cell-content');
+                    const dragHandle = cell.querySelector('.drag-handle');
+
+                    // Don't trigger focus if the drag handle is clicked
+                    if (dragHandle && dragHandle.contains(e.target)) return;
+
+                    if (textBox && e.target !== textBox) {
+                        textBox.focus();
+
+                        // Move cursor to the end
+                        const range = document.createRange();
+                        const selection = window.getSelection();
+                        range.selectNodeContents(textBox);
+                        range.collapse(false); // false = to the end
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                    }
+                });
+
 
 
             }
