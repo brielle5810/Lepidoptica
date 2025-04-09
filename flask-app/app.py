@@ -158,10 +158,10 @@ def preprocess_images_in_batch():
             image_np = gaussian_filter(image_np, sigma=sigma)
 
             # thickening the font
-            image_np = cv2.bitwise_not(image_np)
-            kernal = np.ones((2, 2), np.uint8)
-            image_np = cv2.dilate(image_np, kernal, iterations=2)
-            image_np = cv2.bitwise_not(image_np)
+            # image_np = cv2.bitwise_not(image_np)
+            # kernal = np.ones((2, 2), np.uint8)
+            # image_np = cv2.dilate(image_np, kernal, iterations=2)
+            # image_np = cv2.bitwise_not(image_np)
 
             # image binarization
             _, image_np = cv2.threshold(image_np, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)

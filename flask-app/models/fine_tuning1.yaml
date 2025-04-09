@@ -5,4 +5,4 @@ network_params:
 imgH: 64
 lang_list:
          - 'en'
-character_list: 0123456789!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~ €♀♂°ABCDEFGHIJKLMNOPQRSTUVWXYZÇÑÜÉÁĄabcdefghijklmnopqrstuvwxyzçñüéáą
+character_list: 0123456789!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~ €♀♂°ABCDEFGHIJKLMNOPQRSTUVWXYZÇÑÜÉÁĄÓÃÍÂÚÊÔÄÕabcdefghijklmnopqrstuvwxyzçñüéáąóãíâúêôäõ

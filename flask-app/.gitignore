@@ -1,1 +1,5 @@
 .venv
+saved_originals
+preprocess
+ocr_output
+stage1_crop
