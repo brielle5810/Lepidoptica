@@ -28,11 +28,12 @@
     <h1 class="mt-5" style="font-weight:bold; color:#006666;">Lepidoptica: Text Extraction App</h1>
     <p class="mx-0 my-0" style="font-weight:bold; color: #006666">Upload images to extract text</p>
 
-    <form action="/upload" method="post" enctype="multipart/form-data">
+    <form id="image-upload-form" action="/upload" method="post" enctype="multipart/form-data">
         <div class="mb-3 w-50">
             <label for="formFileMultiple" class="form-label"></label>
             <input class="form-control" type="file" name="files" id="formFileMultiple" accept="image/png, image/jpg, image/jpeg, image/tiff" multiple required>
         </div>
+        <p id="warn-mess" style="color:#9C1A1C; font-weight: bold;"></p>
         <!--    <input type="file" name="files"  accept="image/png, image/jpg, image/jpeg, image/tiff" multiple required>-->
         <button class="mt-3" type="submit" value="Upload">Upload</button>
         <span>&nbsp</span>
@@ -41,6 +42,40 @@
     <form>
 
 </form>
+    <script>
+        const MAX_NUM_FILES = 500;
+        let filesAreValid = false;
+        document.getElementById('formFileMultiple').addEventListener('change',
+            function (e) {
+                const files = document.querySelector('input[type="file"]').files;
+                const warnMess = document.getElementById('warn-mess');
+                if (files.length > MAX_NUM_FILES) {
+                    console.log("too many");
+                    e.preventDefault();
+                    warnMess.textContent = `Image upload limit is ${MAX_NUM_FILES} images. Please select fewer images.`
+                }
+                else {
+                    warnMess.textContent = '';
+                    filesAreValid = true;
+                }
+            }
+        );
+        document.getElementById('image-upload-form').addEventListener('submit', function (e) {
+            const files = document.querySelector('input[type="file"]').files;
+            const warnMess = document.getElementById('warn-mess');
+            if (files.length > MAX_NUM_FILES) {
+                //console.log("too many images");
+                e.preventDefault();
+                warnMess.textContent = `Image upload limit is ${MAX_NUM_FILES} images. Please select fewer images.`
+            }
+            else {
+                 if (!filesAreValid) {
+                    e.preventDefault();
+                }
+            }
+        });
+
+    </script>
 
 </div>
 </body>

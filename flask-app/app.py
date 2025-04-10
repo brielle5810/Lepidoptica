@@ -66,6 +66,14 @@ def upload():
         files = request.files.getlist("files")  # Get multiple files
         filenames = []
 
+        max_files = 500
+        if len(max_files) > 500:
+            # user should not be able to submit if this is the case
+            # taken care of with js
+            # but if they do... hopefully it at least wont crash
+            print(f"Too many files selected. Only {max_files} files have been selected.")
+            files = files[:max_files]
+
         for file in files:
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename).replace(" ", "_")
