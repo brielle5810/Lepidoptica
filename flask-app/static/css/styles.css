@@ -267,6 +267,26 @@ a.nav-a:hover {
   pointer-events: none;
 }
 
+.erase-icon {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 20px;
+  max-height: 20px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.erase-icon:hover {
+  opacity: 1;
+}
+
+
 
 /*.custom-scrollbar-js,*/
 /*.custom-scrollbar-css {*/

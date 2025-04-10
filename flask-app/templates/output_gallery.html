@@ -37,7 +37,7 @@
                 text-align: center;
             }
             tr:nth-child(even){background-color: #f3f7e9;}
-            td:hover {background-color: #d6dbcc;}
+            td:hover {box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.12);}
             tr.htmx-swapping td {
               opacity: 0;
               transition: opacity 1s ease-out;
@@ -218,6 +218,12 @@
                 <!--? DATA: -->
                 {% for cell in row %}
                 <td>
+                    <div class="erase-icon" title="Erase">
+                        <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="51.314" y="2.52336" width="36" height="66" rx="3.5" transform="rotate(45 51.314 2.52336)" stroke="black" stroke-width="5"/>
+                            <line x1="20.0607" y1="33.9393" x2="46.2236" y2="60.1023" stroke="black" stroke-width="5"/>
+                            </svg>
+                    </div>
                     <div class="drag-handle" contenteditable="false" draggable="true">⠿</div>
                     <div class="cell-content" contenteditable="true">{{ cell }}</div>
                 </td>
@@ -319,6 +325,19 @@
             for (let j = 3; j < dataTable.rows[i].cells.length; j++) {  // Start at three to begin past second image
                 let cell = dataTable.rows[i].cells[j];
                 //console.log(`Row ${i}, Column ${j}: ${cell.textContent}`);
+
+                //Erase icon
+                const eraseIcon = cell.querySelector('.erase-icon');
+                if (eraseIcon) {
+                    eraseIcon.addEventListener('click', (e) => {
+                        e.stopPropagation();  // Prevent triggering drag or edit
+                        const contentDiv = cell.querySelector('.cell-content');
+                        if (contentDiv) {
+                            contentDiv.textContent = "";
+                        }
+                        cell.style.backgroundColor = cell.dataset.baselineColor;
+                    });
+                }
 
                 //Drag and drop
                 const handle = cell.querySelector('.drag-handle');
@@ -471,13 +490,16 @@
                     const textBox = cell.querySelector('.cell-content');
                     const dragHandle = cell.querySelector('.drag-handle');
 
-                    // Don't trigger focus if the drag handle is clicked
+                    //Don't trigger focus if the drag handle is clicked
                     if (dragHandle && dragHandle.contains(e.target)) return;
+
+                    //Don't trigger focus if the click is inside the text box
+                    if (textBox && textBox.contains(e.target)) return;
 
                     if (textBox && e.target !== textBox) {
                         textBox.focus();
 
-                        // Move cursor to the end
+                        //Move cursor to the end
                         const range = document.createRange();
                         const selection = window.getSelection();
                         range.selectNodeContents(textBox);
@@ -510,15 +532,29 @@
                 // Stores each csv row data
                 let csvrow = [];
                 for (let j = 2; j < cols.length; j++) { // Skip the image rows
+                    let cell = cols[j];
 
                     // Get the text data of each cell
                     // of a row and push it to csvrow
                     //csvrow.push(cols[j].innerHTML);
                     if (i == 0) {
-                        csvrow.push(cols[j].innerHTML);
+                        csvrow.push(cell.innerHTML);
                     }
                     else {
-                        csvrow.push(dataTable.rows[i].cells[j].querySelector('.cell-content').textContent.trim());
+                        const contentDiv = cell.querySelector('.cell-content');
+
+                        if (contentDiv) {
+                            //Remove newline
+                            const cellContent = contentDiv.textContent.trim().replace(/[\r\n]+/g, '');
+                            //Wrap cell contents in quotes if it contains a comma, double quotation marks to escape
+                            if (cellContent.includes(',') || cellContent.includes('"')) {
+                                csvrow.push('"' + cellContent.replace(/"/g, '""') + '"');
+                            }
+                            else {
+                                csvrow.push(cellContent);
+                            }
+                            
+                        }
                     }
                 }
 
