@@ -546,8 +546,8 @@
                         if (contentDiv) {
                             //Remove newline
                             const cellContent = contentDiv.textContent.trim().replace(/[\r\n]+/g, '');
-                            //Wrap cell contents in quotes if it contains a comma, take out newlines, double quotation marks to escape
-                            if (cellContent.includes(',') || cellContent.includes('\n') || cellContent.includes('"')) {
+                            //Wrap cell contents in quotes if it contains a comma, double quotation marks to escape
+                            if (cellContent.includes(',') || cellContent.includes('"')) {
                                 csvrow.push('"' + cellContent.replace(/"/g, '""') + '"');
                             }
                             else {
