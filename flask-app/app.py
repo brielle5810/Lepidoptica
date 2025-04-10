@@ -17,6 +17,8 @@ import easyocr
 from datetime import datetime
 import easyocr
 
+import textReader
+
 app = Flask(__name__)
 CORS(app)
 
@@ -516,6 +518,8 @@ def apply_processing_strength(image_np, strength):
 
 @app.route("/output", methods=["GET"])
 def output():
+    final_path = os.path.join(OCR_OUTPUT, "data.csv")
+
     #view the images
     og_images = os.listdir(app.config["SAVED_ORIGINALS"])
     saved_images = []

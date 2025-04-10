@@ -161,7 +161,7 @@ if __name__ == '__main__':
 
 
     ### Can be replaced with output from OCR
-    sampleString = "Phoebis sennae\nsennae\nUF\nFLMNH\nMGCL 1163652\nCUBA: GRANMA\nEl Banco, Mpio. Buey Arriba\n1000m, Turquino massif\n'98; L D & J Y Miller\n& L R Hernandez sta. 1994-43\nEX.SA. MAESTRA Allyn Museum Acc. 1994-16"
+    sampleString = "Phoebis sennae\nsennae\nUF\nFLMNH\nMGCL 1163652\nCUBA: GRANMA\nEl Banco, Mpio. Buey Arriba\n1000 km, Turquino massif\n'98; L D & J Y Miller\n& L R Hernandez sta. 1994-43\nEX.SA. MAESTRA Allyn Museum Acc. 1994-16"
     # sampleString = "Phoebis sehnae\nmaycelline\nUF\nFLMNH\nMGCL 1163652\nCUBA: GRANMA\nEl Banco, Mpio. Buey Arriba\n1000m, Turquino massif\n'98; L D & J Y Miller\n& L R Hernandez sta. 1994-43\nEX.SA. MAESTRA Allyn Museum Acc. 1994-16"
     # Phoebis sehhae maycelline
     print("Sample string:\n", sampleString, "\n")
@@ -212,18 +212,35 @@ if __name__ == '__main__':
             df.iloc[currentIndex, x] = word
             listOfStrings.pop(0)
 
-    listOfStrings.pop(0)    # Get rid of UF
-    listOfStrings.pop(0)    # Get rid of FLMNH
+
+    # Category[6]: Sex Symbol
+    if chr(0x2640) in listOfStrings:    # FEMALE
+        df.loc[currentIndex, 'Sex'] = chr(0x2640)
+        listOfStrings.remove(chr(0x2640))
+    elif chr(0x2642) in listOfStrings:  # MALE
+        df.loc[currentIndex, 'Sex'] = chr(0x2642)
+        listOfStrings.remove(chr(0x2642))
 
     # Category[1]: Specimen Voucher
+    listOfStrings.remove("UF")    # Get rid of UF
+    listOfStrings.remove("FLMNH")    # Get rid of FLMNH
+
+    joinedStrings = " ".join(listOfStrings)
     voucher = ""
-    for x in range(2):
-        voucher += listOfStrings[0] + " "
-        listOfStrings.pop(0)
-    df.loc[currentIndex, 'Specimen_voucher'] = voucher[:-1]     # [:-1] takes care of the extra space
+    x = re.search(r"\bMGCL [0-9]{7}", joinedStrings)
+    if x.group() in joinedStrings:
+        voucher = x.group()
+    else:
+        voucher = "NaN"
+
+    df.loc[currentIndex, 'Specimen_voucher'] = voucher
+
+    # Update list of strings (we need to remove the specimen voucher)
+    listOfStrings = joinedStrings.replace(voucher, "").split()
+    joinedStrings = " ".join(listOfStrings)
+
 
     ### Extracting Location Entities: Categories[7 - 10] ###
-    joinedStrings = " ".join(listOfStrings)
     placeEntity = locationtagger.find_locations(text=joinedStrings)
 
     # split all words into ngrams to test against the dictionaries
@@ -235,33 +252,38 @@ if __name__ == '__main__':
     stateList = load_spec_vocab("dictionaries/stateDict.txt")
     countyList = load_spec_vocab("dictionaries/countyDict.txt")
 
-    # Getting all countries
+    ### Getting all countries
     print("The countries in text : ")
     print(placeEntity.countries)
     df.loc[currentIndex, 'Country'] = ", ".join(placeEntity.countries)
+    joinedStrings = joinedStrings.replace(df.loc[currentIndex, 'Country'], "")  # REMOVE FROM BIG STRING
     if not placeEntity.countries:
         # if location tagger doesn't find a country, try to find one using fuzzy matching
         best_match, score = get_best_match_from_ngrams(ngrams, countryList)
         if best_match:
-            # change the correspinding estimate = score
+            # change the corresponding estimate = score
             df.loc[currentIndex, 'Country'] = best_match
+            joinedStrings = joinedStrings.replace(best_match, "")  # REMOVE FROM BIG STRING
         else:
             print("No country found")
 
-    # Getting all states
+    ### Getting all states
     print("The states in text : ")
     print(placeEntity.regions)
     df.loc[currentIndex, 'State'] = ", ".join(placeEntity.regions)
+    joinedStrings = joinedStrings.replace(df.loc[currentIndex, 'State'], "")  # REMOVE FROM BIG STRING
     if not placeEntity.regions:
         best_match, score = get_best_match_from_ngrams(ngrams, stateList)
         if best_match:
-            # change the correspinding estimate = score
+            # change the corresponding estimate = score
             df.loc[currentIndex, 'State'] = best_match
+            joinedStrings = joinedStrings.replace(best_match, "")  # REMOVE FROM BIG STRING
         else:
             print("No state found")
 
+    ### Getting all counties
     best_match, score = get_best_match_from_ngrams(ngrams, countyList)
-    # change the correspinding estimate = score
+    # change the corresponding estimate = score
     df.loc[currentIndex, 'County'] = best_match
     if not best_match:
         df.loc[currentIndex, 'County'] = 'Nan'
@@ -271,10 +293,27 @@ if __name__ == '__main__':
     print("The cities in text : ")
     print(placeEntity.cities)
 
+
+    ### Category[12]: Elevation Max (will always have the unit attached to it so this is the reliable one)
+    # UNITS: m, km, ft, mi, yd
+    x = re.search(r"\d+ ?[dfikmty]*[.']?", joinedStrings)
+    print("Elevation:", x.group())
+    if x.group() in joinedStrings:
+        unit = re.search(r"[a-zA-Z]+", x.group())
+        print("UNIT: ", unit.group())
+        if unit:
+            df.loc[currentIndex, 'Elevation unit'] = unit.group()
+            df.loc[currentIndex, 'Elevation max'] = re.sub(r"[a-zA-Z]+", "", x.group())
+        else:
+            df.loc[currentIndex, 'Elevation max'] = x.group()
+        joinedStrings = re.sub(x.group(), "", joinedStrings)
+
+
     ### NOW BEGINS THE DATE SAGA ###
     print("\nJoined strings: ", joinedStrings)
 
-    datefinder_output = []#datefinder.find_dates(joinedStrings)
+    datefinder_output = []  #
+    datefinder.find_dates(joinedStrings)
 
     if not datefinder_output:
         dates_found = find_more_dates(joinedStrings)
@@ -286,6 +325,8 @@ if __name__ == '__main__':
             proper_date = split_date(date_str)
             df.loc[currentIndex, 'Collecting event start'] = proper_date
             df.loc[currentIndex, 'Collecting event end'] = proper_date
+
+            joinedStrings = joinedStrings.replace(date_str, "")  # REMOVE FROM BIG STRING
     else:
         print("Dates found: ")
         for dates in datefinder_output:
@@ -296,24 +337,21 @@ if __name__ == '__main__':
             df.loc[currentIndex, 'Collecting event end'] = dates.strftime('%m/%d/%Y')
             break
 
-    # Category[26]: Date cataloged (current date at time of program running)
+
+    ### Category[26]: Date cataloged (current date at time of program running)
     df.loc[currentIndex, 'Cataloged date'] = datetime.now().strftime("%m-%d-%Y")
 
+
+    ### CLEANING SOME STUFF UP
+    # Remove collection information 19XX-XX stuff from string
+    joinedStrings = re.sub("[0-9]{4}-[0-9]+", "", joinedStrings)
     print("\n")
+    listOfStrings = joinedStrings.split()
     print("Updated listOfStrings: ", listOfStrings)
     print("")
     pd.set_option('display.max_columns', None)
     print("Updated df:\n", df)
 
-    # sym_spell = SymSpell(max_dictionary_edit_distance=3, prefix_length=7)
-    # dictionary_path = "newDict2.txt"
-    # dictionary_path2 = "bigramDict.txt"
-    # eng_Dict = "en-80k.txt"
-
-    # sym_spell.load_dictionary(dictionary_path, term_index=0, count_index=1, separator="$")
-    # sym_spell.load_dictionary(dictionary_path2, term_index=0, count_index=1, separator="$")
-    # sym_spell.load_dictionary(eng_Dict, term_index=0, count_index=1)
-    # sym_spell.load_bigram_dictionary(dictionary_path2, term_index=0, count_index=1, separator="$")
 
 ### DATE TESTS ###
     # MM DD YYYY
