@@ -529,15 +529,20 @@
                 // Stores each csv row data
                 let csvrow = [];
                 for (let j = 2; j < cols.length; j++) { // Skip the image rows
+                    let cell = cols[j];
 
                     // Get the text data of each cell
                     // of a row and push it to csvrow
                     //csvrow.push(cols[j].innerHTML);
                     if (i == 0) {
-                        csvrow.push(cols[j].innerHTML);
+                        csvrow.push(cell.innerHTML);
                     }
                     else {
-                        csvrow.push(dataTable.rows[i].cells[j].querySelector('.cell-content').textContent.trim());
+                        const contentDiv = cell.querySelector('.cell-content');
+
+                        if (contentDiv) {
+                            csvrow.push(contentDiv.textContent.trim());
+                        }
                     }
                 }
 
