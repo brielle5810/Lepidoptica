@@ -490,13 +490,16 @@
                     const textBox = cell.querySelector('.cell-content');
                     const dragHandle = cell.querySelector('.drag-handle');
 
-                    // Don't trigger focus if the drag handle is clicked
+                    //Don't trigger focus if the drag handle is clicked
                     if (dragHandle && dragHandle.contains(e.target)) return;
+
+                    //Don't trigger focus if the click is inside the text box
+                    if (textBox && textBox.contains(e.target)) return;
 
                     if (textBox && e.target !== textBox) {
                         textBox.focus();
 
-                        // Move cursor to the end
+                        //Move cursor to the end
                         const range = document.createRange();
                         const selection = window.getSelection();
                         range.selectNodeContents(textBox);
@@ -541,7 +544,16 @@
                         const contentDiv = cell.querySelector('.cell-content');
 
                         if (contentDiv) {
-                            csvrow.push(contentDiv.textContent.trim());
+                            //Remove newline
+                            const cellContent = contentDiv.textContent.trim().replace(/[\r\n]+/g, '');
+                            //Wrap cell contents in quotes if it contains a comma, take out newlines, double quotation marks to escape
+                            if (cellContent.includes(',') || cellContent.includes('\n') || cellContent.includes('"')) {
+                                csvrow.push('"' + cellContent.replace(/"/g, '""') + '"');
+                            }
+                            else {
+                                csvrow.push(cellContent);
+                            }
+                            
                         }
                     }
                 }
