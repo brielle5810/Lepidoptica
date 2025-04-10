@@ -4,7 +4,7 @@ import secrets
 import cv2
 import numpy as np
 from flask import Flask, request, send_file, jsonify, render_template, flash, request, redirect, url_for, \
-    send_from_directory, session
+    send_from_directory, session, abort, make_response
 import pandas as pd
 from PIL import Image, ImageOps
 import io
@@ -67,6 +67,14 @@ def upload():
 
         files = request.files.getlist("files")  # Get multiple files
         filenames = []
+
+        max_files = 500
+        if len(max_files) > 500:
+            # user should not be able to submit if this is the case
+            # taken care of with js
+            # but if they do... hopefully it at least wont crash
+            print(f"Too many files selected. Only {max_files} files have been selected.")
+            files = files[:max_files]
 
         for file in files:
             if file and allowed_file(file.filename):
@@ -360,6 +368,59 @@ def download_saved_original_file(name):
 def download_file(name):
     return send_from_directory(app.config["UPLOAD_FOLDER"], name)
 
+def getImagePairs():
+    og_images = sorted(os.listdir(app.config["SAVED_ORIGINALS"]))
+    preprocessed_images = sorted(os.listdir(app.config["PREPROCESS_FOLDER"]))
+    saved_images = []
+    for filename in og_images:
+        if filename in preprocessed_images and filename not in saved_images:
+            saved_images.append(filename)
+    imagePairs = list(zip(saved_images, preprocessed_images))
+    return imagePairs
+
+#using htmx to delete rows from the table (and corresponding data, images)
+@app.route("/deleterow/<int:row_index>", methods=["DELETE"])
+def delete_row(row_index):
+    data_path = os.path.join(OCR_OUTPUT, "data.csv")
+    conf_path = os.path.join(OCR_OUTPUT, "confidence.csv")
+
+    # load as dataframs to then edit
+    try:
+        df_data = pd.read_csv(data_path)
+        df_conf = pd.read_csv(conf_path, dtype=float).fillna(value=100)
+        # correct row index check
+        if row_index < 0 or row_index >= len(df_data):
+            abort(404, description="Invalid row index")
+
+    except Exception as e:
+        abort(500, description="Error reading CSV files: " + str(e))
+
+    #drop from both and reset the indices
+    df_data.drop(index=row_index, inplace=True)
+    df_conf.drop(index=row_index, inplace=True)
+    df_data.reset_index(drop=True, inplace=True)
+    df_conf.reset_index(drop=True, inplace=True)
+
+    try:
+        # write to csv
+        df_data.to_csv(data_path, index=False)
+        df_conf.to_csv(conf_path, index=False)
+    except Exception as e:
+        abort(500, description="Error writing to CSV files: " + str(e))
+
+    # issue-> this doesn't remove the images!
+    # find and remove the corresponding image files
+    imagePairs = getImagePairs()
+    original_filename, preprocessed_filename = imagePairs[row_index]
+
+    delete_file(original_filename) #deletes from all folders...
+
+    # for htmx to remove the row from the DOM -> return "" and 204 status code
+    response = make_response("", 204)
+    # redirect /output route
+    response.headers["HX-Redirect"] = url_for("output")
+    return response
+
 @app.route("/delete/<filename>", methods=["DELETE"])
 def delete_file(filename):
     file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
@@ -557,7 +618,11 @@ def output():
 
     # print("df:\n", df)
 
-    return render_template("output_gallery.html", images_and_data=zip(imagePairs, df_list), headings=df.columns.tolist(), confidence_list=confidences.values.tolist())
+    return render_template("output_gallery.html",
+                           images_and_data=zip(imagePairs, df_list),
+                           headings=df.columns.tolist(),
+                           confidence_list=confidences.values.tolist())
+
 
 
 @app.route("/finished", methods=["GET"])
