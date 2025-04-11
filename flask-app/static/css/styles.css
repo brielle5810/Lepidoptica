@@ -108,6 +108,16 @@ html, body {
     display: block;
 }
 
+.card-img-top-reprocess {
+
+    max-height: 600px;
+  height: auto;
+  width: auto;
+  max-width: 100%;
+  display: block;
+  object-fit: contain;
+    /*border-radius: 5px;*/
+}
 
 .card-img-top {
     width: 100%;

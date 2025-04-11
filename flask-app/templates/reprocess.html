@@ -57,13 +57,13 @@
             <div class="gallery-container p-5">
                 {% for image in images %}
                     <div class="row align-items-center text-center">
-                        <div class="col-4">
-                            <div class="card p-2">
-                                <img src="{{ url_for('download_preprocessed_file', name=image) }}" class="card-img-top">
+                        <div class="col-4" style="display: flex; justify-content: center;">
+                            <div class="card p-2" style="width: fit-content; height: fit-content;">
+                                <img src="{{ url_for('download_preprocessed_file', name=image) }}" class="card-img-top-reprocess">
                             </div>
                         </div>
-                        <div class="col-4">
-                            <div class="col-md-8">
+                        <div class="col-4 d-flex justify-content-center">
+                            <div class="w-100" style="max-width: 300px;">
                                 <input type="hidden" name="selected_images" value="{{ image }}">
                                 <label style="font-weight:bold; color:#006666;">Crop Width Adjustment:</label>
                                 <input onchange="modifyExample('{{ image }}')" type="range" name="crop_factor_{{ image }}" min="0.1" max="1.0" step="0.01" value="0.33">
@@ -76,9 +76,9 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-4">
-                            <div class="card p-2">
-                            <img id="modifiedImage_{{ image }}" src="{{ url_for('download_modified_file', name=image) }}" class="card-img-top">
+                        <div class="col-4" style="display: flex; justify-content: center;">
+                            <div class="card p-2" style="width: fit-content; height: fit-content;">
+                            <img id="modifiedImage_{{ image }}" src="{{ url_for('download_modified_file', name=image) }}" class="card-img-top-reprocess">
                             </div>
                         </div>
                     </div>
