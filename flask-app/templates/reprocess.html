@@ -13,51 +13,177 @@
 </head>
 {% include "nav.html" %}
 <div id="content"></div>
-<body>
+<body class="">
 
-<form action="{{ url_for('apply_reprocessing') }}" method="POST">
+{#<form action="{{ url_for('image_gallery') }}" method="GET">#}
+{#    <div class="container mt-4">#}
+{#        <h2 class="text-center" style="font-weight:bold; color:#006666;">Adjust Processing</h2>#}
+{#        <div class="gallery-container p-5">#}
+{#            {% for image in images %}#}
+{#                <div class="row align-items-center text-center">#}
+{#                    <div class="col-4">#}
+{#                        <div class="card p-2">#}
+{#                            <img src="{{ url_for('download_preprocessed_file', name=image) }}" class="card-img-top">#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <div class="col-4">#}
+{#                        <div class="col-md-8">#}
+{#                            <input type="hidden" name="selected_images" value="{{ image }}">#}
+{#                            <label style="font-weight:bold; color:#006666;">Crop Width Adjustment:</label>#}
+{#                            <input onchange="modifyExample('{{ image }}', this.value)" type="range" name="crop_factor_{{ image }}" min="0.1" max="1.0" step="0.1" value="0.4">#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <div class="col-4">#}
+{#                        <div class="card p-2">#}
+{#                        <img id="modifiedImage" src="{{ url_for('download_modified_file', name=image) }}" class="card-img-top">#}
+{#                        </div>#}
+{#                    </div>#}
+{#            </div>#}
+{#            {% endfor %}#}
+{##}
+{#        </div>#}
+{##}
+{##}
+{#        <br>#}
+{#        <button type="submit" class="btn btn-primary mt-3" style="background-color: #578a3d; color: white; border-radius:15px; text-align:center; font-size:24px;" onclick="returnToGallery()"><b>Return to Gallery</b></button>#}
+{##}
+{#        <br>#}
+{#        <br>#}
+{#    </div>#}
+{#</form>#}
+
     <div class="container mt-4">
         <h2 class="text-center" style="font-weight:bold; color:#006666;">Adjust Processing</h2>
-        <div class="gallery-container p-5">
-            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
-            {% for image in images %}
-            <!-- <div class="row">
-                <div class="col-md-4 "> -->
-                    <div class="col">
-                        <div class="card p-2">
-                    <img src="{{ url_for('download_preprocessed_file', name=image) }}" class="card-img-top">
-                </div>
-                <div class="col-md-8">
-                    <input type="hidden" name="selected_images" value="{{ image }}">
-                    
-                    <label style="font-weight:bold; color:#006666;">Crop Width Adjustment:</label>
-                    <input type="range" name="crop_factor_{{ image }}" min="0.1" max="1.0" step="0.1" value="0.4">
-                    
-                    <label style="font-weight:bold; color:#006666;">Processing Strength:</label>
-                    <select name="processing_strength_{{ image }}">
-                        <option value="soft" style="color: #578a3d">Soft</option>
-                        <option value="medium" selected style="color: #3b7554">Medium</option>
-                        <option value="strong" style="color: #006666">Strong</option>
-                    </select>
-                </div>
+            <div class="gallery-container p-5">
+                {% for image in images %}
+                    <div class="row align-items-center text-center">
+                        <div class="col-4">
+                            <div class="card p-2">
+                                <img src="{{ url_for('download_preprocessed_file', name=image) }}" class="card-img-top">
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="col-md-8">
+                                <input type="hidden" name="selected_images" value="{{ image }}">
+                                <label style="font-weight:bold; color:#006666;">Crop Width Adjustment:</label>
+                                <input onchange="modifyExample('{{ image }}')" type="range" name="crop_factor_{{ image }}" min="0.1" max="1.0" step="0.01" value="0.33">
+
+                                <label style="font-weight:bold; color:#006666;">Processing Strength:</label>
+                                <select onchange="modifyExample('{{ image }}')" name="processing_strength_{{ image }}">
+                                    <option value="soft" style="color: #578a3d">Soft</option>
+                                    <option value="medium" style="color: #3b7554">Medium</option>
+                                    <option value="strong" style="color: #006666">Strong</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="card p-2">
+                            <img id="modifiedImage_{{ image }}" src="{{ url_for('download_modified_file', name=image) }}" class="card-img-top">
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-            </div>
-        </div>
-
-
-        <br>
-        <button type="submit" class="btn btn-primary mt-3" style="background-color: #578a3d; color: white; border-radius:15px; text-align:center; font-size:24px;" onclick="showLoadingScreen()"><b>Apply Reprocessing</b></button>
-
-        <br>
-        <br>
     </div>
-</form>
+
+    <br>
+        <button type="submit" class="btn btn-primary mt-3" style="background-color: #578a3d; color: white; border-radius:15px; text-align:center; font-size:24px;" onclick="returnToGallery()"><b>Return to Gallery</b></button>
+    <br>
+
     
 </body>
 </html>
 <script>
-    function showLoadingScreen() {
-        window.location.href = "/loading_reprocess";
+
+    function refreshImage(imageName) {
+      const img = document.getElementById(`modifiedImage_${imageName}`);
+      const timestamp = new Date().getTime();  // to bust cache
+      img.src = `/modified/${imageName}?t=${timestamp}`;
+    }
+
+    function modifyExample(image) {
+        const cropInput= document.querySelector(`input[name='crop_factor_${image}']`);
+        const strengthSelect = document.querySelector(`select[name='processing_strength_${image}']`);
+
+        let cropValue;
+        let strengthValue;
+
+        if (!cropInput) {
+            cropValue = 0.4;    //default
+        }
+        else{
+            cropValue = cropInput.value;
+        }
+        if (!strengthSelect){
+            strengthValue = "strong";   //default
+        }
+        else{
+            strengthValue = strengthSelect.value;
+        }
+
+        console.log("Cropvalue is " + cropValue + " and strength is " + strengthValue + " for image " + image );
+
+        fetch('/img_reprocessing', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                image_name: image,
+                crop_factor: cropValue,
+                processing_strength: strengthValue,
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log(data);
+                refreshImage(image);
+            } else {
+                alert(`Error: ${data.error}`);
+            }
+        });
+
+        {#fetch('/apply_reprocessing', {method: 'POST'})#}
+        {#.then(response => response.json())#}
+        {#.then(data => {#}
+        {#    if (data.success) {#}
+        {#        console.log(data);#}
+        {#        fetch('/img_reprocessing', {#}
+        {#            method: 'POST',#}
+        {#            body: JSON.stringify({#}
+        {#                image_name: image#}
+        {#            })#}
+        {#        })#}
+        {#        .then(response => response.json())#}
+        {#        .then(data => {#}
+        {#            if (data.success) {#}
+        {#                console.log(data);#}
+        {#                refreshImage(image);#}
+        {#            } else {#}
+        {#                alert(`Error: ${data.error}`);#}
+        {#            }#}
+        {#        });#}
+        {#    } else {#}
+        {#        alert(`Error: ${data.error}`);#}
+        {#    }#}
+        {# });#}
+
+    }
+
+    function returnToGallery() {
+
+        fetch('/update_img_gallery', {
+            method: 'POST',
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log(data);
+                window.location.href = "/image_gallery";
+            } else {
+                alert(`Error: ${data.error}`);
+            }
+        });
     }
 </script>

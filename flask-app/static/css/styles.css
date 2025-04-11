@@ -286,6 +286,11 @@ a.nav-a:hover {
   opacity: 1;
 }
 
+/* CSS to hide the navbar on loading screens */
+.page-loading .nav-container,
+.page-loading-2 .nav-container{
+    display: none;
+}
 
 
 /*.custom-scrollbar-js,*/

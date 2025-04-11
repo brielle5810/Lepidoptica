@@ -23,6 +23,7 @@ app = Flask(__name__)
 CORS(app)
 
 UPLOAD_FOLDER = "uploads"
+MODIFIED_FOLDER = "modified"
 PREPROCESS_FOLDER = "preprocess"
 STAGE1_FOLDER = "stage1_crop"
 SAVED_ORIGINALS = "saved_originals"
@@ -33,12 +34,13 @@ num_processed = 0
 
 reader = easyocr.Reader(['en'], gpu=False, recog_network="fine_tuning1")
 
-for folder in [UPLOAD_FOLDER, STAGE1_FOLDER, PREPROCESS_FOLDER, SAVED_ORIGINALS, OCR_OUTPUT]:
+for folder in [UPLOAD_FOLDER, STAGE1_FOLDER, PREPROCESS_FOLDER, SAVED_ORIGINALS, OCR_OUTPUT, MODIFIED_FOLDER]:
     os.makedirs(folder, exist_ok=True)
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["STAGE1_FOLDER"] = STAGE1_FOLDER
 app.config["PREPROCESS_FOLDER"] = PREPROCESS_FOLDER
+app.config["MODIFIED_FOLDER"] = MODIFIED_FOLDER
 app.config["SAVED_ORIGINALS"] = SAVED_ORIGINALS
 app.config["OCR_OUTPUT"] = OCR_OUTPUT
 
@@ -69,7 +71,7 @@ def upload():
         filenames = []
 
         max_files = 500
-        if len(max_files) > 500:
+        if len(files) > max_files:
             # user should not be able to submit if this is the case
             # taken care of with js
             # but if they do... hopefully it at least wont crash
@@ -78,6 +80,7 @@ def upload():
 
         for file in files:
             if file and allowed_file(file.filename):
+
                 filename = secure_filename(file.filename).replace(" ", "_")
                 file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
                 filenames.append(filename)
@@ -330,7 +333,7 @@ def reprocess_page():
 
     session['reprocess_images'] = selected_images
     return jsonify({"redirect": url_for("reprocess_page_render")})
-    #return render_template("reprocess.html", images=selected_images)
+    #return render_template("modified.html", images=selected_images)
 
 @app.route("/reprocess_view")
 def reprocess_page_render():
@@ -338,7 +341,27 @@ def reprocess_page_render():
     if not images:
         return redirect(url_for("image_gallery"))
 
+    #make a copy of each image in modified folder, this will be outputted nextdoor
+    for image in images:
+        source = os.path.join(PREPROCESS_FOLDER, image)
+        shutil.copy(source, MODIFIED_FOLDER)
+
     return render_template("reprocess.html", images=images)
+
+@app.route("/update_img_gallery", methods=["POST"])
+def update_img_gallery():
+    #move all images from modified folder to preprocess, and delete each
+    for image in os.listdir(MODIFIED_FOLDER):
+        try:
+            source = os.path.join(MODIFIED_FOLDER, image)
+            shutil.copy(source, PREPROCESS_FOLDER)
+            os.remove(source)
+            print(f"Image '{source}' removed successfully from '{MODIFIED_FOLDER}'.")
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+    return jsonify({"success": True, "message": f"All images updated!"})
+
 
 @app.route("/image_gallery", methods=["GET"])
 def image_gallery():
@@ -359,6 +382,10 @@ def loading_ocr():
 @app.route("/preprocessed/<path:name>")
 def download_preprocessed_file(name):
     return send_from_directory(app.config["PREPROCESS_FOLDER"], name)
+
+@app.route("/modified/<path:name>")
+def download_modified_file(name):
+    return send_from_directory(app.config["MODIFIED_FOLDER"], name)
 
 @app.route("/output_gallery/<path:name>")
 def download_saved_original_file(name):
@@ -470,57 +497,105 @@ def download():
     return send_file("output.csv", as_attachment=True)
 
 
-@app.route("/apply_reprocessing", methods=["POST"])
-def apply_reprocessing():
-    #redirects to loading screen before/while reprocessing.
-    selected_images = request.form.getlist("selected_images")
+# @app.route("/apply_reprocessing", methods=["POST"])
+# def apply_reprocessing():
+#     #redirects to loading screen before/while reprocessing.
+#     selected_images = request.form.getlist("selected_images")
+#
+#     # store selected images and settings w/ session
+#     session["selected_images"] = selected_images
+#     session["reprocess_settings"] = {img: {
+#         "crop_factor": request.form[f"crop_factor_{img}"],
+#         "processing_strength": request.form[f"processing_strength_{img}"]
+#     } for img in selected_images}
+#
+#     return redirect(url_for("loading_reprocess"))
 
-    # store selected images and settings w/ session
-    session["selected_images"] = selected_images
-    session["reprocess_settings"] = {img: {
-        "crop_factor": request.form[f"crop_factor_{img}"],
-        "processing_strength": request.form[f"processing_strength_{img}"]
-    } for img in selected_images}
+# @app.route("/apply_reprocessing", methods=["POST"])
+# def apply_reprocessing():
+#     #redirects to loading screen before/while reprocessing.
+#     selected_images = request.form.getlist("selected_images")
+#
+#     # store selected images and settings w/ session
+#     session["selected_images"] = selected_images
+#     session["reprocess_settings"] = {img: {
+#         "crop_factor": request.form[f"crop_factor_{img}"],
+#         "processing_strength": request.form[f"processing_strength_{img}"]
+#     } for img in selected_images}
+#
+#     return jsonify({"success": True, "message": "State Saved"})
 
-    return redirect(url_for("loading_reprocess"))
-
-
-@app.route("/start_reprocessing", methods=["POST"])
-def start_reprocessing():
+@app.route("/img_reprocessing", methods=["POST"])
+def img_reprocessing():
     #processes images after loading screen is shown
-    selected_images = session.get("selected_images", [])
-    reprocess_settings = session.get("reprocess_settings", {})
+    data = request.get_json()
 
-    for image_name in selected_images:
-        settings = reprocess_settings.get(image_name, {})
-        crop_factor = float(settings.get("crop_factor", 0.4))  # Default to 0.4 (2/5)
-        processing_strength = settings.get("processing_strength", "medium")
+    image_name = data.get("image_name")
+    processing_strength = data.get("processing_strength")
+    crop_factor = float(data.get("crop_factor"))
+    print(image_name)
+    print(crop_factor)
+    print(processing_strength)
 
-        original_path = os.path.join(SAVED_ORIGINALS, image_name)
-        preprocessed_path = os.path.join(PREPROCESS_FOLDER, image_name)
+    original_path = os.path.join(SAVED_ORIGINALS, image_name)
+    modified_path = os.path.join(MODIFIED_FOLDER, image_name)
 
-        if not os.path.exists(original_path):
-            print(f"Original image for {image_name} not found.")
-            continue
+    if not os.path.exists(original_path):
+        print(f"Original image for {image_name} not found.")
+        return jsonify({"message": "Image not found"}), 200
 
-        image = Image.open(original_path)
-        image = ImageOps.exif_transpose(image)
-        width, height = image.size
-        new_width = int(width * crop_factor)
-        cropped_image = image.crop((0, 0, new_width, height))
+    image = Image.open(original_path)
+    image = ImageOps.exif_transpose(image)
+    width, height = image.size
+    new_width = int(width * crop_factor)
+    cropped_image = image.crop((0, 0, new_width, height))
 
-        processed_np = np.array(cropped_image)
+    processed_np = np.array(cropped_image)
 
-        processed_np = apply_processing_strength(processed_np, processing_strength)
+    processed_np = apply_processing_strength(processed_np, processing_strength)
 
-        processed_pil = Image.fromarray(processed_np)
-        processed_pil.save(preprocessed_path)
+    processed_pil = Image.fromarray(processed_np)
+    processed_pil.save(modified_path)
 
-    # clear session data
-    session.pop("selected_images", None)
-    session.pop("reprocess_settings", None)
+    return jsonify({"success": "Reprocessing complete"}), 200
 
-    return jsonify({"message": "Reprocessing complete"}), 200
+
+# @app.route("/start_reprocessing", methods=["POST"])
+# def start_reprocessing():
+#     #processes images after loading screen is shown
+#     selected_images = session.get("selected_images", [])
+#     reprocess_settings = session.get("reprocess_settings", {})
+#
+#     for image_name in selected_images:
+#         settings = reprocess_settings.get(image_name, {})
+#         crop_factor = float(settings.get("crop_factor", 0.4))  # Default to 0.4 (2/5)
+#         processing_strength = settings.get("processing_strength", "medium")
+#
+#         original_path = os.path.join(SAVED_ORIGINALS, image_name)
+#         preprocessed_path = os.path.join(PREPROCESS_FOLDER, image_name)
+#
+#         if not os.path.exists(original_path):
+#             print(f"Original image for {image_name} not found.")
+#             continue
+#
+#         image = Image.open(original_path)
+#         image = ImageOps.exif_transpose(image)
+#         width, height = image.size
+#         new_width = int(width * crop_factor)
+#         cropped_image = image.crop((0, 0, new_width, height))
+#
+#         processed_np = np.array(cropped_image)
+#
+#         processed_np = apply_processing_strength(processed_np, processing_strength)
+#
+#         processed_pil = Image.fromarray(processed_np)
+#         processed_pil.save(preprocessed_path)
+#
+#     # clear session data
+#     session.pop("selected_images", None)
+#     session.pop("reprocess_settings", None)
+#
+#     return jsonify({"message": "Reprocessing complete"}), 200
 
 
 def apply_processing_strength(image_np, strength):
@@ -550,30 +625,30 @@ def apply_processing_strength(image_np, strength):
         print("Applying strong processing")
 
         # greyscale image
-        # image_np = cv2.cvtColor(image_np, cv2.COLOR_BGR2GRAY)
-        #
-        # # thickening the font
-        # image_np = cv2.bitwise_not(image_np)
-        # kernal = np.ones((2, 2), np.uint8)
-        # image_np = cv2.dilate(image_np, kernal, iterations=1)
-        # image_np = cv2.bitwise_not(image_np)
-        #
-        # # blurring image
-        # sigma = 0.5
-        # image_np = gaussian_filter(image_np, sigma=sigma)
-        #
-        # # image binarization
-        # _, eroded = cv2.threshold(image_np, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        image_np = cv2.cvtColor(image_np, cv2.COLOR_BGR2GRAY)
+
+        # thickening the font
+        image_np = cv2.bitwise_not(image_np)
+        kernal = np.ones((2, 2), np.uint8)
+        image_np = cv2.dilate(image_np, kernal, iterations=1)
+        image_np = cv2.bitwise_not(image_np)
+
+        # blurring image
+        sigma = 0.5
+        image_np = gaussian_filter(image_np, sigma=sigma)
+
+        # image binarization
+        _, eroded = cv2.threshold(image_np, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
         # Old Strong:
-        image_np = cv2.normalize(image_np, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-        opening = cv2.morphologyEx(image_np, cv2.MORPH_OPEN, kernel_three, iterations=2)
-        opening = cv2.fastNlMeansDenoisingColored(opening, None, 10, 10, 7, 15)
-
-        gray = cv2.cvtColor(opening, cv2.COLOR_BGR2GRAY)
-        gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
-
-        eroded = cv2.erode(gray, kernel_two, iterations=1)
+        # image_np = cv2.normalize(image_np, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+        # opening = cv2.morphologyEx(image_np, cv2.MORPH_OPEN, kernel_three, iterations=2)
+        # opening = cv2.fastNlMeansDenoisingColored(opening, None, 10, 10, 7, 15)
+        #
+        # gray = cv2.cvtColor(opening, cv2.COLOR_BGR2GRAY)
+        # gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+        #
+        # eroded = cv2.erode(gray, kernel_two, iterations=1)
     return eroded
 
 

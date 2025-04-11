@@ -62,7 +62,7 @@ def split_date(date_str):
     day = month = year = ""
     date_list = [date_str]
 
-    if re.search("\.", date_str):
+    if re.search(r"\.", date_str):
         date_list = date_str.split(".")
     elif re.search(",", date_str):
         date_list = date_str.split(",")
