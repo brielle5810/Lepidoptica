@@ -24,7 +24,7 @@
         .then(response => response.json())
         .then(data => {
             console.log("Reprocessing complete:", data);
-            window.location.href = '/image_gallery'; // Redirect when done
+            window.location.href = '/reprocess'; // Redirect when done
         })
         .catch(error => {
             console.error("Error during reprocessing:", error);
