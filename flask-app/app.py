@@ -69,7 +69,7 @@ def upload():
         filenames = []
 
         max_files = 500
-        if len(max_files) > 500:
+        if len(files) > 500:
             # user should not be able to submit if this is the case
             # taken care of with js
             # but if they do... hopefully it at least wont crash
