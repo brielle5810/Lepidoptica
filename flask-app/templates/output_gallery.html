@@ -250,6 +250,10 @@
             <a style="all: unset; padding-top: 5%"><b>GET CSV</b></a>
         </button>
     </div>
+    <div style="position: absolute; top: 5%; right: 30%">
+        <button class="button" id="mergeButton" onclick="mergeSelectedCells()">Merge</button>
+    </div>
+    
 
     <script>
       function syncHeaderWidths() {
@@ -338,12 +342,16 @@
         //Drag and drop
         let draggedCell = null;
 
+        let selectedCells = [];     // For cell merging
+        let firstClickedCell = null;
+
+        //Loops through all cells in table and sets up various event listeners
+
         var tableContent = document.getElementById('dataTable');
         for (let i = 1; i < dataTable.rows.length; i++) {   // Skip header by starting at 1
 
             for (let j = 3; j < dataTable.rows[i].cells.length; j++) {  // Start at three to begin past second image
                 let cell = dataTable.rows[i].cells[j];
-                //console.log(`Row ${i}, Column ${j}: ${cell.textContent}`);
 
                 //Erase icon
                 const eraseIcon = cell.querySelector('.erase-icon');
@@ -355,6 +363,9 @@
                             contentDiv.textContent = "";
                         }
                         cell.style.backgroundColor = cell.dataset.baselineColor;
+
+                        // Clear any selected cells for merge functionality
+                        clearSelectedCells();
                     });
                 }
 
@@ -364,6 +375,10 @@
                     //Click on the handle to drag contents
                     //Also displays ghost image of cell contents below cursor
                     cell.querySelector('.drag-handle').addEventListener('dragstart', (e) => {
+
+                        // Clear any selected cells for merge functionality
+                        clearSelectedCells();
+
                         draggedCell = cell;
                         console.log("Dragged Cell: ", draggedCell);
 
@@ -504,31 +519,90 @@
                     }
                 });
 
-                //This event listener will automatically focus the text box of a current cell if you click inside the cell but outside the text box
+                //Code for merging cells
+                const mergeButton = document.getElementById("mergeButton");
+                mergeButton.style.display = "none"; // Hide initially
+
+                //Only show merge button when at least one cell is selected
+                function updateMergeButtonVisibility() {
+                    mergeButton.style.display = selectedCells.length > 0 ? "inline-block" : "none";
+                }
+
+                function clearSelectedCells() {
+                    selectedCells.forEach(cell => cell.classList.remove('selected-cell'));
+                    selectedCells = [];
+                    firstClickedCell = null;
+                    updateMergeButtonVisibility();
+}
+                
                 cell.addEventListener('click', (e) => {
-                    const textBox = cell.querySelector('.cell-content');
-                    const dragHandle = cell.querySelector('.drag-handle');
+                    
+                    const isShift = e.shiftKey;
+            
+                    if (isShift) {
+                        if (!selectedCells.includes(cell)) {
+                            if (!firstClickedCell) {
+                                firstClickedCell = cell;
+                            }
+                            selectedCells.push(cell);
+                            cell.classList.add('selected-cell');
+                            updateMergeButtonVisibility();
+                        }
+                    } 
+                    else {
+                        //This event listener will automatically focus the text box of a current cell if you click inside the cell but outside the text box
+                        
+                        // Clear any selected cells for merge functionality
+                        clearSelectedCells();
 
-                    //Don't trigger focus if the drag handle is clicked
-                    if (dragHandle && dragHandle.contains(e.target)) return;
+                        const textBox = cell.querySelector('.cell-content');
+                        const dragHandle = cell.querySelector('.drag-handle');
 
-                    //Don't trigger focus if the click is inside the text box
-                    if (textBox && textBox.contains(e.target)) return;
+                        //Don't trigger focus if the drag handle is clicked
+                        if (dragHandle && dragHandle.contains(e.target)) return;
 
-                    if (textBox && e.target !== textBox) {
-                        textBox.focus();
+                        //Don't trigger focus if the click is inside the text box
+                        if (textBox && textBox.contains(e.target)) return;
 
-                        //Move cursor to the end
-                        const range = document.createRange();
-                        const selection = window.getSelection();
-                        range.selectNodeContents(textBox);
-                        range.collapse(false); // false = to the end
-                        selection.removeAllRanges();
-                        selection.addRange(range);
+                        if (textBox && e.target !== textBox) {
+                            textBox.focus();
+
+                            //Move cursor to the end
+                            const range = document.createRange();
+                            const selection = window.getSelection();
+                            range.selectNodeContents(textBox);
+                            range.collapse(false); // false = to the end
+                            selection.removeAllRanges();
+                            selection.addRange(range);
+                        }
+
                     }
                 });
+                
 
-
+                function mergeSelectedCells() {
+                    if (selectedCells.length < 2) {
+                        clearSelectedCells();
+                        return;
+                    }
+                
+                    const mergedText = selectedCells
+                        .map(cell => cell.querySelector('.cell-content')?.textContent.trim() || "")
+                        .join(" ");
+                
+                    const target = firstClickedCell.querySelector('.cell-content');
+                    if (target) target.textContent = mergedText;
+                
+                    selectedCells.forEach(cell => {
+                        cell.style.backgroundColor = cell.dataset.baselineColor;
+                        if (cell !== firstClickedCell) {
+                            const content = cell.querySelector('.cell-content');
+                            if (content) content.textContent = "";
+                        }
+                    });
+                
+                    clearSelectedCells();
+                }
 
             }
         }

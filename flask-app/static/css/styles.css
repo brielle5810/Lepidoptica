@@ -302,6 +302,13 @@ a.nav-a:hover {
     display: none;
 }
 
+.selected-cell {
+
+
+    outline: 2px solid #3399ff;
+    outline-offset: -2px;
+}
+
 
 /*.custom-scrollbar-js,*/
 /*.custom-scrollbar-css {*/
