@@ -69,7 +69,7 @@ def upload():
         filenames = []
 
         max_files = 500
-        if len(files) > 500:
+        if len(files) > max_files:
             # user should not be able to submit if this is the case
             # taken care of with js
             # but if they do... hopefully it at least wont crash
@@ -78,6 +78,7 @@ def upload():
 
         for file in files:
             if file and allowed_file(file.filename):
+
                 filename = secure_filename(file.filename).replace(" ", "_")
                 file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
                 filenames.append(filename)
