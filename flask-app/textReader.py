@@ -20,10 +20,10 @@ OCR_OUTPUT = "ocr_output"
 def get_best_match(term, spec_list, threshold=80):
     match, score, _ = process.extractOne(term, spec_list)
     if score >= threshold:
-        print(f"Trying to match '{term}' | Best match: '{match}' (score: {score})!")
+        #print(f"Trying to match '{term}' | Best match: '{match}' (score: {score})!")
         return match, score
     else:
-        print(f"Low confidence genus match for '{term}': matched to '{match}' ({score})!")
+        #print(f"Low confidence genus match for '{term}': matched to '{match}' ({score})!")
         return term, score
 
 
@@ -50,34 +50,6 @@ def get_best_match_from_ngrams(ngrams, vocab_list, threshold=80):
         if score > best_score:
             best_match, best_score = match, score
     return (best_match, best_score) if best_score >= threshold else (None, 0)
-
-def find_more_dates(text):
-    date_patterns = [
-        # DD.MM.YYYY | DD,MM,YYYY | DD/MM/YYYY | DD-MM-YYYY   OR   MM.DD.YYYY | MM,DD,YYYY | MM/DD/YYYY | MM-DD-YYYY
-        r"\d{2}[.,/-]\d{2}[.,/-]\d{4};*",
-        # YYYY   OR   'YY
-        r"(\d{4});?(?![a-zA-Z-])",
-        r"'(\d{2});?(?![a-zA-Z-])",
-        # Roman numerals format
-        # DD.MM.YYYY where MM = roman numerals
-        r"(?:\d{1,2}[.,])?(?:i|ii|iii|iv|v|vi|vii|viii|ix|x|xi|xii)*[.,]\d{4};*",
-        # DD MM YYYY where MM = date name (abbreviate or otherwise)
-        ### CAN I REPLACE THESE WITH /w ? who's to say.....
-        r"(?:\d{1,2} )?(?:jan|JAN|feb|FEB|mar|MAR|apr|APR|may|MAY|jun|JUN|jul|JUL|aug|AUG|sept|SEPT|oct|OCT|nov|NOV|dec|DEC|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sept|Oct|Nov|Dec)*[., ]{1,3}\d{4};*",
-        r"(?:\d{1,2} )?(?:January|February|March|April|May|June|July|August|September|October|November|December|JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER)*[., ]{1,3}\d{4};*"
-    ]
-
-    for pattern in date_patterns:
-        matches = re.findall(pattern, text)
-        print(matches)
-        if matches:
-            for index, date in enumerate(matches):
-                if date.endswith(';'):
-                    matches[index] = date[:-1]
-                if len(date) == 2:
-                    matches[index] = "'" + date
-            return matches
-    return []
 
 def is_valid_date(date_str, format):
     try:
@@ -118,7 +90,6 @@ def split_date(date_str):
         numeral_List = re.findall("i|ii|iii|iv|v|vi|vii|viii|ix|x|xi|xii", month)
         roman_numeral = "".join(numeral_List)
         month = str(roman.fromRoman(roman_numeral.upper())) + "/"
-        print(month)
     elif (len(date_list) >= 2) and re.search("[^a-zA-Z]", month):
         month = month[:-1]  # Get rid of slash
         try:
@@ -155,16 +126,15 @@ if __name__ == "__main__":
         #       [36]Other record source     [37]publication     [38]publication
         # 3. Input parsed list into a CSV format, where the first line is the label names and then the rest of it is the information
         # Consistencies:
-        #   - The species name will always be first, followed by UF tag
+        #   - The species name will always be first
         #   - Date will always have a year and month - date is tricky, but we can say that if there's 2 periods/commas, there's a day -
         #   if not, and there's only one (or only one space), it's a day
-        #   - For questionable label, maybe we can put if the general confidence rating is low, don't publish
-        #   - Labels 2, 24 - 39 are not part of the labels!
-        # 4. fillna(): Fills NA/NaN values for remainder of dataframe
+        #   - Labels 24 - 39 are not part of the labels!
 
-### MAKE THIS A FOR LOOP AT SOME POINT ###
+
+### CODE START ###
     # data is the template list of metadata attributes; there'll be a list for each image
-    # Category 0: CatalogNumber can be filled in off the top (#########)
+    # Category[0]: CatalogNumber can be filled in off the top (#########)
     data = [["#########", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN"]]
 
     # Create the pandas DataFrame: df
@@ -173,29 +143,35 @@ if __name__ == "__main__":
     print("df", df)
     currentIndex = 0  # Refers to the current ocr output we're parsing (0 - (n-1)) where n is the number of photos uploaded
 
+    ### START READING FROM THE OCR OUTPUT FILE (data.csv)
     with open(os.path.join(OCR_OUTPUT, "data.csv"), 'r') as file:
-        next(file)  # Skip header
+        next(file)  # Skip header (contains df category names)
         for line in file:
             df.loc[len(df)] = [None] * len(df.columns)
             print(line)
-            listOfStrings = line.strip().split(",")
-            listOfStrings = [x.strip('"') for x in listOfStrings]
+            listOfStrings = line.strip().split('"')
+            for x in listOfStrings:
+                if x == '' or x == ',':
+                    listOfStrings.remove(x)
             print("List of strings: ", listOfStrings)
 
-            df.loc[currentIndex, 'CatalogNumber'] = "#########"
+            # Default values of the df
+            df.loc[currentIndex] = ["#########", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN",
+                 "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN",
+                 "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN"]
 
             # The order that the categories are filled in is, at first, determined by the order the text is parsed from the photo
             # Some items, (genus, species, and subspecies) always come first
             # Categories 3 - 6: (family--not often included...), Genus, Species, and Subspecies
             for x in range(3, 6):
                 print("Current index: ", x)
-                if listOfStrings[x] != "UF" and listOfStrings[x] != "FLMNH":
+                if listOfStrings[0] != "UF" and listOfStrings[0] != "FLMNH":
+                    #print("List of strings[0]: ", listOfStrings[0])
                     word = listOfStrings[0]
                     old_word = listOfStrings[0]
                     ratio = 0
 
                     if " " in listOfStrings[0]:
-                        print("HEYYYY")
                         twoWordList = word.split(" ")
                         word = twoWordList[0]
                         old_word = twoWordList[0]
@@ -229,39 +205,37 @@ if __name__ == "__main__":
 
             # Category[6]: Sex Symbol
             if chr(0x2640) in listOfStrings:    # FEMALE
-                df.loc[currentIndex, 'Sex'] = chr(0x2640)
+                df.loc[currentIndex, 'Sex'] = "female"
                 listOfStrings.remove(chr(0x2640))
             elif chr(0x2642) in listOfStrings:  # MALE
-                df.loc[currentIndex, 'Sex'] = chr(0x2642)
+                df.loc[currentIndex, 'Sex'] = "male"
                 listOfStrings.remove(chr(0x2642))
 
             ### Category[1]: Specimen Voucher
             # First check if UF and FLMNH are in there somewhere
-            if "UF" in listOfStrings:
-                listOfStrings.remove("UF")    # Get rid of UF
-            if "FLMNH" in listOfStrings:
-                listOfStrings.remove("FLMNH")    # Get rid of FLMNH
+            for word in listOfStrings:
+                if re.search(r"UF", word) is not None:
+                    listOfStrings.remove(word)
 
-            joinedStrings = " ".join(listOfStrings)
-            x = re.search(r"UF", joinedStrings)
-            if x is not None:
-                listOfStrings = joinedStrings.replace(x.group(), "").split()
-            x = re.search(r"FLMNH", joinedStrings)
-            if x is not None:
-                listOfStrings = joinedStrings.replace(x.group(), "").split()
+            for word in listOfStrings:
+                if re.search(r"FLMNH", word) is not None:  # Get rid of UF or FLMNH
+                    listOfStrings.remove(word)
 
-            voucher = ""
+            # Split the string (delim will allow us to reincorporate it into list form in the proper order later)
+            delim = " | "
+            joinedStrings = delim.join(listOfStrings)
+            print("New and improved joined string: ", joinedStrings)
+
+
+            voucher = "NaN"
             x = re.search(r"\bMGCL [0-9]{7}", joinedStrings)
             if x.group() in joinedStrings:
                 voucher = x.group()
-            else:
-                voucher = "NaN"
+                # Update list of strings (we need to remove the specimen voucher)
+                listOfStrings = listOfStrings.remove(x.group())
+                joinedStrings = joinedStrings.replace(x.group(), "")  # REMOVE FROM BIG STRING
 
             df.loc[currentIndex, 'Specimen_voucher'] = voucher
-
-            # Update list of strings (we need to remove the specimen voucher)
-            listOfStrings = joinedStrings.replace(voucher, "").split()
-            joinedStrings = " ".join(listOfStrings)
 
 
             ### Extracting Location Entities: Categories[7 - 10] ###
@@ -310,12 +284,17 @@ if __name__ == "__main__":
             # change the corresponding estimate = score
             df.loc[currentIndex, 'County'] = best_match
             if not best_match:
-                df.loc[currentIndex, 'County'] = 'Nan'
+                df.loc[currentIndex, 'County'] = 'NaN'
                 # use city ?
 
             # Getting all cities
             print("The cities in text : ")
             print(placeEntity.cities)
+
+
+            ### CLEANING SOME STUFF UP BEFORE NUMBER CALCULATIONS
+            # Remove collection information 19XX-XX stuff from string
+            joinedStrings = re.sub("[0-9]{4}-[0-9]+", "", joinedStrings)
 
 
             ### Category[12]: Elevation Max (will always have the unit attached to it so this is the reliable one)
@@ -340,17 +319,52 @@ if __name__ == "__main__":
             datefinder.find_dates(joinedStrings)
 
             if not datefinder_output:
-                dates_found = find_more_dates(joinedStrings)
+                dates_found = []
+                ### START CHECKING FOR THE COMMON DATE OUTPUTS
+                # DD.MM.YYYY | DD,MM,YYYY | DD/MM/YYYY | DD-MM-YYYY   OR   MM.DD.YYYY | MM,DD,YYYY | MM/DD/YYYY | MM-DD-YYYY
+                if re.search(r"\d{1,2}[\s.,/-]{1}\d{2}[\s.,/-]{1}\d{4}", joinedStrings) is not None:
+                    print("It's a DD/MM/YYYY format!")
+                    x = re.search(r"\d{1,2}[\s.,/-]{1}\d{2}[\s.,/-]{1}\d{4}", joinedStrings)
+                    dates_found = x.group()
+                # Roman numerals format
+                # DD.MM.YYYY where MM = roman numerals
+                elif re.search(r"\d{1,2}[.,\s]*(?:i|ii|iii|iv|v|vi|vii|viii|ix|x|xi|xii)*[.,\s]*\d{4}", joinedStrings):
+                    print("It's DD.MM.YYYY roman numerals format!")
+                    x = re.search(r"\d{1,2}[.,\s]*(?:i|ii|iii|iv|v|vi|vii|viii|ix|x|xi|xii)*[.,\s]*\d{4}", joinedStrings)
+                    dates_found = x.group()
+                # DD MM YYYY where MM = date name (abbreviate or otherwise).
+                elif re.search("(?:\d{1,2} )?[.,\s]*[a-zA-Z]+[.,\s]*\d{2,4}", joinedStrings):
+                    print("It's a DD MonthName YYYY format!")
+                    if re.search(r"(?:\d{1,2} )?(?:jan|JAN|feb|FEB|mar|MAR|apr|APR|may|MAY|jun|JUN|jul|JUL|aug|AUG|sept|SEPT|oct|OCT|nov|NOV|dec|DEC|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sept|Oct|Nov|Dec)*[., ]{1,3}\d{4};*", joinedStrings):
+                        print("Abbreviated Date")
+                        x = re.search(r"(?:\d{1,2} )?(?:jan|JAN|feb|FEB|mar|MAR|apr|APR|may|MAY|jun|JUN|jul|JUL|aug|AUG|sept|SEPT|oct|OCT|nov|NOV|dec|DEC|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sept|Oct|Nov|Dec)*[., ]{1,3}\d{4};*", joinedStrings)
+                        dates_found = x.group()
+                    elif re.search("(?:\d{1,2} )?(?:January|February|March|April|May|June|July|August|September|October|November|December|JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER)*[., ]{1,3}\d{4};*", joinedStrings):
+                        print("Non-abbreviated Date")
+                        x = re.search("(?:\d{1,2} )?(?:January|February|March|April|May|June|July|August|September|October|November|December|JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER)*[., ]{1,3}\d{4};*", joinedStrings)
+                        dates_found = x.group()
+                # YYYY   OR   'YY
+                elif re.search("\d{4};?(?![a-zA-Z-])", joinedStrings) is not None:
+                    print("It's a YYYY format!")
+                    x = re.search("\d{4};?(?![a-zA-Z-])", joinedStrings)
+                    dates_found = x.group()
+                elif re.search("'?\d{2};?(?![a-zA-Z-])", joinedStrings) is not None:
+                    print("It's a 'YY format!")
+                    x = re.search("\d{2};?(?![a-zA-Z-])", joinedStrings)
+                    dates_found = x.group()
+                else:
+                    dates_found.append("NaN")
 
-                for date_str in dates_found:
-                    df.loc[currentIndex, 'Date verbatim'] = date_str
+                print("Preliminary dates found: ", dates_found)
+                df.loc[currentIndex, 'Date verbatim'] = dates_found
 
-                    # Categories[21 - 22] (they're the same)
-                    proper_date = split_date(date_str)
-                    df.loc[currentIndex, 'Collecting event start'] = proper_date
-                    df.loc[currentIndex, 'Collecting event end'] = proper_date
+                # Categories[21 - 22] (they're the same)
+                proper_date = split_date(dates_found)
+                print("Proper date: ", proper_date)
+                df.loc[currentIndex, 'Collecting event start'] = proper_date
+                df.loc[currentIndex, 'Collecting event end'] = proper_date
 
-                    joinedStrings = joinedStrings.replace(date_str, "")  # REMOVE FROM BIG STRING
+                joinedStrings = joinedStrings.replace(dates_found, "")  # REMOVE DATE FROM BIG STRING
             else:
                 print("Dates found: ")
                 for dates in datefinder_output:
@@ -362,20 +376,46 @@ if __name__ == "__main__":
                     break
 
 
+            ### Category[14]: Collector
+            # Thought process: If we isolate strings with the ampersand, that's closer than nothing
+            ### HARD RESET OF STRING: (We're also gonna remove the sta. and Acc.)
+            joinedStrings = re.sub(r"sta\.", "", joinedStrings)
+            joinedStrings = re.sub(r"Acc\.", "", joinedStrings)
+            listOfStrings = joinedStrings.split(" | ")
+            listOfStrings = list(filter(None, listOfStrings))  # Removes empty strings
+            print("\nPost date strings: ", listOfStrings)
+
+            collectors = ""
+            for string in listOfStrings:
+                if "&" in string:
+                    if collectors == "":
+                        collectors += string
+                    else:
+                        collectors += " " + string
+                    joinedStrings = joinedStrings.replace(string, "")
+
+            if collectors == "":
+                collectors = "NaN"
+            else:
+                # Remove extraneous semicolons, space or not
+                collectors = re.sub(r"(;\s)|;", "", collectors)
+
+            df.loc[currentIndex, 'Collectors'] = collectors
+
+
             ### Category[26]: Date cataloged (current date at time of program running)
             df.loc[currentIndex, 'Cataloged date'] = datetime.now().strftime("%m-%d-%Y")
 
 
-            ### CLEANING SOME STUFF UP
-            # Remove collection information 19XX-XX stuff from string
-            joinedStrings = re.sub("[0-9]{4}-[0-9]+", "", joinedStrings)
-            print("\n")
-            listOfStrings = joinedStrings.split()
+            ### OKAY NOW PRINT REMAINING STRING ###
+            listOfStrings = joinedStrings.split(" | ")
+            listOfStrings = list(filter(None, listOfStrings))  # Removes empty strings
             print("Updated listOfStrings: ", listOfStrings)
-            print("")
-            pd.set_option('display.max_columns', None)
-            print("Updated df:\n", df)
 
             currentIndex += 1   # Go to next line
 
-    df.to_csv('/ocr_output/parsed.csv', index=False)
+    ### FINAL PRINT OF DATAFRAME
+    df = df.iloc[:-1]   # Remove extraneous last row
+    pd.set_option('display.max_columns', None)
+    print("\nUpdated df:\n", df)
+    df.to_csv(os.path.join(OCR_OUTPUT, "parsed.csv"), index=False)
