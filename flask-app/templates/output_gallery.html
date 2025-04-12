@@ -343,7 +343,6 @@
         let draggedCell = null;
 
         let selectedCells = [];     // For cell merging
-        let firstClickedCell = null;
 
         //Loops through all cells in table and sets up various event listeners
 
@@ -525,27 +524,32 @@
 
                 //Only show merge button when at least one cell is selected
                 function updateMergeButtonVisibility() {
-                    mergeButton.style.display = selectedCells.length > 0 ? "inline-block" : "none";
+                    mergeButton.style.display = selectedCells.length > 1 ? "inline-block" : "none";
                 }
 
                 function clearSelectedCells() {
                     selectedCells.forEach(cell => cell.classList.remove('selected-cell'));
                     selectedCells = [];
-                    firstClickedCell = null;
                     updateMergeButtonVisibility();
 }
-                
+                //Click event listener for merge and cell focus
                 cell.addEventListener('click', (e) => {
                     
                     const isShift = e.shiftKey;
             
+                    //Merge
                     if (isShift) {
-                        if (!selectedCells.includes(cell)) {
-                            if (!firstClickedCell) {
-                                firstClickedCell = cell;
-                            }
+                        const index = selectedCells.indexOf(cell);
+                        if (index === -1) {
+                            //If cell has not already been selected
                             selectedCells.push(cell);
                             cell.classList.add('selected-cell');
+                            updateMergeButtonVisibility();
+                        }
+                        else {
+                            //Already selected - deselect it
+                            selectedCells.splice(index, 1);
+                            cell.classList.remove('selected-cell')
                             updateMergeButtonVisibility();
                         }
                     } 
@@ -590,16 +594,16 @@
                         .map(cell => cell.querySelector('.cell-content')?.textContent.trim() || "")
                         .join(" ");
                 
-                    const target = firstClickedCell.querySelector('.cell-content');
+                    const target = selectedCells[0].querySelector('.cell-content');
                     if (target) target.textContent = mergedText;
                 
-                    selectedCells.forEach(cell => {
-                        cell.style.backgroundColor = cell.dataset.baselineColor;
-                        if (cell !== firstClickedCell) {
-                            const content = cell.querySelector('.cell-content');
+                    for (let k = 0; k < selectedCells.length; k++) {
+                        selectedCells[k].style.backgroundColor = selectedCells[k].dataset.baselineColor;
+                        if (k != 0) {
+                            const content = selectedCells[k].querySelector('.cell-content');
                             if (content) content.textContent = "";
                         }
-                    });
+                    }
                 
                     clearSelectedCells();
                 }
