@@ -496,35 +496,6 @@ def delete_all():
 def download():
     return send_file("output.csv", as_attachment=True)
 
-
-# @app.route("/apply_reprocessing", methods=["POST"])
-# def apply_reprocessing():
-#     #redirects to loading screen before/while reprocessing.
-#     selected_images = request.form.getlist("selected_images")
-#
-#     # store selected images and settings w/ session
-#     session["selected_images"] = selected_images
-#     session["reprocess_settings"] = {img: {
-#         "crop_factor": request.form[f"crop_factor_{img}"],
-#         "processing_strength": request.form[f"processing_strength_{img}"]
-#     } for img in selected_images}
-#
-#     return redirect(url_for("loading_reprocess"))
-
-# @app.route("/apply_reprocessing", methods=["POST"])
-# def apply_reprocessing():
-#     #redirects to loading screen before/while reprocessing.
-#     selected_images = request.form.getlist("selected_images")
-#
-#     # store selected images and settings w/ session
-#     session["selected_images"] = selected_images
-#     session["reprocess_settings"] = {img: {
-#         "crop_factor": request.form[f"crop_factor_{img}"],
-#         "processing_strength": request.form[f"processing_strength_{img}"]
-#     } for img in selected_images}
-#
-#     return jsonify({"success": True, "message": "State Saved"})
-
 @app.route("/img_reprocessing", methods=["POST"])
 def img_reprocessing():
     #processes images after loading screen is shown
@@ -532,9 +503,11 @@ def img_reprocessing():
 
     image_name = data.get("image_name")
     processing_strength = data.get("processing_strength")
+    line_value = float(data.get("line_value"))
     crop_factor = float(data.get("crop_factor"))
     print(image_name)
     print(crop_factor)
+    print(line_value)
     print(processing_strength)
 
     original_path = os.path.join(SAVED_ORIGINALS, image_name)
@@ -552,74 +525,74 @@ def img_reprocessing():
 
     processed_np = np.array(cropped_image)
 
-    processed_np = apply_processing_strength(processed_np, processing_strength)
+    processed_np = apply_processing_strength(processed_np, processing_strength, line_value)
 
     processed_pil = Image.fromarray(processed_np)
     processed_pil.save(modified_path)
 
     return jsonify({"success": "Reprocessing complete"}), 200
 
+def apply_thickness(image_np, thickness):
+    # thickening the font
+    if thickness == 3:
+        return image_np
 
-# @app.route("/start_reprocessing", methods=["POST"])
-# def start_reprocessing():
-#     #processes images after loading screen is shown
-#     selected_images = session.get("selected_images", [])
-#     reprocess_settings = session.get("reprocess_settings", {})
-#
-#     for image_name in selected_images:
-#         settings = reprocess_settings.get(image_name, {})
-#         crop_factor = float(settings.get("crop_factor", 0.4))  # Default to 0.4 (2/5)
-#         processing_strength = settings.get("processing_strength", "medium")
-#
-#         original_path = os.path.join(SAVED_ORIGINALS, image_name)
-#         preprocessed_path = os.path.join(PREPROCESS_FOLDER, image_name)
-#
-#         if not os.path.exists(original_path):
-#             print(f"Original image for {image_name} not found.")
-#             continue
-#
-#         image = Image.open(original_path)
-#         image = ImageOps.exif_transpose(image)
-#         width, height = image.size
-#         new_width = int(width * crop_factor)
-#         cropped_image = image.crop((0, 0, new_width, height))
-#
-#         processed_np = np.array(cropped_image)
-#
-#         processed_np = apply_processing_strength(processed_np, processing_strength)
-#
-#         processed_pil = Image.fromarray(processed_np)
-#         processed_pil.save(preprocessed_path)
-#
-#     # clear session data
-#     session.pop("selected_images", None)
-#     session.pop("reprocess_settings", None)
-#
-#     return jsonify({"message": "Reprocessing complete"}), 200
+    image_np = cv2.bitwise_not(image_np)
+    kernal = np.ones((2, 2), np.uint8)
+
+    if thickness == 0:
+        image_np = cv2.erode(image_np, kernal, iterations=3)
+    if thickness == 1:
+        image_np = cv2.erode(image_np, kernal, iterations=2)
+    if thickness == 2:
+        image_np = cv2.erode(image_np, kernal, iterations=1)
+    if thickness == 4:
+        image_np = cv2.dilate(image_np, kernal, iterations=1)
+    if thickness == 5:
+        image_np = cv2.dilate(image_np, kernal, iterations=2)
+    if thickness == 6:
+        image_np = cv2.dilate(image_np, kernal, iterations=3)
+
+    image_np = cv2.bitwise_not(image_np)
+    return image_np
 
 
-def apply_processing_strength(image_np, strength):
+def apply_processing_strength(image_np, strength, thickness):
 
     kernel_three = np.ones((3, 3), np.uint8) #from open!
     kernel_two = np.ones((2, 2), np.uint8) #from erode!
 
     if strength == "soft":
         print("Applying soft processing")
-        gray = cv2.cvtColor(image_np, cv2.COLOR_BGR2GRAY)
-        # kernel = np.ones((2, 2), np.uint8)
-        noise_removed = cv2.fastNlMeansDenoising(gray, None, 5, 7, 21) 
-        thresholded = cv2.adaptiveThreshold(noise_removed, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)  
-        eroded = cv2.erode(thresholded, kernel_two, iterations=1)
+        # Grayscale
+        image_np = cv2.cvtColor(image_np, cv2.COLOR_BGR2GRAY)
+
+        # Thickness
+        image_np = apply_thickness(image_np, thickness)
+
+        # image binarization
+        image_np = cv2.adaptiveThreshold(image_np, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 19, 8)
+
+        # CLAHE
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        image_np = clahe.apply(image_np)
+
+        # To remove noise
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
+        image_np = cv2.morphologyEx(image_np, cv2.MORPH_OPEN, kernel)
+
+        # Sharpening
+        laplacian = cv2.Laplacian(image_np, cv2.CV_64F)
+        image_np = cv2.convertScaleAbs(image_np - 0.7 * laplacian)
 
     elif strength == "medium":
         print("Applying medium processing")
-        gray = cv2.cvtColor(image_np, cv2.COLOR_BGR2GRAY)
+        image_np = cv2.cvtColor(image_np, cv2.COLOR_BGR2GRAY)
         # Use slightly stronger kernel and denoising
         # kernel = np.ones((3, 3), np.uint8)
-        noise_removed = cv2.fastNlMeansDenoising(gray, None, 10, 10, 7)
-        contrast_adjusted = cv2.equalizeHist(noise_removed)  
-        thresholded = cv2.threshold(contrast_adjusted, 127, 255, cv2.THRESH_BINARY)[1]
-        eroded = cv2.erode(thresholded, kernel_two, iterations=1)
+        image_np = cv2.fastNlMeansDenoising(image_np, None, 10, 10, 7)
+        image_np = cv2.equalizeHist(image_np)
+        image_np = cv2.threshold(image_np, 127, 255, cv2.THRESH_BINARY)[1]
 
     else:  # strong -> default
         print("Applying strong processing")
@@ -628,28 +601,16 @@ def apply_processing_strength(image_np, strength):
         image_np = cv2.cvtColor(image_np, cv2.COLOR_BGR2GRAY)
 
         # thickening the font
-        image_np = cv2.bitwise_not(image_np)
-        kernal = np.ones((2, 2), np.uint8)
-        image_np = cv2.dilate(image_np, kernal, iterations=1)
-        image_np = cv2.bitwise_not(image_np)
+        image_np = apply_thickness(image_np, thickness)
 
         # blurring image
         sigma = 0.5
         image_np = gaussian_filter(image_np, sigma=sigma)
 
         # image binarization
-        _, eroded = cv2.threshold(image_np, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        _, image_np = cv2.threshold(image_np, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
-        # Old Strong:
-        # image_np = cv2.normalize(image_np, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-        # opening = cv2.morphologyEx(image_np, cv2.MORPH_OPEN, kernel_three, iterations=2)
-        # opening = cv2.fastNlMeansDenoisingColored(opening, None, 10, 10, 7, 15)
-        #
-        # gray = cv2.cvtColor(opening, cv2.COLOR_BGR2GRAY)
-        # gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
-        #
-        # eroded = cv2.erode(gray, kernel_two, iterations=1)
-    return eroded
+    return image_np
 
 
 @app.route("/output", methods=["GET"])
