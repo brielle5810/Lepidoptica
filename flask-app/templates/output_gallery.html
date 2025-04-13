@@ -357,9 +357,13 @@
                 if (eraseIcon) {
                     eraseIcon.addEventListener('click', (e) => {
                         e.stopPropagation();  // Prevent triggering drag or edit
-                        const contentDiv = cell.querySelector('.cell-content');
+                        const contentDiv = cell.querySelector('.cell-content').textContent;
                         if (contentDiv) {
                             contentDiv.textContent = "";
+                            cell.querySelector('.cell-content').textContent = "";
+                            const rowIndex = i - 1;
+                            const colIndex = j - 3;
+                            saveCellChange(rowIndex, colIndex, "", cell);
                         }
                         cell.style.backgroundColor = cell.dataset.baselineColor;
 
@@ -446,41 +450,54 @@
 
                     // Add drop event to swap content
                     cell.addEventListener('drop', (e) => {
-                        console.log("Dragged Cell: ", draggedCell);
-                        console.log("Target Cell: ", cell);
+                            console.log("Dragged Cell: ", draggedCell);
+                            console.log("Target Cell: ", cell);
 
-                        e.preventDefault();
+                            e.preventDefault();
 
-                        console.log("Drop Event Triggered");
+                            console.log("Drop Event Triggered");
 
-                        if (draggedCell && draggedCell !== cell) {
-                            const sourceContent = draggedCell.querySelector('.cell-content');
-                            const targetContent = cell.querySelector('.cell-content');
-                            const sourceColor = draggedCell.style.backgroundColor; // Save original text
-                            const targetColor = cell.style.backgroundColor; // Save original color
-                            const originalTextContent = draggedCell.dataset.originalContent;
+                            if (draggedCell && draggedCell !== cell) {
+                                const sourceContent = draggedCell.querySelector('.cell-content');
+                                const targetContent = cell.querySelector('.cell-content');
+                                const sourceColor = draggedCell.style.backgroundColor; // Save original text
+                                const targetColor = cell.style.backgroundColor; // Save original color
+                                const originalTextContent = draggedCell.dataset.originalContent;
 
-                            console.log("Source Content:", sourceContent.innerHTML);
-                            console.log("Target Content:", targetContent.innerHTML);
+                                console.log("Source Content:", sourceContent.innerHTML);
+                                console.log("Target Content:", targetContent.innerHTML);
 
-                            //Swap the content between the source and target cells
-                            const temp = sourceContent.innerHTML;
-                            sourceContent.innerHTML = targetContent.innerHTML;
-                            targetContent.innerHTML = temp;
+                                //Swap the content between the source and target cells
+                                const temp = sourceContent.innerHTML;
+                                sourceContent.innerHTML = targetContent.innerHTML;
+                                targetContent.innerHTML = temp;
 
-                            draggedCell.style.backgroundColor = targetColor;
-                            cell.style.backgroundColor = sourceColor;
-                            draggedCell.dataset.originalContent = cell.dataset.originalContent;
-                            cell.dataset.originalContent = originalTextContent;
+                                draggedCell.style.backgroundColor = targetColor;
+                                cell.style.backgroundColor = sourceColor;
+                                draggedCell.dataset.originalContent = cell.dataset.originalContent;
+                                cell.dataset.originalContent = originalTextContent;
 
+                                const sourceRow = draggedCell.parentElement.rowIndex - 1;
+                                const sourceCol = draggedCell.cellIndex - 3;
+                                const targetRow = cell.parentElement.rowIndex - 1;
+                                const targetCol = cell.cellIndex - 3;
+
+                                const updates = [
+                                    {row: sourceRow, col: sourceCol, value: sourceContent.textContent.trim()},
+                                    {row: targetRow, col: targetCol, value: targetContent.textContent.trim()}
+                                ];
+
+                                saveMultipleCellChanges(updates);
+
+                            }
+                            cell.style.outline = '';
+                            //cell.style.backgroundColor = cell.dataset.originalColor;
+
+                            draggedCell = null;
                         }
-
-                        cell.style.outline = '';
-                        //cell.style.backgroundColor = cell.dataset.originalColor;
-
-                        draggedCell = null;
-                    });
+                    );
                 }
+
 
                 //Confidence representation
 
@@ -502,19 +519,24 @@
                 //Change to white when user selects cell
                 cell.querySelector('.cell-content').addEventListener("focus", function () {
                     console.log("working?");
-                    cell.dataset.originalContent = cell.textContent.trim(); // Save original text
+                    cell.dataset.originalContent = cell.querySelector('.cell-content').trim(); // Save original text
                     cell.dataset.originalColor = cell.style.backgroundColor; // Save original color
                     cell.style.backgroundColor = cell.dataset.baselineColor;
                 });
 
                 //Compare original content with new content when user clicks away
+                // save to csv
                 cell.querySelector('.cell-content').addEventListener("blur", function () {
                     let originalContent = cell.dataset.originalContent;  // Retrieve stored text
-                    let newContent = cell.textContent.trim();  // Get current text
+                    let newContent = cell.querySelector('.cell-content').textContent;  // Get current text
 
                     if (originalContent == newContent) {
                         console.log("Cell content changed from:", originalContent, "to:", newContent);
                         cell.style.backgroundColor = cell.dataset.originalColor; // Reset to red/yellow if cell contents were not changed and cell was red/yellow when the user selected it
+                    } else if (newContent !== originalContent) {
+                        const rowIndex = i - 1;
+                        const colIndex = j - 3;
+                        saveCellChange(rowIndex, colIndex, newContent, cell);
                     }
                 });
 
@@ -531,12 +553,13 @@
                     selectedCells.forEach(cell => cell.classList.remove('selected-cell'));
                     selectedCells = [];
                     updateMergeButtonVisibility();
-}
+                }
+
                 //Click event listener for merge and cell focus
                 cell.addEventListener('click', (e) => {
-                    
+
                     const isShift = e.shiftKey;
-            
+
                     //Merge
                     if (isShift) {
                         const index = selectedCells.indexOf(cell);
@@ -582,30 +605,86 @@
 
                     }
                 });
-                
+
+                function swapAndPersistCells(draggedCell, targetCell) {
+                      const sourceContent = draggedCell.querySelector('.cell-content');
+                      const targetContent = targetCell.querySelector('.cell-content');
+
+                      if (!sourceContent || !targetContent) return;
+
+                      const sourceText = sourceContent.textContent.trim();
+                      const targetText = targetContent.textContent.trim();
+
+                      // Visually swap
+                      sourceContent.textContent = targetText;
+                      targetContent.textContent = sourceText;
+
+                      const sourceRow = draggedCell.parentElement.rowIndex - 1;
+                      const sourceCol = draggedCell.cellIndex - 3;
+                      const targetRow = targetCell.parentElement.rowIndex - 1;
+                      const targetCol = targetCell.cellIndex - 3;
+
+                      // Save source update first, then target after it completes
+                      saveCellChange(sourceRow, sourceCol, targetText, draggedCell)
+                        .then(() => {
+                          return saveCellChange(targetRow, targetCol, sourceText, targetCell);
+                        })
+                        .catch((err) => {
+                          console.error("Error during swap persistence:", err);
+                        });
+                    }
 
                 function mergeSelectedCells() {
                     if (selectedCells.length < 2) {
                         clearSelectedCells();
                         return;
                     }
-                
+
+                    const updates = [];
+
                     const mergedText = selectedCells
                         .map(cell => cell.querySelector('.cell-content')?.textContent.trim() || "")
                         .join(" ");
-                
-                    const target = selectedCells[0].querySelector('.cell-content');
-                    if (target) target.textContent = mergedText;
-                
-                    for (let k = 0; k < selectedCells.length; k++) {
-                        selectedCells[k].style.backgroundColor = selectedCells[k].dataset.baselineColor;
-                        if (k != 0) {
-                            const content = selectedCells[k].querySelector('.cell-content');
-                            if (content) content.textContent = "";
-                        }
+
+                    const targetCell = selectedCells[0];
+                    const targetContent = targetCell.querySelector('.cell-content');
+                    const targetRow = targetCell.parentElement.rowIndex - 1;
+                    const targetCol = targetCell.cellIndex - 3;
+
+                    if (targetContent) {
+                        targetContent.textContent = mergedText;
                     }
-                
-                    clearSelectedCells();
+
+                    updates.push({
+                        row: targetRow,
+                        col: targetCol,
+                        value: mergedText
+                    });
+
+                    for (let i = 1; i < selectedCells.length; i++) {
+                        const cell = selectedCells[i];
+                        const contentDiv = cell.querySelector('.cell-content');
+                        const row = cell.parentElement.rowIndex - 1;
+                        const col = cell.cellIndex - 3;
+
+                        if (contentDiv) {
+                            contentDiv.textContent = "";
+                        }
+
+                        cell.style.backgroundColor = cell.dataset.baselineColor;
+
+                        updates.push({
+                            row: row,
+                            col: col,
+                            value: ""
+                        });
+                    }
+
+                    saveMultipleCellChanges(updates);
+
+                    selectedCells.forEach(cell => cell.classList.remove('selected-cell'));
+                    selectedCells = [];
+                    updateMergeButtonVisibility();
                 }
 
             }
@@ -691,6 +770,48 @@
             temp_link.click();
             document.body.removeChild(temp_link);
         }
+
+        function saveCellChange(rowIndex, colIndex, newContent, cell = null) {
+            fetch("/update_cell", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    row: rowIndex,
+                    col: colIndex,
+                    value: newContent
+                })
+                }).then(res => res.json())
+                .then(data => {
+                      if (data.success) {
+                          console.log(`Cells: [${rowIndex}, ${colIndex}] updated.`);
+                          if (cell) {
+                              cell.dataset.originalContent = newContent;
+                          }
+                      } else {
+                          console.error("Update failed");
+                      }
+                }).catch(err => {
+                  console.error("Error sending update:", err);
+                });
+        }
+        function saveMultipleCellChanges(changesArray) { //mult cells, used in merge, calling them individiaully causes interruptions and failures
+            fetch("/update_mult_cells", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(changesArray)
+            }).then(res => res.json())
+              .then(data => {
+                  if (data.success) {
+                      console.log("Batch cell update complete");
+                  } else {
+                      console.error("Batch update failed");
+                  }
+              }).catch(err => {
+                  console.error("Error in batch update:", err);
+              });
+        }
+
+
     </script>
 
     </body>
