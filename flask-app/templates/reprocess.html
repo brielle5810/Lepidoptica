@@ -65,15 +65,23 @@
                         <div class="col-4 d-flex justify-content-center">
                             <div class="w-100" style="max-width: 300px;">
                                 <input type="hidden" name="selected_images" value="{{ image }}">
-                                <label style="font-weight:bold; color:#006666;">Crop Width Adjustment:</label>
-                                <input onchange="modifyExample('{{ image }}')" type="range" name="crop_factor_{{ image }}" min="0.1" max="1.0" step="0.01" value="0.33">
-
-                                <label style="font-weight:bold; color:#006666;">Processing Strength:</label>
-                                <select onchange="modifyExample('{{ image }}')" name="processing_strength_{{ image }}">
-                                    <option value="soft" style="color: #578a3d">Soft</option>
-                                    <option value="medium" style="color: #3b7554">Medium</option>
-                                    <option value="strong" style="color: #006666">Strong</option>
-                                </select>
+                                <div class="row">
+                                    <label style="font-weight:bold; color:#006666;">Crop Width Adjustment:</label>
+                                    <input onchange="modifyExample('{{ image }}'); this.nextElementSibling.value = this.value" type="range" name="crop_factor_{{ image }}" min="0.01" max="1.00" step="0.01" value="0.33"><output>Default: 0.33</output>
+                                </div>
+                                <div class="row">
+                                    <label style="font-weight:bold; color:#006666;">Line Thickness Adjustment:</label>
+                                    <input onchange="modifyExample('{{ image }}'); this.nextElementSibling.value = thickValue(this.value)" type="range" name="line_thick_{{ image }}" min="0" max="6" step="1" value="4"><output>Default: thick</output>
+                                </div>
+                                <div class="row">
+                                    <label style="font-weight:bold; color:#006666;">Processing Strength:</label>
+                                    <select onchange="modifyExample('{{ image }}')" name="processing_strength_{{ image }}">
+                                        <option selected>Choose an option</option>
+                                        <option value="soft" style="color: #578a3d">Soft</option>
+                                        <option value="medium" style="color: #3b7554">Medium</option>
+                                        <option value="strong" style="color: #006666">Strong</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                         <div class="col-4" style="display: flex; justify-content: center;">
@@ -95,24 +103,60 @@
 </html>
 <script>
 
+    function thickValue(value){
+        //translate numerical value into string
+        value = parseInt(value);
+        string_value = "";
+        if (value === 0){
+            string_value = "thin x3";
+        }
+        else if (value === 1){
+            string_value = "thin x2"
+        }
+        else if (value === 2){
+            string_value = "thin"
+        }
+        else if (value === 3){
+            string_value = "normal"
+        }
+        else if (value === 4){
+            string_value = "thick"
+        }
+        else if (value === 5){
+            string_value = "thick x2"
+        }
+        else if (value === 6){
+            string_value = "thick x3"
+        }
+        return string_value;
+    }
+
     function refreshImage(imageName) {
       const img = document.getElementById(`modifiedImage_${imageName}`);
-      const timestamp = new Date().getTime();  // to bust cache
+      const timestamp = new Date().getTime();
       img.src = `/modified/${imageName}?t=${timestamp}`;
     }
 
     function modifyExample(image) {
         const cropInput= document.querySelector(`input[name='crop_factor_${image}']`);
+        const lineInput= document.querySelector(`input[name='line_thick_${image}']`);
         const strengthSelect = document.querySelector(`select[name='processing_strength_${image}']`);
 
         let cropValue;
         let strengthValue;
+        let lineValue;
 
         if (!cropInput) {
             cropValue = 0.4;    //default
         }
         else{
             cropValue = cropInput.value;
+        }
+        if (!lineInput) {
+            lineValue = 4;    //default (thick)
+        }
+        else{
+            lineValue = lineInput.value;
         }
         if (!strengthSelect){
             strengthValue = "strong";   //default
@@ -121,7 +165,7 @@
             strengthValue = strengthSelect.value;
         }
 
-        console.log("Cropvalue is " + cropValue + " and strength is " + strengthValue + " for image " + image );
+        console.log("Cropvalue is " + cropValue + " and linevalue is " + lineValue + " and strength is " + strengthValue + " for image " + image );
 
         fetch('/img_reprocessing', {
             method: 'POST',
@@ -131,6 +175,7 @@
             body: JSON.stringify({
                 image_name: image,
                 crop_factor: cropValue,
+                line_value: lineValue,
                 processing_strength: strengthValue,
             })
         })
@@ -143,32 +188,6 @@
                 alert(`Error: ${data.error}`);
             }
         });
-
-        {#fetch('/apply_reprocessing', {method: 'POST'})#}
-        {#.then(response => response.json())#}
-        {#.then(data => {#}
-        {#    if (data.success) {#}
-        {#        console.log(data);#}
-        {#        fetch('/img_reprocessing', {#}
-        {#            method: 'POST',#}
-        {#            body: JSON.stringify({#}
-        {#                image_name: image#}
-        {#            })#}
-        {#        })#}
-        {#        .then(response => response.json())#}
-        {#        .then(data => {#}
-        {#            if (data.success) {#}
-        {#                console.log(data);#}
-        {#                refreshImage(image);#}
-        {#            } else {#}
-        {#                alert(`Error: ${data.error}`);#}
-        {#            }#}
-        {#        });#}
-        {#    } else {#}
-        {#        alert(`Error: ${data.error}`);#}
-        {#    }#}
-        {# });#}
-
     }
 
     function returnToGallery() {
