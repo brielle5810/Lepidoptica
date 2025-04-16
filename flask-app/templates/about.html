@@ -3,26 +3,224 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     <title>About</title>
 
 </head>
 {% include "nav.html" %}
-<div id="content"></div>
 <body>
-<div class="container align-center">
-    <h1 class="mt-5" style="font-weight:bold; color:#006666;">About Lepidoptica</h1>
-
-    <h3 class="mt-5" style="text-align: center; hover: none; width: 80%; color: #3d6a23">
-        This is a tool to assist in digitization efforts for the <b>Florida Museum of Natural History McGuire Center</b> by transcribing butterfly specimen labels for the Lepidoptera collection.
+<div class="container custom-wide-container">
+    <div class="text-center justify-center">
+    <h1 class="mt-5 mx-auto" style="font-weight:bold; color:#006666;">About Lepidoptica</h1>
+    <h5 class="mt-4 mb-5 mx-auto" style="text-align: center; hover: none; width: 80%; color: #3d6a23">
+        This is a tool to assist in digitization efforts for the <b>Florida Museum of Natural History McGuire Center</b> by
+        extracting and parse metadata from butterfly specimen labels.
+        This metadata is to be uploaded to the FLMNH's Specify Lepidoptera Collection database, available online
+        <a href="https://specifyportal.floridamuseum.ufl.edu/leps/">here,</a> for researchers and museums.
         <br><br>
-        Users can upload batches of images and our website will attempt to transcribe their text content using machine learning. Next, users can edit the transcriptions from the web interface and save them as a .csv file for bulk uploading to the collection database.<br><br>
-
+        Users can upload batches of images and our website will attempt to transcribe their text content using machine learning technology, specifically a fine-tuned model using EasyOCR.
+        Next, users can edit the transcriptions from the web interface and save them as a .csv file for bulk uploading to the collection database.<br><br>
         <i>Designed by students Alexia Rangel Krashenitsa, Alex Harvey, Brielle Stokes, and Katja Karoleski at the University of Florida for Senior Project Spring 2025.</i><br><br>
+        <i>Supervised by curators Keith Willmott and Vaughn Shirey.</i><br><br>
+        <i>Special thanks to the Florida Museum of Natural History and the McGuire Center for Lepidoptera and Biodiversity.</i><br><br>
+    </h5>
+     <!-- Data -->
+     <div class="row justify-content-center mt-5">
+     <h2 class="my-4">Example Data</h2>
+         <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel" style="max-width: 900px;">
+          <ol class="carousel-indicators">
+            <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+            <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+            <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+                <li data-target="#carouselExampleIndicators" data-slide-to="3"></li>
+          </ol>
+          <div class="carousel-inner">
+            <div class="carousel-item active">
+              <img class="d-block w-100" src="{{ url_for('static', filename='about_images/5a7f3589-1b64-43cc-96c4-692569fd462b.jpg') }}" alt="First slide">
+             <div class="carousel-caption d-none d-md-block">
+            <h5>...</h5>
+            <p>...</p>
+          </div>
+          </div>
+            <div class="carousel-item">
+              <img class="d-block w-100" src="{{ url_for('static', filename='about_images/1fe13662-52fe-4b2a-aac6-94df65ea59f8.jpg') }}" alt="Second slide">
+             <div class="carousel-caption d-none d-md-block">
+            <h5>...</h5>
+            <p>...</p>
+          </div>
+            </div>
+            <div class="carousel-item">
+              <img class="d-block w-100" src="{{ url_for('static', filename='about_images/3f4bb73a-f784-463e-a2e3-e5a27a15a216.jpg') }}" alt="Third slide">
+                 <div class="carousel-caption d-none d-md-block">
+                <h5>...</h5>
+                <p>...</p>
+              </div>
+            </div>
+              <div class="carousel-item">
+              <img class="d-block w-100" src="{{ url_for('static', filename='about_images/preprocessed.png') }}" alt="Third slide">
+                 <div class="carousel-caption d-none d-md-block">
+                <h5>...</h5>
+                <p>...</p>
+              </div>
+            </div>
 
-    For our project repository and more information about our project, please visit<br>
-    <a href="https://github.com/brielle5810/TJS_Project" style="color: #187191">https://github.com/brielle5810/TJS_Project</a>
-    </h3>
+
+          </div>
+
+          <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="sr-only"></span>
+          </a>
+          <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="sr-only"></span>
+          </a>
+   </div>
+
+        <!-- team -->
+   <div class="row justify-content-center mt-5">
+       <h2 class="my-4">Meet the Team</h2>
+      <div class="col-md-3 col-sm-12">
+        <div class="card">
+          <img src="{{ url_for('static', filename='about_images/alexia.png') }}"  class="card-img-top rounded-circle d-block mx-auto mt-3" alt="Image 1" />
+          <div class="card-body">
+            <h5 class="card-title">Alexia Rangel Krashenitsa</h5>
+            <p class="card-text text-muted">Role, description</p>
+          </div>
+        </div>
+      </div>
+
+       <div class="col-md-3 col-sm-12">
+        <div class="card">
+          <img src="{{ url_for('static', filename='about_images/katja2.png') }}"  class="card-img-top rounded-circle d-block mx-auto mt-3" alt="Image 2" />
+          <div class="card-body">
+            <h5 class="card-title">Katja Karoleski</h5>
+            <p class="card-text text-muted">Role, description</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 col-sm-12">
+        <div class="card">
+          <img src="{{ url_for('static', filename='about_images/01h84ks8b3kn95ybj78q.jpg') }}" class="card-img-top rounded-circle d-block mx-auto mt-3" alt="Image 3" />
+          <div class="card-body">
+            <h5 class="card-title">Brielle Stokes</h5>
+            <p class="card-text text-muted">Role, description</p>
+          </div>
+        </div>
+      </div>
+
+       <div class="col-md-3 col-sm-12">
+        <div class="card">
+          <img src="{{ url_for('static', filename='about_images/alexharvey.png') }}" class="card-img-top rounded-circle d-block mx-auto mt-3" alt="Image 4" />
+          <div class="card-body">
+            <h5 class="card-title">Alex Harvey</h5>
+            <p class="card-text text-muted">Role, description</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+        <!-- Advisors-->
+    <div class="row justify-content-center mt-5">
+       <h2 class="my-4">Our Advisors</h2>
+      <div class="col-md-3 col-sm-12">
+        <div class="card">
+          <img src="{{ url_for('static', filename='about_images/alexia.png') }}"  class="card-img-top rounded-circle d-block mx-auto mt-3" alt="Image 1" />
+          <div class="card-body">
+            <h5 class="card-title">Dr. Keith Willmott</h5>
+            <p class="card-text text-muted">Role</p>
+          </div>
+        </div>
+      </div>
+
+       <div class="col-md-3 col-sm-12">
+        <div class="card">
+          <img src="{{ url_for('static', filename='about_images/katja2.png') }}"  class="card-img-top rounded-circle d-block mx-auto mt-3" alt="Image 2" />
+          <div class="card-body">
+            <h5 class="card-title">Dr. Vaughn Shirey</h5>
+            <p class="card-text text-muted">Role</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+         <!-- ahefhf -->
+        </div>
+
+        <h5 class="mt-4 mb-5 mx-auto" style="padding-bottom: 1.5rem; text-align: center; width: 80%; color: #3d6a23;">
+          For our project repository and more information, visit:<br />
+          <a href="https://github.com/brielle5810/TJS_Project" target="_blank">
+            https://github.com/brielle5810/TJS_Project
+          </a>
+        </h5>
+
+
+
+    </div>
 </div>
 
 </body>
 </html>
+  <style>
+    body {
+      margin: 0;
+        {#padding-top: 5rem;#}
+         padding-top: 50rem;
+    }
+
+    .card img {
+        object-fit: cover;
+        {#max-height: 250px;#}
+        height: 200px;
+        width: 200px;
+    }
+
+     .custom-wide-container {
+        max-width: 70vw;
+      }
+
+     h2 {
+         color:#006666;
+     }
+
+     .carousel-inner img {
+        max-height: 600px;
+        width: auto;
+        margin: auto;
+        object-fit: contain;
+    }
+
+
+
+    .card {
+      color:#006666;
+      background-color: #a7ddb3;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    a {
+      color: #187191;
+      text-decoration: underline;
+    }
+
+    a:hover {
+      text-decoration: none;
+    }
+
+   .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+      background-size: 100% 100%;
+      width: 4rem;
+      height: 3rem;
+    }
+
+
+  </style>
