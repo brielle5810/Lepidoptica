@@ -687,6 +687,8 @@ def apply_processing_strength(image_np, strength, thickness):
 
 @app.route("/output", methods=["GET"])
 def output():
+    #TODO: RUN TEXTREADER.PY
+    textReader.parsing()
     final_path = os.path.join(OCR_OUTPUT, "data.csv")
 
     #view the images
@@ -707,9 +709,7 @@ def output():
     pd.set_option('display.max_columns', None)
 
     ### USE THIS FOR THE FINAL VERSION
-    df = pd.read_csv(os.path.join(OCR_OUTPUT, "data.csv"))
-    df = df.fillna("")
-    # print("df:\n", df)
+    df = pd.read_csv(os.path.join(OCR_OUTPUT, "parsed.csv"))
     df_list = df.values.tolist()
     print("df_list:\n", df_list, "\n")
     print("====================================")
@@ -717,7 +717,7 @@ def output():
     for item1, item2 in zip(images, df_list):
         print(item1, item2)
 
-    confidences = pd.read_csv(os.path.join(OCR_OUTPUT, "confidence.csv"), dtype=float).fillna(value = 100)
+    confidences = pd.read_csv(os.path.join(OCR_OUTPUT, "parsed_confidence.csv"), dtype=float).fillna(value = 100)
     print("confidence_list:\n", df_list, "\n")
     print("====================================")
 
