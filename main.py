@@ -8,6 +8,7 @@ from pip._internal.metadata import pkg_resources
 from symspellpy import SymSpell, Verbosity
 import json
 import sys
+from scipy.ndimage import gaussian_filter
 
 import smartcrop
 
@@ -32,7 +33,7 @@ def crop_left_half(image_path):
 
     # width = image.shape[1]
 
-    fraction = 2 / 5
+    fraction = 0.45
     new_width = int(width * fraction)
     # image.crop((xmin, ymin, xmax, ymax))
     left_half = image.crop((0, 0, new_width, height))
@@ -53,25 +54,73 @@ def rotate_180(image_path):
     crop_left_half(after_path + image_path.split('/')[1])
 
 def binarize(image_path):
-    image = cv2.imread(image_path)
-    # normalize image
-    image = cv2.normalize(image, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-    # noise removal
-    kernel = np.ones((3, 3), np.uint8)
-    opening = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel, iterations=2)
-    opening = cv2.fastNlMeansDenoisingColored(opening, None, 10, 10, 7, 15)
-    gray = cv2.cvtColor(opening, cv2.COLOR_BGR2GRAY)
-    gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
-    #gray = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
-    #kernel = np.ones((2, 2), np.uint8)  # smaller kernel for subtle effects
-    #processed = cv2.morphologyEx(gray, cv2.MORPH_CLOSE, kernel, iterations=1)  # fill gaps instead of erosion
-    # thinning, skeletonization
-    kernel = np.ones((2, 2), np.uint8)
-    erosion = cv2.erode(gray, kernel, iterations=1)
+    image = Image.open(image_path)
+    image = image.convert("RGB")
+    image = np.array(image)
+
+    # attempt one
+    #greyscale image
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # thickening the font
+    image = cv2.bitwise_not(image)
+    kernal = np.ones((2, 2), np.uint8)
+    image = cv2.dilate(image, kernal, iterations=1)
+    image = cv2.bitwise_not(image)
+
+    # blurring image
+    sigma = 0.5
+    image = gaussian_filter(image, sigma=sigma)
+
+    # image binarization
+    _, image = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+    #attempt two
+    # Grayscale
+    # image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    #
+    # # Thickness
+    # image = cv2.bitwise_not(image)
+    # kernal = np.ones((2, 2), np.uint8)
+    # image = cv2.dilate(image, kernal, iterations=1)
+    # image = cv2.bitwise_not(image)
+    #
+    # # image binarization
+    # image = cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 19, 8)
+    #
+    # # CLAHE
+    # clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    # image = clahe.apply(image)
+    #
+    # # To remove noise
+    # kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
+    # image = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel)
+    #
+    # # Sharpening
+    # laplacian = cv2.Laplacian(image, cv2.CV_64F)
+    # image = cv2.convertScaleAbs(image - 0.7 * laplacian)
+
+    # attempt three
+    # # normalize image
+    # image = cv2.normalize(image, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+    # # noise removal
+    # kernel = np.ones((3, 3), np.uint8)
+    # opening = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel, iterations=2)
+    # opening = cv2.fastNlMeansDenoisingColored(opening, None, 10, 10, 7, 15)
+    # gray = cv2.cvtColor(opening, cv2.COLOR_BGR2GRAY)
+    # gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+    # #gray = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+    # #kernel = np.ones((2, 2), np.uint8)  # smaller kernel for subtle effects
+    # #processed = cv2.morphologyEx(gray, cv2.MORPH_CLOSE, kernel, iterations=1)  # fill gaps instead of erosion
+    # # thinning, skeletonization
+    # kernel = np.ones((2, 2), np.uint8)
+    # erosion = cv2.erode(gray, kernel, iterations=1)
+
     #show image
     # os.mkdir('preprocessed2')
     os.makedirs('preprocessed2', exist_ok=True)
-    cv2.imwrite('preprocessed2/' + image_path.split('/')[1], erosion)
+    cv2.imwrite('preprocessed2/' + image_path.split('/')[1], image)
+    # cv2.imwrite('preprocessed2/' + image_path.split('/')[1], erosion)
 
 
 def extract_text(image_path):
@@ -143,19 +192,13 @@ if __name__ == '__main__':
     # why so many diff directories?
     # to compare different stages of the image processing and processing techniques
     # this is just a test so... chill
-    for file in os.listdir('unprocessed/'):
-        rotate_180(f'unprocessed/{file}')
+    # for file in os.listdir('NanonetsFromAlex/'):
+    #     rotate_180(f'NanonetsFromAlex/{file}')
+
+    for file in os.listdir('nanonetLexi/'):
+        rotate_180(f'nanonetLexi/{file}')
 
     for file in os.listdir('cut_turned/'):
         binarize(f'cut_turned/{file}')
         #binarize(f'smartcrop/{file}') erm
-
-    count1 = 0
-    text1 = ''
-    for file in os.listdir('preprocessed/'):
-        print (file)
-        text1 = extract_text(f'preprocessed/{file}')
-        #print(text1)
-        count1 += 1
-
 

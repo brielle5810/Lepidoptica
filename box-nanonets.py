@@ -8,8 +8,14 @@ model = NANONETSOCR()
 # MODEL_ID = '52e3f05e-50dd-430a-9b8d-42f28e0942b2'
 # API_KEY = '6ef92718-f203-11ef-90b1-a6fe692a5476'
 #BRIELLE:
-MODEL_ID = '5c1490c0-0edc-412e-949c-0e68060b76db'
-API_KEY = '10fe9db1-f1f6-11ef-b958-eaf9f4bd4f51'
+# MODEL_ID = '5c1490c0-0edc-412e-949c-0e68060b76db'
+# API_KEY = '10fe9db1-f1f6-11ef-b958-eaf9f4bd4f51'
+#ALEX:
+# MODEL_ID = '9c3dbc9b-67c2-449a-a8dd-15fe85c9a9e1'
+# API_KEY = '92421153-13bf-11f0-b71f-f2abfc032ff7'
+#ALEXIA:
+MODEL_ID = '82b4a9e4-bf0e-4fcd-9e3f-c24fab0d4039'
+API_KEY = '8a12cc28-1815-11f0-b123-ba3b08fd7528'
 model.set_token(API_KEY)
 # MODEL_ID = '5c1490c0-0edc-412e-949c-0e68060b76db'
 # API_KEY = '10fe9db1-f1f6-11ef-b958-eaf9f4bd4f51'
@@ -24,7 +30,7 @@ response = requests.post(url, auth=(API_KEY, ''), headers={"Content-Type": "appl
 response_data = response.json()
 #print (response_data)
 
-PREPROCESSED_DIR = "preprocessed_B"
+PREPROCESSED_DIR = "preprocessed_L_2"
 OUTPUT_DIR = "NANONETS_DATA4"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 

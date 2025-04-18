@@ -39,7 +39,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "main",
-    "last_opened_file_path": "C:/Users/alexi/OneDrive/Documents/CS_Projects/2025-TJS-Senior-Project/Alexia's Work/2025-deep-text-recognition-benchmark-practice",
+    "last_opened_file_path": "C:/Users/alexi/OneDrive/Documents/CS_Projects/2025-TJS-Senior-Project",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -79,14 +79,6 @@
       <method v="2" />
     </configuration>
   </component>
-  <component name="SharedIndexes">
-    <attachedChunks>
-      <set>
-        <option value="bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-PY-243.25659.43" />
-        <option value="bundled-python-sdk-181015f7ab06-4df51de95216-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-243.25659.43" />
-      </set>
-    </attachedChunks>
-  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -103,6 +95,7 @@
       <workItem from="1743117884032" duration="5980000" />
       <workItem from="1743172429341" duration="3232000" />
       <workItem from="1743366295546" duration="1404000" />
+      <workItem from="1744835625696" duration="15000" />
     </task>
     <servers />
   </component>
