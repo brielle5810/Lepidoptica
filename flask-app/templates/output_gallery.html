@@ -196,7 +196,7 @@
                             hx-delete="/deleterow/{{ loop.index0 }}"
                             hx-target="#row-{{ loop.index0 }}"
                             hx-swap="outerHTML"
-                            hx-confirm="Are you sure?" style="font-size:60px; font-weight:bold; color:#8a2129">
+                            hx-confirm="Are you sure? Deleting this row will remove the images and all corresponding data." style="font-size:60px; font-weight:bold; color:#8a2129">
                         &times;
                     </button>
                 </td>
@@ -239,10 +239,14 @@
             </tr>
             {% endfor %}
         </tbody>
-            <tbody hx-confirm="Are you sure?" hx-target="closest tr" hx-swap="outerHTML swap:1s"></tbody>
+            <tbody hx-confirm="Are you sure? Deleting this will remove all the corresponding data." hx-target="closest tr" hx-swap="outerHTML swap:1s">
+            </tbody>
   </table>
 </div>
 
+     <div style="position: absolute; top: 5%; left: 30%">
+        <button class="mt-3 button" onclick="deleteAll()" >Delete All</button>
+    </div>
 
     <div class="wrapper" style="padding-bottom: 5%">
         <button class="button" style="margin-top: 2%;" onclick="tableToCSV()">
@@ -689,6 +693,29 @@
 
             }
         }
+    </script>
+    <script>
+        <!--? DELETE ALL IMAGES -->
+       function deleteAll() {
+            const confirmDelete = confirm("Are you sure? Only press this after CSV download. This will remove photos and all corresponding data for program use next session. This action cannot be undone.");
+            if (!confirmDelete) return;
+
+            fetch(`/delete_all`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log(`Deleted all images`);
+                        location.reload();
+                    } else {
+                        alert(`Error: ${data.error}`);
+                    }
+                })
+                .catch(err => {
+                    console.error("Request failed", err);
+                    alert("Failed to delete images. Please try again.");
+                });
+        }
+
     </script>
 
     <script type="text/javascript">
