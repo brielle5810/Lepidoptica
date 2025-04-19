@@ -3,18 +3,15 @@ import secrets
 
 import cv2
 import numpy as np
-from flask import Flask, request, send_file, jsonify, render_template, flash, request, redirect, url_for, \
-    send_from_directory, session, abort, make_response
+from flask import Flask, request, session, send_file, jsonify, render_template, flash, request, redirect, url_for, \
+    send_from_directory, abort, make_response
 import pandas as pd
 from PIL import Image, ImageOps
-import io
 from flask_cors import CORS
 #from flask_table import Table, Col
 from werkzeug.utils import secure_filename
 import shutil
 from scipy.ndimage import gaussian_filter
-import easyocr
-from datetime import datetime
 import easyocr
 
 import textReader
@@ -57,14 +54,12 @@ def allowed_file(filename):
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    print("hello, world!!")
     return render_template("index.html")
 
 @app.route("/upload", methods=["GET", "POST"])
 def upload():
     if request.method == 'POST':
         if 'files' not in request.files:
-            #flash('No file part')
             return redirect(request.url)
 
         files = request.files.getlist("files")  # Get multiple files
@@ -87,8 +82,6 @@ def upload():
 
         if filenames:
             return redirect(url_for("loading_page", filenames=",".join(filenames)))
-
-        #flash("No valid files selected")
         return redirect(request.url)
 
 def clear_folder(folder):
@@ -99,11 +92,10 @@ def clear_folder(folder):
 
 @app.route("/loading_page", methods=["GET"])
 def loading_page():
-    #loading page renders THEN CALLS preprocess! so user waits on loading page
-    #filenames = request.args.get("filenames", "").split(",") if request.args.get("filenames") else []
+    # oading page renders THEN CALLS preprocess! so user waits on loading page
     return render_template("loading.html")
 
-# before deleting files from UPLOAD_FOLDER, move them to SAVED_ORIGINALS
+# before deleting files from UPLOAD_FOLDER, move them to SAVED_ORIGINALS-> need them for reprocessing
 def move_originals(filename):
     original_path = os.path.join(UPLOAD_FOLDER, filename)
     saved_path = os.path.join(SAVED_ORIGINALS, filename)
@@ -111,14 +103,14 @@ def move_originals(filename):
     if os.path.exists(original_path):
         shutil.move(original_path, saved_path)  # Moves file instead of deleting it
 
-@app.route("/edit", methods=["GET", "POST"])
-def edit():
-    return render_template("edit.html")
+# @app.route("/edit", methods=["GET", "POST"])
+# def edit():
+#     return render_template("edit.html")
 
 
 @app.route("/preprocess", methods=["GET", "POST"])
 def preprocess():
-    # edited for bath uploads/processing
+    # edited for batch uploads/processing
     filenames = os.listdir(app.config["UPLOAD_FOLDER"])
 
     if not filenames:
@@ -151,9 +143,8 @@ def crop_images_in_batch(filenames):
 
 
 def preprocess_images_in_batch():
-    # create kernels once, instead of repeatedly for each pic as b4....
-    kernel_open = np.ones((3, 3), np.uint8)
-    kernel_erode = np.ones((2, 2), np.uint8)
+    # create kernel once, instead of repeatedly for each pic as b4....
+    kernel_22 = np.ones((2, 2), np.uint8)
 
     for filename in os.listdir(STAGE1_FOLDER):
         image_path = os.path.join(STAGE1_FOLDER, filename)
@@ -170,8 +161,7 @@ def preprocess_images_in_batch():
 
             # thickening the font
             image_np = cv2.bitwise_not(image_np)
-            kernal = np.ones((2, 2), np.uint8)
-            image_np = cv2.dilate(image_np, kernal, iterations=1)
+            image_np = cv2.dilate(image_np, kernel_22, iterations=1)
             image_np = cv2.bitwise_not(image_np)
 
             # blurring image
@@ -217,8 +207,6 @@ def progress():
 
 @app.route("/ocr", methods=["POST"])
 def ocr():
-    print("do ocr")
-
     #This version creates individual .csv files for each image
     # for filename in os.listdir(PREPROCESS_FOLDER):
     #     name = filename.split(".")[0]
@@ -326,14 +314,13 @@ def ocr():
 
 @app.route("/reprocess", methods=["POST"])
 def reprocess_page():
-    selected_images = request.form.getlist("selected_images") 
+    selected_images = request.form.getlist("selected_images")
 
     if not selected_images:
         return redirect(url_for("image_gallery"))
 
     session['reprocess_images'] = selected_images
     return jsonify({"redirect": url_for("reprocess_page_render")})
-    #return render_template("modified.html", images=selected_images)
 
 @app.route("/reprocess_view")
 def reprocess_page_render():
@@ -366,18 +353,11 @@ def update_img_gallery():
 @app.route("/image_gallery", methods=["GET"])
 def image_gallery():
     images = os.listdir(app.config["PREPROCESS_FOLDER"])
-    print(images)
-    print("====================================")
     return render_template("image_gallery.html", images=images)
-
-@app.route("/loading_reprocess", methods=["GET"])
-def loading_reprocess():
-    return render_template("loading_reprocess.html")
 
 @app.route("/loading_ocr", methods=["GET"])
 def loading_ocr():
     return render_template("loading_ocr.html")
-
 
 @app.route("/preprocessed/<path:name>")
 def download_preprocessed_file(name):
@@ -509,7 +489,7 @@ def update_mult_cells():
             else:
                 print(f"invalid update attempted: row={row}, col={col} --skipping")
 
-        if df.columns.empty: #yes this was a real error i was getting. no i dont know why. yes i think i fixedit.
+        if df.columns.empty:
             print("no columns — skipping")
             return jsonify(success=False, error="df has no columns"), 500
 
@@ -522,38 +502,37 @@ def update_mult_cells():
 
 @app.route("/delete/<filename>", methods=["DELETE"])
 def delete_file(filename):
-    file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-    preprocessed_path = os.path.join(app.config["PREPROCESS_FOLDER"], filename)
-    stage1_path = os.path.join(app.config["STAGE1_FOLDER"], filename)
-    saved_originals_path = os.path.join(app.config["SAVED_ORIGINALS"], filename)
+    for folder in [UPLOAD_FOLDER, PREPROCESS_FOLDER, STAGE1_FOLDER, SAVED_ORIGINALS, MODIFIED_FOLDER]:
+        file_path = os.path.join(folder, filename)
+        if os.path.exists(file_path):
+            os.remove(file_path)
 
-    if os.path.exists(file_path):
-        os.remove(file_path)
-    if os.path.exists(preprocessed_path):
-        os.remove(preprocessed_path)
-    if os.path.exists(stage1_path):
-        os.remove(stage1_path)
-    if os.path.exists(saved_originals_path):
-        os.remove(saved_originals_path)
-    return jsonify({"success": True, "message": f"{filename} deleted"})
+    return jsonify({"success": True, "message": f"{filename} attempted deletion in all folders"})
+    # file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+    # preprocessed_path = os.path.join(app.config["PREPROCESS_FOLDER"], filename)
+    # stage1_path = os.path.join(app.config["STAGE1_FOLDER"], filename)
+    # saved_originals_path = os.path.join(app.config["SAVED_ORIGINALS"], filename)
+    # modified_path = os.path.join(app.config["MODIFIED_FOLDER"], filename)
+    #
+    # if os.path.exists(file_path):
+    #     os.remove(file_path)
+    # if os.path.exists(preprocessed_path):
+    #     os.remove(preprocessed_path)
+    # if os.path.exists(stage1_path):
+    #     os.remove(stage1_path)
+    # if os.path.exists(saved_originals_path):
+    #     os.remove(saved_originals_path)
+    # if os.path.exists(modified_path):
+    #     os.remove(modified_path)
 
 @app.route("/delete_all", methods=["DELETE"])
 def delete_all():
-    #file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-    #preprocessed_path = os.path.join(app.config["PREPROCESS_FOLDER"], filename)
-    #stage1_path = os.path.join(app.config["STAGE1_FOLDER"], filename)
-    for folder in [UPLOAD_FOLDER, PREPROCESS_FOLDER, STAGE1_FOLDER, SAVED_ORIGINALS]:
+    for folder in [UPLOAD_FOLDER, PREPROCESS_FOLDER, STAGE1_FOLDER, SAVED_ORIGINALS, MODIFIED_FOLDER]:
         for filename in os.listdir(folder):
             file_path = os.path.join(folder, filename)
             if os.path.exists(file_path):
                 os.remove(file_path)
     return jsonify({"success": True, "message": "All files deleted"})
-    # for filename in os.listdir(app.config["UPLOAD_FOLDER"]):
-    #     file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-    #     if os.path.exists(file_path):
-    #         os.remove(file_path)
-    #
-    # return jsonify({"success": True, "message": "All files deleted"})
 
 
 # @app.before_request
@@ -630,10 +609,6 @@ def apply_thickness(image_np, thickness):
 
 
 def apply_processing_strength(image_np, strength, thickness):
-
-    kernel_three = np.ones((3, 3), np.uint8) #from open!
-    kernel_two = np.ones((2, 2), np.uint8) #from erode!
-
     if strength == "soft":
         print("Applying soft processing")
         # Grayscale
@@ -725,12 +700,10 @@ def output():
         print(item3)
 
     # print("df:\n", df)
-
     return render_template("output_gallery.html",
                            images_and_data=zip(imagePairs, df_list),
                            headings=df.columns.tolist(),
                            confidence_list=confidences.values.tolist())
-
 
 
 @app.route("/finished", methods=["GET"])

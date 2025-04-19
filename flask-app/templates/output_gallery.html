@@ -299,7 +299,6 @@
       // event listener for htmx:afterRequest
       document.body.addEventListener("htmx:afterRequest", function(evt) {
           if (evt.detail.requestConfig.verb === "DELETE") {
-              // refresh :)))) to see update
               window.location.reload();
           }
       });

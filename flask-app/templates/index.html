@@ -61,7 +61,7 @@
                 if (files.length > MAX_NUM_FILES) {
                     console.log("too many");
                     e.preventDefault();
-                    warnMess.textContent = `Image upload limit is ${MAX_NUM_FILES} images. Please select fewer images.`
+                    warnMess.textContent = `Image upload limit is ${MAX_NUM_FILES} images.`
                 }
                 else {
                     warnMess.textContent = '';
@@ -75,7 +75,7 @@
             if (files.length > MAX_NUM_FILES) {
                 //console.log("too many images");
                 e.preventDefault();
-                warnMess.textContent = `Image upload limit is ${MAX_NUM_FILES} images. Please select fewer images.`
+                warnMess.textContent = `Image upload limit is ${MAX_NUM_FILES} images. Please choose fewer images.`
             }
             else {
                  if (!filesAreValid) {
