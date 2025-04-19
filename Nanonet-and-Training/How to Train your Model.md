@@ -58,7 +58,9 @@ Every other python file is called here. Unfortunately google drive doesn't provi
 
 1. Make Nanonet images: Visit [Nanonets.com](https://nanonets.com/), make an account. Upload raw butterfly images. For each word/conneted text without spaces between, make a box and transcribe. You can use the same default container [fig.3]. You will then need to change the Review status of all the images to Approved, or else they won't be considered later. 
 
-![fig.3](<howtotrain-images/3.png?raw=true> “fig.3: Example of text parsing in Nanonets.com”)
+| ![fig.3]<howtotrain-images/3.png?raw=true) |
+|:--:|
+| fig.3: Example of text parsing in Nanonets.com |
 
 2. Make note of the Nanonet Model ID (found in Workflow Settings) and API key (found in Account Info)
 
