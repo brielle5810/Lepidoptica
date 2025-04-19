@@ -16,8 +16,13 @@ This program is responsible for taking the nanonet data in `nanodata_all/` and t
 
 *NOTE: Default path is set to `/content/drive/MyDrive/Colab Notebooks/data_folder/tjs-butterfly-imagetotext/lepidoptica-custom-model/data_organization/`. Set to `[your drive path]/lepidoptica-custom-model/data_organization/`*
 
-![fig.1](<howtotrain-images/1.png?raw=true> “fig.1: Images in original Nanonet format”)
-![fig.2](<howtotrain-images/2.png?raw=true> “fig.2: Images after being read through NanoNet-To-Data.ipynb”)
+| ![fig.1](howtotrain-images/1.png?raw=true) |
+|:--:|
+| fig.1: Images in original Nanonet format |
+|:--:|
+| ![fig.2](howtotrain-images/2.png?raw=true) |
+|:--:|
+| fig.2: Images after being read through NanoNet-To-Data.ipynb |
 
 ### :butterfly: config_files
 This important folder contains `en_filtered_config.yaml`, a file that controls training configurations. Editing this file will change the batch size, allowed characters, data locations, and more. Currently, none of the files in here are named `en_filtered_config.yaml`. Instead, they're named for which fine_tuned model they were used for, just for version history. Be aware that if you'll train your own version, you'll need to name this file `en_filtered_config.yaml`, or change this name in `trainer.ipynb`. 
