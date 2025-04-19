@@ -4,6 +4,10 @@ Through this guide, we're hoping you'll be well equipped to continue (or even re
 
 Before I get into the steps taken to actually train the model, I want to outline the important files, directories, and what we did to train our latest model. This should set the stage, so you understand how everything fits together.
 
+[Directories](https://github.com/brielle5810/TJS_Project/blob/main/Nanonet-and-Training/How%20to%20Train%20your%20Model.md#directories)
+[How to Train](https://github.com/brielle5810/TJS_Project/blob/main/Nanonet-and-Training/How%20to%20Train%20your%20Model.md#how-to-train)
+[History](https://github.com/brielle5810/TJS_Project/blob/main/Nanonet-and-Training/How%20to%20Train%20your%20Model.md#history)
+
 ## Directories
 This is a map of our training directory, `lepidoptica-custom-model/`. Forewarning: everything has been adjusted to work in Google Colab. So for this to work, you need to unzip and upload everything to Google Drive. There is a default directory, but that can be changed within code (which I will note if necessary). Anything not mentioned is still important, just not enough to go into further details with. 
 
