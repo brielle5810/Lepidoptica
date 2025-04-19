@@ -19,7 +19,7 @@ This program is responsible for taking the nanonet data in `nanodata_all/` and t
 | ![fig.1](howtotrain-images/1.png?raw=true) |
 |:--:|
 | fig.1: Images in original Nanonet format |
-|:--:|
+
 | ![fig.2](howtotrain-images/2.png?raw=true) |
 |:--:|
 | fig.2: Images after being read through NanoNet-To-Data.ipynb |
