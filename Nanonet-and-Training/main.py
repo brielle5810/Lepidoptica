@@ -1,4 +1,5 @@
 import shutil
+from logging import exception
 
 import cv2
 import numpy as np
@@ -105,85 +106,33 @@ def binarize(image_path):
     os.makedirs('preprocessed', exist_ok=True)
     cv2.imwrite('preprocessed/' + image_path.split('/')[1], image)
 
-
-# def extract_text(image_path):
-#     image = cv2.imread(image_path)
-#     text = pytesseract.image_to_string(image, lang='eng', config='--psm 4')
-#     #image_to_data(im, lang='eng', config=psm)
-#     print(text)
-#     return text
-#
-#
-# def post_correction(text):
-#     sym_spell = SymSpell(max_dictionary_edit_distance=3, prefix_length=7)
-#     dictionary_path = "newDict2.txt"
-#     eng_Dict = "en-80k.txt"
-#
-#     dictionary_path2 = "bigramDict.txt"
-#     sym_spell.load_dictionary(dictionary_path2, term_index=0, count_index=1, separator="$")
-#     sym_spell.load_dictionary(dictionary_path, term_index=0, count_index=1, separator="$")
-#     #sym_spell.load_dictionary(eng_Dict, term_index=0, count_index=1)
-#     #sym_spell.load_bigram_dictionary(dictionary_path2, term_index=0, count_index=1, separator="$")
-#
-#     print(text)
-#     print("====================================================")
-#
-#     # print first 10 words in dictionary
-#     #suggestions = sym_spell.lookup_compound(text, max_edit_distance=2, transfer_casing=True)
-#     #suggestions = sym_spell.lookup(text, Verbosity.TOP, max_edit_distance=2, transfer_casing=True)
-#
-#     suggestions = []
-#     for i in text.split():
-#         suggestions.append(sym_spell.lookup(i, Verbosity.TOP, max_edit_distance=2, transfer_casing=True))
-#         #maybe Verbosity.TOP, or ALL
-#
-#     # suggestions = sym_spell.lookup_compound(text, max_edit_distance=2, transfer_casing=True)
-#     # for suggestion in suggestions:
-#     #     print(suggestion.term)
-#
-#     return suggestions
-# def apply_smart_crop(image_path, crop_data):
-#     # Open the image
-#     image = Image.open(image_path)
-#     img_width, img_height = image.size
-#
-#     # we are using full height to not cut off smaller labels, as is done when everything is left to SmartCrop
-#     x, y, width, height = crop_data['x'], crop_data['y'], crop_data['width'], img_height
-#
-#     # im1 = im.crop((leftstart, pixelsfromtop, howfarright, howfardown))
-#     cropped_image = image.crop((x, 0, x + width, height))
-#
-#     output_dir = "smartcrop"
-#     os.makedirs(output_dir, exist_ok=True)
-#
-#     filename = os.path.basename(image_path)
-#     cropped_image.save(os.path.join(output_dir, filename))
-
-# def testSmartCrop(image_path):
-#     image = Image.open(image_path)
-#     sc = smartcrop.SmartCrop()
-#     result = sc.crop(image, 100, 100)
-#     output_dir = 'smartcrop'
-#     os.makedirs(output_dir, exist_ok=True)
-#
-#     print(result['top_crop'])
-#
-#     apply_smart_crop(image_path, result['top_crop'])
-
-
 if __name__ == '__main__':
 
-    shutil.rmtree('rotated_and_cropped/')
-    os.makedirs('rotated_and_cropped/')
+    raw_images = 'example/'
 
-    shutil.rmtree('rotated/')
-    os.makedirs('rotated/')
+    if not os.path.exists(raw_images):
+        exception("The raw image file path does not exist")
 
-    shutil.rmtree('preprocessed')
-    os.makedirs('preprocessed')
+    if os.path.exists('rotated_and_cropped/'):
+        shutil.rmtree('rotated_and_cropped/')
+        os.makedirs('rotated_and_cropped/')
+    else:
+        os.makedirs('rotated_and_cropped/')
 
-    for file in os.listdir('example/'):
-        rotate_180(f'example/{file}')
+    if os.path.exists('rotated/'):
+        shutil.rmtree('rotated/')
+        os.makedirs('rotated/')
+    else:
+        os.makedirs('rotated/')
+
+    if os.path.exists('preprocessed'):
+        shutil.rmtree('preprocessed')
+        os.makedirs('preprocessed')
+    else:
+        os.makedirs('preprocessed')
+
+    for file in os.listdir(raw_images):
+        rotate_180(f'{raw_images}{file}')
 
     for file in os.listdir('rotated_and_cropped/'):
         binarize(f'rotated_and_cropped/{file}')
