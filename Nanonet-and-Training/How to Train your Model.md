@@ -1,8 +1,3 @@
----
-title: How to Train your Model
-
----
-
 # How to Train your Model
 
 Through this guide, we're hoping you'll be well equipped to continue (or even restart) fine tuning easyocr. Mainly, I followed what was outlined in the EasyOCR github for training a [custom recognition model](https://github.com/JaidedAI/EasyOCR/blob/master/custom_model.md). They have a [custom trainer folder](https://github.com/JaidedAI/EasyOCR/tree/master/trainer) in their repository, modelled after the [deep-text-recognition-benchmark](https://github.com/clovaai/deep-text-recognition-benchmark) repository, which I downloaded to work on top of.
@@ -21,8 +16,8 @@ This program is responsible for taking the nanonet data in `nanodata_all/` and t
 
 *NOTE: Default path is set to `/content/drive/MyDrive/Colab Notebooks/data_folder/tjs-butterfly-imagetotext/lepidoptica-custom-model/data_organization/`. Set to `[your drive path]/lepidoptica-custom-model/data_organization/`*
 
-![fig.1](howtotrain-images/1.png?raw=true)“fig.1: Images in original Nanonet format”
-![fig.2](howtotrain-images/2.png?raw=true)“fig.2: Images after being read through NanoNet-To-Data.ipynb”
+![fig.1](howtotrain-images/1.png?raw=true “fig.1: Images in original Nanonet format”)
+![fig.2](howtotrain-images/2.png?raw=true “fig.2: Images after being read through NanoNet-To-Data.ipynb”)
 
 ### :butterfly: config_files
 This important folder contains `en_filtered_config.yaml`, a file that controls training configurations. Editing this file will change the batch size, allowed characters, data locations, and more. Currently, none of the files in here are named `en_filtered_config.yaml`. Instead, they're named for which fine_tuned model they were used for, just for version history. Be aware that if you'll train your own version, you'll need to name this file `en_filtered_config.yaml`, or change this name in `trainer.ipynb`. 
@@ -63,7 +58,7 @@ Every other python file is called here. Unfortunately google drive doesn't provi
 
 1. Make Nanonet images: Visit [Nanonets.com](https://nanonets.com/), make an account. Upload raw butterfly images. For each word/conneted text without spaces between, make a box and transcribe. You can use the same default container [fig.3]. You will then need to change the Review status of all the images to Approved, or else they won't be considered later. 
 
-![fig.3](howtotrain-images/3.png?raw=true)“fig.3”
+![fig.3](howtotrain-images/3.png?raw=true “fig.3: Example of text parsing in Nanonets.com”)
 
 2. Make note of the Nanonet Model ID (found in Workflow Settings) and API key (found in Account Info)
 
