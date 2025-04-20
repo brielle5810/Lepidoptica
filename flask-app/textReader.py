@@ -112,6 +112,12 @@ def split_date(date_str):
 
     return date_string
 
+def find_people_names(text):
+    nlp = spacy.load("en_core_web_sm")
+    doc = nlp(text)
+    names = [ent.text for ent in doc.ents if ent.label_ == "PERSON"]
+    return names
+
 
 # essential entity models downloads
 nltk.download('punkt_tab')
@@ -143,7 +149,7 @@ def parsing():
 ### CODE START ###
     # data is the template list of metadata attributes; there'll be a list for each image
     # Category[0]: CatalogNumber can be filled in off the top (#########)
-    data = [["#########", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN"]]
+    data = [["#########", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]]
     conf_data = [["100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0",
                  "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0",
                  "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0"]]
@@ -185,9 +191,9 @@ def parsing():
         print("List of confidence: ", listOfConfidence)
 
         # Default values of the df and cdf
-        df.loc[currentIndex] = ["#########", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN",
-             "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN",
-             "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN", "NaN"]
+        df.loc[currentIndex] = ["#########", "", "", "", "", "", "", "", "", "", "", "", "", "",
+             "", "", "", "", "", "", "", "", "", "", "", "", "", "",
+             "", "", "", "", "", "", "", "", "", "", ""]
         cdf.loc[currentIndex] = ["100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0",
              "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0",
              "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0"]
@@ -274,27 +280,52 @@ def parsing():
         print("New and improved joined string: ", joinedStrings)
 
 
-        voucher = "NaN"
-        x = re.search(r"\bMGCL [0-9]{7}", joinedStrings)
-        if x.group():
-            if x.group() in joinedStrings:
-                voucher = x.group()
-                # Fill in confidence csv
-                index = listOfStrings.index(x.group())
-                cdf.loc[currentIndex, 'Specimen_voucher'] = listOfConfidence[index]
-                # Update list of strings (we need to remove the specimen voucher)
-                listOfStrings.remove(x.group())
-                joinedStrings = joinedStrings.replace(x.group(), "")  # REMOVE FROM BIG STRING
-
+        voucher = ""
+        x = re.search(r"(MGCL)?\s?[0-9]{7}", joinedStrings, re.IGNORECASE)
+        if x is not None:
+            voucher = x.group()
+            joinedStrings = joinedStrings.replace(x.group(), "")  # REMOVE FROM BIG STRING
         df.loc[currentIndex, 'Specimen_voucher'] = voucher
 
+        # Confidence rating check
+        if x is not None:
+            if x.group() in listOfStrings:
+                index = listOfStrings.index(x.group())
+                cdf.loc[currentIndex, 'Specimen_voucher'] = listOfConfidence[index]
+                listOfStrings.remove(x.group())
+            else:
+                ## FINALLY UTILIZING THE OG COPIES OF THE LISTS FOR SOMETHING
+                # This portion is called if the regexed specimen voucher isn't 1:1 with the one in the listOfStrings
+                # Also, remove the specimen voucher from the listOfStrings
+                average = 0.0
+                divisor = 0
+                for string in copiedStrings:
+                    if (re.findall(x.group(), string)) and (string != ""):
+                        index = copiedStrings.index(string)
+                        average += float(copiedConfidence[index])
+                        divisor += 1
+                        if string in listOfStrings:
+                            listOfStrings.remove(string)
+                    elif (re.findall(string, x.group())) and (string != ""):
+                        index = copiedStrings.index(string)
+                        average += float(copiedConfidence[index])
+                        divisor += 1
+                        if string in listOfStrings:
+                            listOfStrings.remove(string)
+                if average != 0:
+                    average = average / divisor
+                elif average == 0:
+                    average = 100.0
 
-        ### Extracting Location Entities: Categories[7 - 10] ###
+                cdf.loc[currentIndex, 'Specimen_voucher'] = average
+
+
+        ### LOCALITIES: Categories[7 - 10] ###
         placeEntity = locationtagger.find_locations(text=joinedStrings)
 
         # split all words into ngrams to test against the dictionaries
         words = [t for t in joinedStrings.split() if len(t) > 2]
-        ngrams = get_ngrams(words, 3) #heres the thing... so few have 5 words
+        ngrams = get_ngrams(words, 3)  # heres the thing... so few have 5 words
 
         # load dictionaries
         countryList = load_spec_vocab("dictionaries/countryDict.txt")
@@ -304,43 +335,27 @@ def parsing():
         ### Getting all countries
         print("The countries in text : ")
         print(placeEntity.countries)
-        i = 0
-        while i < len(placeEntity.countries):
-            if placeEntity.countries[i] in listOfStrings:
-                index = listOfStrings.index(placeEntity.countries[i])
-                cdf.loc[currentIndex, 'Country'] = listOfConfidence[index]
-            i += 1
 
         df.loc[currentIndex, 'Country'] = ", ".join(placeEntity.countries)
-        joinedStrings = joinedStrings.replace(df.loc[currentIndex, 'Country'], "")  # REMOVE FROM BIG STRING
         if not placeEntity.countries:
             # if location tagger doesn't find a country, try to find one using fuzzy matching
             best_match, score = get_best_match_from_ngrams(ngrams, countryList)
             if best_match:
                 # change the corresponding estimate = score
                 df.loc[currentIndex, 'Country'] = best_match
-                joinedStrings = joinedStrings.replace(best_match, "")  # REMOVE FROM BIG STRING
             else:
                 print("No country found")
 
         ### Getting all states
         print("The states in text : ")
         print(placeEntity.regions)
-        i = 0
-        while i < len(placeEntity.regions):
-            if placeEntity.regions[i] in listOfStrings:
-                index = listOfStrings.index(placeEntity.regions[i])
-                cdf.loc[currentIndex, 'State'] = listOfConfidence[index]
-            i += 1
 
         df.loc[currentIndex, 'State'] = ", ".join(placeEntity.regions)
-        joinedStrings = joinedStrings.replace(df.loc[currentIndex, 'State'], "")  # REMOVE FROM BIG STRING
         if not placeEntity.regions:
             best_match, score = get_best_match_from_ngrams(ngrams, stateList)
             if best_match:
                 # change the corresponding estimate = score
                 df.loc[currentIndex, 'State'] = best_match
-                joinedStrings = joinedStrings.replace(best_match, "")  # REMOVE FROM BIG STRING
             else:
                 print("No state found")
 
@@ -352,12 +367,40 @@ def parsing():
             index = listOfStrings.index(best_match)
             cdf.loc[currentIndex, 'County'] = listOfConfidence[index]
         if not best_match:
-            df.loc[currentIndex, 'County'] = 'NaN'
+            df.loc[currentIndex, 'County'] = ''
             # use city ?
 
         # Getting all cities
         print("The cities in text : ")
         print(placeEntity.cities)
+        df.loc[currentIndex, 'Locality name'] = ", ".join(placeEntity.cities)
+
+        # Confidence rating check/removing localities
+        for iter in range(7, 11):
+            # This portion is called if the locationtagger country/city/county isn't 1:1 with the one in the listOfStrings
+            average = 0.0
+            divisor = 0
+            for string in listOfStrings:
+                if (re.search(string, df.iloc[currentIndex, iter], re.IGNORECASE)) and (string != ""):
+                    index = copiedStrings.index(string)
+                    average += float(copiedConfidence[index])
+                    divisor += 1
+
+                    listOfStrings.remove(string)  ### Remove from list of strings
+                    joinedStrings = re.sub(string, "", joinedStrings)  ### REMOVE FROM BIG STRING
+                elif (re.search(df.iloc[currentIndex, iter], string, re.IGNORECASE)) and (string != ""):
+                    index = copiedStrings.index(string)
+                    average += float(copiedConfidence[index])
+                    divisor += 1
+
+                    listOfStrings.remove(string)  ### Remove from list of strings
+                    joinedStrings = re.sub(string, "", joinedStrings)  ### REMOVE FROM BIG STRING
+
+            if average != 0:
+                average = average / divisor
+            elif average == 0:
+                average = 100.0
+            cdf.loc[currentIndex, iter] = average
 
 
         ### CLEANING SOME STUFF UP BEFORE NUMBER CALCULATIONS
@@ -407,7 +450,7 @@ def parsing():
                         joinedStrings = re.sub(string, "", joinedStrings)
                 if average != 0:
                     average = average / divisor
-                else:
+                elif average == 0:
                     average = 100.0
                 cdf.loc[currentIndex, 'Elevation max'] = average
                 cdf.loc[currentIndex, 'Elevation unit'] = average
@@ -417,10 +460,6 @@ def parsing():
         # First, check if there's a xxxN/S, xxxE/W formatted string anywhere
         # [NSEW]* is checking for the cardinal directions (* indicates 0+, for NE, SW, etc..)
         if re.search(r"\d+[.,]\d+[NSEW]*[,\s]*\d+[.,]\d+[NSEW]*", joinedStrings, re.IGNORECASE):
-            # Update confidence rating csv
-            index = listOfStrings.index(re.search(r"\d+[.,]\d+[NSEW]*[,\s]*\d+[.,]\d+[NSEW]*", joinedStrings, re.IGNORECASE).group())
-            cdf.loc[currentIndex, 'Latitude'] = listOfConfidence[index]
-            cdf.loc[currentIndex, 'Longitude'] = listOfConfidence[index]
             # See if it's only one, or both longitude/latitude
             x = re.findall(r"\d+[.,]\d+[NSEW]*[,\s]*\d+[.,]\d+[NSEW]*", joinedStrings, re.IGNORECASE)
             y = re.findall(r"\d+[.,]\d+[NSEW]*", "".join(x), re.IGNORECASE)
@@ -430,6 +469,14 @@ def parsing():
                 df.iloc[currentIndex, 15 + iter] = element
                 iter += 1
             joinedStrings = re.sub(r"\d+[.,]\d+[NSEW]*[,\s]*\d+[.,]\d+[NSEW]*", "", joinedStrings)
+
+            # Update confidence rating csv
+            try:
+                index = listOfStrings.index(re.search(r"\d+[.,]\d+[NSEW]*[,\s]*\d+[.,]\d+[NSEW]*", joinedStrings, re.IGNORECASE).group())
+                cdf.loc[currentIndex, 'Latitude'] = listOfConfidence[index]
+                cdf.loc[currentIndex, 'Longitude'] = listOfConfidence[index]
+            except ValueError:
+                print("No lat and long ig")
 
 
         ### NOW BEGINS THE DATE SAGA ###
@@ -484,7 +531,7 @@ def parsing():
             x = re.search("\d{2};?(?![a-zA-Z-])", dateString)
             dates_found = x.group()
         else:
-            dates_found = "NaN"
+            dates_found = ""
 
         print("Preliminary dates found: ", dates_found)
         df.loc[currentIndex, 'Date verbatim'] = dates_found
@@ -496,7 +543,6 @@ def parsing():
             cdf.loc[currentIndex, 'Collecting event start'] = listOfConfidence[index]
             cdf.loc[currentIndex, 'Collecting event end'] = listOfConfidence[index]
         else:
-            ## FINALLY UTILIZING THE OG COPIES OF THE LISTS FOR SOMETHING
             # This portion is called if the dates are split amongst 2 separate text boxes: ["June","28, 1969"]
             # Also, remove the split date from the listOfStrings
             average = 0.0
@@ -518,7 +564,7 @@ def parsing():
                     joinedStrings = re.sub(string, "", joinedStrings)
             if average != 0:
                 average = average / divisor
-            else:
+            elif average == 0:
                 average = 100.0
             cdf.loc[currentIndex, 'Date verbatim'] = average
             cdf.loc[currentIndex, 'Collecting event start'] = average
@@ -574,9 +620,7 @@ def parsing():
                 average += float(listOfConfidence[index])
                 joinedStrings = joinedStrings.replace(string, "")
 
-        if collectors == "":
-            collectors = "NaN"
-        else:
+        if collectors != "":
             # Remove extraneous semicolons/legate abbreviations, space or not
             collectors = re.sub(r"(;\s)|;", "", collectors)
             collectors = re.sub(r"(leg|le8|1cg)\.?\s?", "", collectors)
@@ -599,9 +643,10 @@ def parsing():
         print("Original lists: ", copiedStrings, "\n", copiedConfidence, "\n\n")
 
         ### FILL IN THE REST OF THE COLUMNS OF THE DATAFRAME
-        i = 0
+        # Start from Country (Category[7]), since that's where things start getting messy
+        i = 7
         while i < len(df.columns):
-            if df.iloc[currentIndex, i] == "NaN":
+            if df.iloc[currentIndex, i] == "":
                 if listOfStrings[0] in copiedStrings:
                     df.iloc[currentIndex, i] = listOfStrings[0]
                     index = copiedStrings.index(listOfStrings[0])
