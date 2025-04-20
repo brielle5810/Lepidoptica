@@ -306,7 +306,7 @@ def ocr():
 
             transcription_lines = transcription_lines + "\""
 
-            data = open(final_path, "a", encoding="utf8")
+            data = open(data_path, "a", encoding="utf8")
             data.write(transcription_lines)
             data.close()
 
