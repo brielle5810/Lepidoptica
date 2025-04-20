@@ -234,23 +234,40 @@ def ocr():
     num_processed = 0
 
     #Delete data.csv if it exists
-    final_path = os.path.join(OCR_OUTPUT, "data.csv")
+    data_path = os.path.join(OCR_OUTPUT, "data.csv")
     confidence_path = os.path.join(OCR_OUTPUT, "confidence.csv")
+    final_path = os.path.join(OCR_OUTPUT, "parsed.csv")
+    final_confidence_path = os.path.join(OCR_OUTPUT, "parsed.confidence.csv")
+
 
     for filename in os.listdir(OCR_OUTPUT):
         if filename == "data.csv":
-            os.remove(final_path)
+            os.remove(data_path)
         if filename == "confidence.csv":
             os.remove(confidence_path)
+        if filename == "parsed.csv":
+            os.remove(final_path)
+        if filename == "parsed_confidence.csv":
+            os.remove(final_confidence_path)
 
-    #Create data.csv
-    data = open(final_path, "w", encoding="utf8")
+
+    #Create the csvs
+    data = open(data_path, "w", encoding="utf8")
     data.write("CatalogNumber,Specimen_voucher,Family,Genus,Species,Subspecies,Sex,Country,State,County,Locality name,Elevation min,Elevation max,Elevation unit,Collectors,Latitude,Longitude,Georeferencing source,Georeferencing precision,Questionable label data,Do not publish,Collecting event start,Collecting event end,Date verbatim,Remarks public,Remarks private,Cataloged date,Cataloger First,Cataloger last,Prep type 1,Prep count 1,Prep type 2,Prep number 2,Prep type 3,Prep number 3,Other record number,Other record source,publication,publication")
     data.close()
 
     confidence = open(confidence_path, "w", encoding="utf8")
     confidence.write("CatalogNumber,Specimen_voucher,Family,Genus,Species,Subspecies,Sex,Country,State,County,Locality name,Elevation min,Elevation max,Elevation unit,Collectors,Latitude,Longitude,Georeferencing source,Georeferencing precision,Questionable label data,Do not publish,Collecting event start,Collecting event end,Date verbatim,Remarks public,Remarks private,Cataloged date,Cataloger First,Cataloger last,Prep type 1,Prep count 1,Prep type 2,Prep number 2,Prep type 3,Prep number 3,Other record number,Other record source,publication,publication")
     confidence.close()
+
+    parsed_data = open(data_path, "w", encoding="utf8")
+    data.write("CatalogNumber,Specimen_voucher,Family,Genus,Species,Subspecies,Sex,Country,State,County,Locality name,Elevation min,Elevation max,Elevation unit,Collectors,Latitude,Longitude,Georeferencing source,Georeferencing precision,Questionable label data,Do not publish,Collecting event start,Collecting event end,Date verbatim,Remarks public,Remarks private,Cataloged date,Cataloger First,Cataloger last,Prep type 1,Prep count 1,Prep type 2,Prep number 2,Prep type 3,Prep number 3,Other record number,Other record source,publication,publication")
+    data.close()
+
+    parsed_confidence = open(data_path, "w", encoding="utf8")
+    data.write("CatalogNumber,Specimen_voucher,Family,Genus,Species,Subspecies,Sex,Country,State,County,Locality name,Elevation min,Elevation max,Elevation unit,Collectors,Latitude,Longitude,Georeferencing source,Georeferencing precision,Questionable label data,Do not publish,Collecting event start,Collecting event end,Date verbatim,Remarks public,Remarks private,Cataloged date,Cataloger First,Cataloger last,Prep type 1,Prep count 1,Prep type 2,Prep number 2,Prep type 3,Prep number 3,Other record number,Other record source,publication,publication")
+    data.close()
+
     #Write data to csv
     #Confidence for each data point stored in confidence.csv
 
@@ -310,6 +327,9 @@ def ocr():
 
         except Exception as e:
             print(f"Error preprocessing {filename}: {e}")
+
+    #TODO: RUN TEXTREADER.PY
+    textReader.parsing()
 
     return jsonify({"success": True, "message": f"OCR Complete"})
 
