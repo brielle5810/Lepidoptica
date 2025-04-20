@@ -703,7 +703,7 @@ def output():
     pd.set_option('display.max_columns', None)
 
     ### USE THIS FOR THE FINAL VERSION
-    df = pd.read_csv(os.path.join(OCR_OUTPUT, "parsed.csv"))
+    df = pd.read_csv(os.path.join(OCR_OUTPUT, "parsed.csv")).fillna('')
     df_list = df.values.tolist()
     print("df_list:\n", df_list, "\n")
     print("====================================")

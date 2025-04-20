@@ -522,7 +522,7 @@
                 //Change to white when user selects cell
                 cell.querySelector('.cell-content').addEventListener("focus", function () {
                     console.log("working?");
-                    cell.dataset.originalContent = cell.querySelector('.cell-content').trim(); // Save original text
+                    cell.dataset.originalContent = cell.querySelector('.cell-content').textContent.trim(); // Save original text
                     cell.dataset.originalColor = cell.style.backgroundColor; // Save original color
                     cell.style.backgroundColor = cell.dataset.baselineColor;
                 });
@@ -655,7 +655,8 @@
                     const targetCol = targetCell.cellIndex - 3;
 
                     if (targetContent) {
-                        targetContent.textContent = mergedText;
+                        targetContent.textContent = mergedText.trim();
+                        targetCell.style.backgroundColor = cell.dataset.baselineColor;
                     }
 
                     updates.push({
