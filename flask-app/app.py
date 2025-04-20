@@ -29,7 +29,7 @@ OCR_OUTPUT = "ocr_output"
 num_files = 0
 num_processed = 0
 
-reader = easyocr.Reader(['en'], gpu=False, recog_network="fine_tuning1")
+reader = easyocr.Reader(['en'], gpu=False, recog_network="fine_tuning2")
 
 for folder in [UPLOAD_FOLDER, STAGE1_FOLDER, PREPROCESS_FOLDER, SAVED_ORIGINALS, OCR_OUTPUT, MODIFIED_FOLDER]:
     os.makedirs(folder, exist_ok=True)

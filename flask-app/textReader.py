@@ -276,14 +276,15 @@ def parsing():
 
         voucher = "NaN"
         x = re.search(r"\bMGCL [0-9]{7}", joinedStrings)
-        if x.group() in joinedStrings:
-            voucher = x.group()
-            # Fill in confidence csv
-            index = listOfStrings.index(x.group())
-            cdf.loc[currentIndex, 'Specimen_voucher'] = listOfConfidence[index]
-            # Update list of strings (we need to remove the specimen voucher)
-            listOfStrings.remove(x.group())
-            joinedStrings = joinedStrings.replace(x.group(), "")  # REMOVE FROM BIG STRING
+        if x.group():
+            if x.group() in joinedStrings:
+                voucher = x.group()
+                # Fill in confidence csv
+                index = listOfStrings.index(x.group())
+                cdf.loc[currentIndex, 'Specimen_voucher'] = listOfConfidence[index]
+                # Update list of strings (we need to remove the specimen voucher)
+                listOfStrings.remove(x.group())
+                joinedStrings = joinedStrings.replace(x.group(), "")  # REMOVE FROM BIG STRING
 
         df.loc[currentIndex, 'Specimen_voucher'] = voucher
 
@@ -378,33 +379,38 @@ def parsing():
                 df.loc[currentIndex, 'Elevation max'] = x.group()
             joinedStrings = re.sub(x.group(), "", joinedStrings)
 
-        # Confidence rating check
-        if x.group() in listOfStrings:
-            index = listOfStrings.index(x.group())
-            cdf.loc[currentIndex, 'Elevation max'] = listOfConfidence[index]
-            cdf.loc[currentIndex, 'Elevation unit'] = listOfConfidence[index]
-        else:
-            ## FINALLY UTILIZING THE OG COPIES OF THE LISTS FOR SOMETHING
-            # This portion is called if the regexed elevation isn't 1:1 with the one in the listOfStrings
-            # Also, remove the elevation from the listOfStrings
-            average = 0.0
-            divisor = 0
-            for string in copiedStrings:
-                if re.search(x.group(), string) is not None and string != "":
-                    index = copiedStrings.index(string)
-                    average += float(copiedConfidence[index])
-                    divisor += 1
-                    listOfStrings.remove(string)
-                    joinedStrings = re.sub(string, "", joinedStrings)
-                elif re.search(string, x.group()) is not None and string != "":
-                    index = copiedStrings.index(string)
-                    average += float(copiedConfidence[index])
-                    divisor += 1
-                    listOfStrings.remove(string)
-                    joinedStrings = re.sub(string, "", joinedStrings)
-            average = average / divisor
-            cdf.loc[currentIndex, 'Elevation max'] = average
-            cdf.loc[currentIndex, 'Elevation unit'] = average
+            # Confidence rating check
+            if x.group() in listOfStrings:
+                index = listOfStrings.index(x.group())
+                cdf.loc[currentIndex, 'Elevation max'] = listOfConfidence[index]
+                cdf.loc[currentIndex, 'Elevation unit'] = listOfConfidence[index]
+            else:
+                ## FINALLY UTILIZING THE OG COPIES OF THE LISTS FOR SOMETHING
+                # This portion is called if the regexed elevation isn't 1:1 with the one in the listOfStrings
+                # Also, remove the elevation from the listOfStrings
+                average = 0.0
+                divisor = 0
+                for string in copiedStrings:
+                    if (re.findall(x.group(), string)) and (string != ""):
+                        index = copiedStrings.index(string)
+                        average += float(copiedConfidence[index])
+                        divisor += 1
+                        if string in listOfStrings:
+                            listOfStrings.remove(string)
+                        joinedStrings = re.sub(string, "", joinedStrings)
+                    elif (re.findall(string, x.group())) and (string != ""):
+                        index = copiedStrings.index(string)
+                        average += float(copiedConfidence[index])
+                        divisor += 1
+                        if string in listOfStrings:
+                            listOfStrings.remove(string)
+                        joinedStrings = re.sub(string, "", joinedStrings)
+                if average != 0:
+                    average = average / divisor
+                else:
+                    average = 100.0
+                cdf.loc[currentIndex, 'Elevation max'] = average
+                cdf.loc[currentIndex, 'Elevation unit'] = average
 
 
         ### EWWWWWWW LATITUDE AND LONGITUDE :XXXX (categories [15] and [16])
@@ -436,7 +442,7 @@ def parsing():
 
         ### START CHECKING FOR THE COMMON DATE OUTPUTS
         # DD.MM.YYYY | DD,MM,YYYY | DD/MM/YYYY | DD-MM-YYYY   OR   MM.DD.YYYY | MM,DD,YYYY | MM/DD/YYYY | MM-DD-YYYY
-        if re.search(r"\d{1,2}[\s.,/-]{1}\d{2}[\s.,/-]{1}\d{4}", dateString) is not None:
+        if re.search(r"\d{1,2}[\s.,/-]{1}\d{2}[\s.,/-]{1}\d{4}", dateString):
             print("It's a DD/MM/YYYY format!")
             x = re.search(r"\d{1,2}[\s.,/-]{1}\d{2}[\s.,/-]{1}\d{4}", dateString)
             dates_found = x.group()
@@ -478,7 +484,7 @@ def parsing():
             x = re.search("\d{2};?(?![a-zA-Z-])", dateString)
             dates_found = x.group()
         else:
-            dates_found.append("NaN")
+            dates_found = "NaN"
 
         print("Preliminary dates found: ", dates_found)
         df.loc[currentIndex, 'Date verbatim'] = dates_found
@@ -496,19 +502,24 @@ def parsing():
             average = 0.0
             divisor = 0
             for string in copiedStrings:
-                if re.search(string, df.loc[currentIndex, 'Date verbatim']) is not None and string != "":
+                if (re.findall(dates_found, string)) and (string != ""):
                     index = copiedStrings.index(string)
                     average += float(copiedConfidence[index])
                     divisor += 1
-                    listOfStrings.remove(string)
+                    if string in listOfStrings:
+                        listOfStrings.remove(string)
                     joinedStrings = re.sub(string, "", joinedStrings)
-                elif re.search(df.loc[currentIndex, 'Date verbatim'], string) is not None and string != "":
+                elif (re.findall(string, dates_found)) and (string != ""):
                     index = copiedStrings.index(string)
                     average += float(copiedConfidence[index])
                     divisor += 1
-                    listOfStrings.remove(string)
+                    if string in listOfStrings:
+                        listOfStrings.remove(string)
                     joinedStrings = re.sub(string, "", joinedStrings)
-            average = average / divisor
+            if average != 0:
+                average = average / divisor
+            else:
+                average = 100.0
             cdf.loc[currentIndex, 'Date verbatim'] = average
             cdf.loc[currentIndex, 'Collecting event start'] = average
             cdf.loc[currentIndex, 'Collecting event end'] = average
