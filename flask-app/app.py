@@ -237,7 +237,7 @@ def ocr():
     data_path = os.path.join(OCR_OUTPUT, "data.csv")
     confidence_path = os.path.join(OCR_OUTPUT, "confidence.csv")
     final_path = os.path.join(OCR_OUTPUT, "parsed.csv")
-    final_confidence_path = os.path.join(OCR_OUTPUT, "parsed.confidence.csv")
+    final_confidence_path = os.path.join(OCR_OUTPUT, "parsed_confidence.csv")
 
 
     for filename in os.listdir(OCR_OUTPUT):
