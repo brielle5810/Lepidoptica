@@ -195,8 +195,8 @@ def parsing():
              "", "", "", "", "", "", "", "", "", "", "", "", "", "",
              "", "", "", "", "", "", "", "", "", "", ""]
         cdf.loc[currentIndex] = ["100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0",
-             "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0",
-             "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0"]
+            "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0",
+            "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0"]
 
         # The order that the categories are filled in is, at first, determined by the order the text is parsed from the photo
         # Some items, (genus, species, and subspecies) always come first
@@ -467,7 +467,7 @@ def parsing():
             # Iterate through both elements and populate longitude and latitude (if there ARE two)
             for element in y:
                 df.iloc[currentIndex, 15 + iter] = element
-                iter += 1
+                iter +=  1
             joinedStrings = re.sub(r"\d+[.,]\d+[NSEW]*[,\s]*\d+[.,]\d+[NSEW]*", "", joinedStrings)
 
             # Update confidence rating csv
