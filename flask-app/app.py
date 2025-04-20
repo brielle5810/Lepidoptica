@@ -30,6 +30,7 @@ num_files = 0
 num_processed = 0
 
 reader = easyocr.Reader(['en'], gpu=False, recog_network="fine_tuning2")
+has_parsed = False
 
 for folder in [UPLOAD_FOLDER, STAGE1_FOLDER, PREPROCESS_FOLDER, SAVED_ORIGINALS, OCR_OUTPUT, MODIFIED_FOLDER]:
     os.makedirs(folder, exist_ok=True)
@@ -437,7 +438,7 @@ def update_cell():
     new_value = data["value"]
     print(new_value)
 
-    data_path = os.path.join(OCR_OUTPUT, "data.csv")
+    data_path = os.path.join(OCR_OUTPUT, "parsed.csv")
 
     try:
         df_data = pd.read_csv(data_path, dtype=str) #read all as string to avoid compat type errors
@@ -460,7 +461,7 @@ def update_cell():
 
 @app.route("/update_mult_cells", methods=["POST"])
 def update_mult_cells():
-    data_path = os.path.join(OCR_OUTPUT, "data.csv")
+    data_path = os.path.join(OCR_OUTPUT, "parsed.csv")
 
     if not os.path.exists(data_path):
         return jsonify(success=False, error="CSV file not found"), 404
@@ -663,7 +664,13 @@ def apply_processing_strength(image_np, strength, thickness):
 @app.route("/output", methods=["GET"])
 def output():
     #TODO: RUN TEXTREADER.PY
-    textReader.parsing()
+    #NEED TO MARK if IT HAS ALREADY BEEN RUN, or it will overwrite user changes
+    global has_parsed
+
+    if not has_parsed:
+        textReader.parsing()
+        has_parsed = True
+
     final_path = os.path.join(OCR_OUTPUT, "data.csv")
 
     #view the images
