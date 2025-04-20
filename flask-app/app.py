@@ -389,8 +389,8 @@ def getImagePairs():
 #using htmx to delete rows from the table (and corresponding data, images)
 @app.route("/deleterow/<int:row_index>", methods=["DELETE"])
 def delete_row(row_index):
-    data_path = os.path.join(OCR_OUTPUT, "data.csv")
-    conf_path = os.path.join(OCR_OUTPUT, "confidence.csv")
+    data_path = os.path.join(OCR_OUTPUT, "parsed.csv")
+    conf_path = os.path.join(OCR_OUTPUT, "parsed_confidence.csv")
 
     # load as dataframs to then edit
     try:
