@@ -106,8 +106,8 @@ def split_date(date_str):
         month = month + "/"
 
     date_string = f"{month}{day}{year}"
-    if re.findall(";", date_string):
-        date_string = re.sub(";", "", date_string)
+    if re.findall("[;|\s]", date_string):
+        date_string = re.sub("[;|\s]", "", date_string)
 
     return date_string
 
@@ -214,7 +214,6 @@ def parsing():
                     old_word = twoWordList[0]
                     # Delete the old, two-word cell
                     del listOfStrings[0]
-                    del listOfConfidence[0]
                     # Reinsert the words back into the list as two separate words
                     listOfStrings.insert(0, twoWordList[0])
                     listOfStrings.insert(1, twoWordList[1])
@@ -244,7 +243,7 @@ def parsing():
                 df.iloc[currentIndex, x] = word
                 listOfStrings.remove(old_word)
                 cdf.iloc[currentIndex, x] = word_conf
-                listOfConfidence.remove(listOfConfidence[0])
+                listOfConfidence.pop(0)
 
 
         # Category[6]: Sex Symbol
@@ -253,13 +252,13 @@ def parsing():
             index = listOfStrings.index(str(chr(0x2640)))
             cdf.loc[currentIndex, 'Sex'] = listOfConfidence[index]
             listOfStrings.remove(str(chr(0x2640)))
-            listOfConfidence.remove(listOfConfidence[index])
+            listOfConfidence.pop(index)
         elif chr(0x2642) in listOfStrings:  # MALE
             df.loc[currentIndex, 'Sex'] = "male"
             index = listOfStrings.index(str(chr(0x2642)))
             cdf.loc[currentIndex, 'Sex'] = listOfConfidence[index]
             listOfStrings.remove(str(chr(0x2642)))
-            listOfConfidence.remove(listOfConfidence[index])
+            listOfConfidence.pop(index)
 
         ### Category[1]: Specimen Voucher
         # First check if UF and FLMNH are in there somewhere - if so, remove them
@@ -293,6 +292,7 @@ def parsing():
                 index = listOfStrings.index(x.group())
                 cdf.loc[currentIndex, 'Specimen_voucher'] = listOfConfidence[index]
                 listOfStrings.remove(x.group())
+                listOfConfidence.pop(index)
             else:
                 ## FINALLY UTILIZING THE OG COPIES OF THE LISTS FOR SOMETHING
                 # This portion is called if the regexed specimen voucher isn't 1:1 with the one in the listOfStrings
@@ -305,12 +305,14 @@ def parsing():
                         average += float(copiedConfidence[index])
                         divisor += 1
                         if string in listOfStrings:
+                            listOfConfidence.pop(listOfStrings.index(string))
                             listOfStrings.remove(string)
                     elif (re.findall(string, x.group())) and (string != ""):
                         index = copiedStrings.index(string)
                         average += float(copiedConfidence[index])
                         divisor += 1
                         if string in listOfStrings:
+                            listOfConfidence.pop(listOfStrings.index(string))
                             listOfStrings.remove(string)
                 if average != 0:
                     average = average / divisor
@@ -367,6 +369,8 @@ def parsing():
         if best_match in listOfStrings:
             index = listOfStrings.index(best_match)
             cdf.loc[currentIndex, 'County'] = listOfConfidence[index]
+            listOfConfidence.pop(index)
+            listOfStrings.remove(best_match)
         if not best_match:
             # use city ?
             df.loc[currentIndex, 'County'] = ", ".join(placeEntity.cities)
@@ -382,20 +386,25 @@ def parsing():
             average = 0.0
             divisor = 0
             for string in listOfStrings:
-                if (re.search(string, df.iloc[currentIndex, iter], re.IGNORECASE)) and (string != ""):
-                    index = copiedStrings.index(string)
-                    average += float(copiedConfidence[index])
-                    divisor += 1
+                if df.iloc[currentIndex, iter] != "":
+                    if (re.search(string, df.iloc[currentIndex, iter], re.IGNORECASE)) and (string != ""):
+                        print("Found the string in the df!", string, "in df", df.iloc[currentIndex, iter])
+                        index = copiedStrings.index(string)
+                        average += float(copiedConfidence[index])
+                        divisor += 1
 
-                    listOfStrings.remove(string)  ### Remove from list of strings
-                    joinedStrings = re.sub(string, "", joinedStrings)  ### REMOVE FROM BIG STRING
-                elif (re.search(df.iloc[currentIndex, iter], string, re.IGNORECASE)) and (string != ""):
-                    index = copiedStrings.index(string)
-                    average += float(copiedConfidence[index])
-                    divisor += 1
+                        listOfConfidence.pop(listOfStrings.index(string))  ### Remove from list of confidences
+                        listOfStrings.remove(string)  ### Remove from list of strings
+                        joinedStrings = re.sub(string, "", joinedStrings)  ### REMOVE FROM BIG STRING
+                    elif (re.search(df.iloc[currentIndex, iter], string, re.IGNORECASE)) and (string != ""):
+                        print("Found the df in the string!", df.iloc[currentIndex, iter], "in string", string)
+                        index = copiedStrings.index(string)
+                        average += float(copiedConfidence[index])
+                        divisor += 1
 
-                    listOfStrings.remove(string)  ### Remove from list of strings
-                    joinedStrings = re.sub(string, "", joinedStrings)  ### REMOVE FROM BIG STRING
+                        listOfConfidence.pop(listOfStrings.index(string))  ### Remove from list of confidences
+                        listOfStrings.remove(string)  ### Remove from list of strings
+                        joinedStrings = re.sub(string, "", joinedStrings)  ### REMOVE FROM BIG STRING
 
             if average != 0:
                 average = average / divisor
@@ -556,6 +565,7 @@ def parsing():
                     average += float(copiedConfidence[index])
                     divisor += 1
                     if string in listOfStrings:
+                        listOfConfidence.pop(listOfStrings.index(string))  ### Remove from list of confidences
                         listOfStrings.remove(string)
                     joinedStrings = re.sub(string, "", joinedStrings)
                 elif (re.findall(string, dates_found)) and (string != ""):
@@ -563,6 +573,7 @@ def parsing():
                     average += float(copiedConfidence[index])
                     divisor += 1
                     if string in listOfStrings:
+                        listOfConfidence.pop(listOfStrings.index(string))  ### Remove from list of confidences
                         listOfStrings.remove(string)
                     joinedStrings = re.sub(string, "", joinedStrings)
             if average != 0:
@@ -599,7 +610,7 @@ def parsing():
         listOfStrings = joinedStrings.split(" | ")
 
         for word in listOfStrings:
-            if re.search(r"colln\.", word, re.IGNORECASE) is not None:  # Get rid of colln. tags
+            if (re.search(r"colln\.", word, re.IGNORECASE) is not None) or (re.search(r"Museum", word, re.IGNORECASE) is not None):  # Get rid of colln. tags
                 listOfStrings.remove(word)
                 joinedStrings = re.sub(word, "", joinedStrings)
 
@@ -628,7 +639,10 @@ def parsing():
             collectors = re.sub(r"(;\s)|;", "", collectors)
             collectors = re.sub(r"(leg|le8|1cg)\.?\s?", "", collectors)
 
-        average = average / divisor
+        if average != 0:
+            average = average / divisor
+        elif average == 0:
+            average = 100.0
         cdf.loc[currentIndex, 'Collectors'] = average
         df.loc[currentIndex, 'Collectors'] = collectors
 

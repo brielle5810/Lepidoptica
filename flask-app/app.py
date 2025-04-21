@@ -675,7 +675,6 @@ def apply_processing_strength(image_np, strength, thickness):
 
 @app.route("/output", methods=["GET"])
 def output():
-    #TODO: RUN TEXTREADER.PY
     #NEED TO MARK if IT HAS ALREADY BEEN RUN, or it will overwrite user changes
     # global has_parsed
     #

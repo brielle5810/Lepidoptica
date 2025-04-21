@@ -331,12 +331,6 @@
               modalImg.src = this.src;
               modalImg.alt = this.alt;
               captionText.innerHTML = this.nextElementSibling.innerHTML;
-              
-              //theadElement.style.visibility = "hidden";
-              //console.log(theadElement.style.display);
-              //theadElement.style.display = "none";
-              //theadElement.style.border = 'none';
-
           }
         }
 
@@ -504,10 +498,10 @@
 
                 //Confidence representation
 
-                let cellConfidence = confidenceValues[i - 1][j - 2];
+                let cellConfidence = confidenceValues[i - 1][j - 3];
                 cell.dataset.baselineColor = cell.style.backgroundColor;
 
-                //console.log(confidenceValues[i - 1][j - 2]);
+                //console.log(confidenceValues[i - 1][j - 3]);
 
                 if (cellConfidence < 0.25) {
                     cell.style.backgroundColor = `rgb(255, 140, 140)`;
