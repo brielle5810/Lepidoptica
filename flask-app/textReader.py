@@ -164,7 +164,7 @@ def parsing():
         next(file)   # Skip header (contains df category names)
         reader = csv.reader(file)
         originalConfidence = list(reader)
-    print("confidence", originalConfidence)
+    #print("confidence", originalConfidence)
     ##### END OF PROTOTYPE
 
 
@@ -173,7 +173,7 @@ def parsing():
         next(file)  # Skip header (contains df category names)
         reader = csv.reader(file)
         originalData = list(reader)
-    print("data", originalData, "\n")
+    #print("data", originalData, "\n")
 
     for line in originalData:
         df.loc[len(df)] = [''] * len(df.columns)
@@ -238,7 +238,7 @@ def parsing():
                 if broadRatio >= ratio:
                     word = vagueWord
                     # change estimate = broadRatio
-                print(f"Replaced '{old_word}' with '{word}'")
+                #print(f"Replaced '{old_word}' with '{word}'")
 
                 df.iloc[currentIndex, x] = word
                 listOfStrings.remove(old_word)
@@ -273,8 +273,7 @@ def parsing():
         # Split the string (delim will allow us to reincorporate it into list form in the proper order later)
         delim = " | "
         joinedStrings = delim.join(listOfStrings)
-        print("New and improved joined string: ", joinedStrings)
-
+        #print("New and improved joined string: ", joinedStrings)
 
         voucher = ""
         x = re.search(r"(MGCL)?\s?[0-9]{7}", joinedStrings, re.IGNORECASE)
@@ -324,6 +323,7 @@ def parsing():
 
         ### LOCALITIES: Categories[7 - 10] ###
         locationString = joinedStrings.replace(" | ", " ")
+        #print("Location string:", locationString)
         placeEntity = locationtagger.find_locations(text=locationString)
 
         # split all words into ngrams to test against the dictionaries
@@ -336,8 +336,8 @@ def parsing():
         countyList = load_spec_vocab("dictionaries/countyDict.txt")
 
         ### Getting all countries
-        print("The countries in text : ")
-        print(placeEntity.countries)
+        #print("The countries in text : ")
+        #print(placeEntity.countries)
 
         df.loc[currentIndex, 'Country'] = ", ".join(placeEntity.countries)
         if not placeEntity.countries:
@@ -350,8 +350,8 @@ def parsing():
                 print("No country found")
 
         ### Getting all states
-        print("The states in text : ")
-        print(placeEntity.regions)
+        #print("The states in text : ")
+        #print(placeEntity.regions)
 
         df.loc[currentIndex, 'State'] = ", ".join(placeEntity.regions)
         if not placeEntity.regions:
@@ -376,8 +376,8 @@ def parsing():
             df.loc[currentIndex, 'County'] = ", ".join(placeEntity.cities)
 
         # Getting all cities
-        print("The cities in text : ")
-        print(placeEntity.cities)
+        #print("The cities in text : ")
+        #print(placeEntity.cities)
         df.loc[currentIndex, 'Locality name'] = ", ".join(placeEntity.cities)
 
         # Confidence rating check/removing localities
@@ -388,7 +388,7 @@ def parsing():
             for string in listOfStrings:
                 if df.iloc[currentIndex, iter] != "":
                     if (re.search(string, df.iloc[currentIndex, iter], re.IGNORECASE)) and (string != ""):
-                        print("Found the string in the df!", string, "in df", df.iloc[currentIndex, iter])
+                        #print("Found the string in the df!", string, "in df", df.iloc[currentIndex, iter])
                         index = copiedStrings.index(string)
                         average += float(copiedConfidence[index])
                         divisor += 1
@@ -397,7 +397,7 @@ def parsing():
                         listOfStrings.remove(string)  ### Remove from list of strings
                         joinedStrings = re.sub(string, "", joinedStrings)  ### REMOVE FROM BIG STRING
                     elif (re.search(df.iloc[currentIndex, iter], string, re.IGNORECASE)) and (string != ""):
-                        print("Found the df in the string!", df.iloc[currentIndex, iter], "in string", string)
+                        #print("Found the df in the string!", df.iloc[currentIndex, iter], "in string", string)
                         index = copiedStrings.index(string)
                         average += float(copiedConfidence[index])
                         divisor += 1
@@ -416,14 +416,14 @@ def parsing():
         ### CLEANING SOME STUFF UP BEFORE NUMBER CALCULATIONS
         # Remove collection information (19XX-XX / # 20XX-X) stuff from string
         joinedStrings = re.sub("[0-9]{4}-[0-9]+", "", joinedStrings)
-        joinedStrings = re.sub("[^#]\s[0-9]{4}-[0-9]+", "", joinedStrings)
+        joinedStrings = re.sub("#\s[0-9]{4}-[0-9]+", "", joinedStrings)
 
 
         ### Category[12]: Elevation Max (will always have the unit attached to it so this is the reliable one)
         # UNITS: m, km, ft, mi, yd
         x = re.search(r"\d+ ?[dfikmty]+[.']?", joinedStrings)
         if x is not None:
-            print("Preliminary elevation: ", x.group())
+            #print("Preliminary elevation: ", x.group())
             unit = re.search(r"[a-zA-Z]+", x.group())
             if unit is not None:
                 df.loc[currentIndex, 'Elevation unit'] = unit.group()
@@ -474,7 +474,7 @@ def parsing():
             # See if it's only one, or both longitude/latitude
             x = re.findall(r"\d+[.,]\d+[NSEW]*[,\s]*\d+[.,]\d+[NSEW]*", joinedStrings, re.IGNORECASE)
             y = re.findall(r"\d+[.,]\d+[NSEW]*", "".join(x), re.IGNORECASE)
-            print("Lat and long found??: ", x, y)
+            #print("Lat and long found??: ", x, y)
             iter = 0
             # Iterate through both elements and populate longitude and latitude (if there ARE two)
             for element in y:
@@ -492,18 +492,18 @@ def parsing():
 
 
         ### NOW BEGINS THE DATE SAGA (Categories[21 - 23] ###
-        print("\nJoined strings: ", joinedStrings)
+        #print("\nJoined strings: ", joinedStrings)
         dateString = joinedStrings.replace(" | ", " ")
-        print("Date string: ", dateString, "\n")
+        #print("Date string: ", dateString, "\n")
 
         datefinder_output = datefinder.find_dates(dateString)
         dates_found = []
 
         ### START CHECKING FOR THE COMMON DATE OUTPUTS
         # DD.MM.YYYY | DD,MM,YYYY | DD/MM/YYYY | DD-MM-YYYY   OR   MM.DD.YYYY | MM,DD,YYYY | MM/DD/YYYY | MM-DD-YYYY
-        if re.search(r"\d{1,2}[\s.,/-]{1}\d{2}[\s.,/-]{1}\d{4}", dateString):
+        if re.search(r"\d{1,2}[\s.,/-]\d{2}[\s.,/-]\d{4}", dateString):
             print("It's a DD/MM/YYYY format!")
-            x = re.search(r"\d{1,2}[\s.,/-]{1}\d{2}[\s.,/-]{1}\d{4}", dateString)
+            x = re.search(r"\d{1,2}[\s.,/-]\d{2}[\s.,/-]\d{4}", dateString)
             dates_found = x.group()
         # Roman numerals format
         # DD.MM.YYYY where MM = roman numerals
@@ -604,15 +604,13 @@ def parsing():
 
 
         ### HARD RESET OF STRING: (We're also gonna remove the sta., Acc., colln., etc.)
-        joinedStrings = re.sub(r"sta\.", "", joinedStrings, re.IGNORECASE)
-        joinedStrings = re.sub(r"Acc\.", "", joinedStrings, re.IGNORECASE)
-        joinedStrings = re.sub(r"MGCL[\s]?", "", joinedStrings, re.IGNORECASE)
+        joinedStrings = re.sub(r"[sS]ta\.", "", joinedStrings, re.IGNORECASE)
+        joinedStrings = re.sub(r"([aA]cc\.|[aA]ccession)", "", joinedStrings, re.IGNORECASE)
+        joinedStrings = re.sub(r"MGCL\s?", "", joinedStrings, re.IGNORECASE)
+        joinedStrings = re.sub(r"([cC]olln\.|[cC]oll\.)", "", joinedStrings, re.IGNORECASE)
+        joinedStrings = re.sub(r"[mM]useum", "", joinedStrings, re.IGNORECASE)
+        peopleString = joinedStrings.replace(" | ", " ")
         listOfStrings = joinedStrings.split(" | ")
-
-        for word in listOfStrings:
-            if (re.search(r"colln\.", word, re.IGNORECASE) is not None) or (re.search(r"Museum", word, re.IGNORECASE) is not None):  # Get rid of colln. tags
-                listOfStrings.remove(word)
-                joinedStrings = re.sub(word, "", joinedStrings)
 
         listOfStrings = list(filter(None, listOfStrings))  # Removes empty strings from list
 
@@ -630,19 +628,40 @@ def parsing():
                 else:
                     collectors += " " + string
                     divisor += 1
+
                 index = listOfStrings.index(string)
                 average += float(listOfConfidence[index])
+                ## Clean up strings/lists
                 joinedStrings = joinedStrings.replace(string, "")
 
         if collectors != "":
+            #print("Collectors: ", collectors)
             # Remove extraneous semicolons/legate abbreviations, space or not
             collectors = re.sub(r"(;\s)|;", "", collectors)
-            collectors = re.sub(r"(leg|le8|1cg)\.?\s?", "", collectors)
+            collectors = re.sub(r"(leg|le8|1cg)\.?\s?", "", collectors, re.IGNORECASE)
+        elif collectors == "":
+            peopleNames = find_people_names(peopleString)
+            print("Found people names: ", peopleNames)
+            if len(peopleNames) != 0:
+                collectors = ", ".join(peopleNames)
+                divisor = 0
+
+                for string in copiedStrings:
+                    if (re.findall(string, collectors, re.IGNORECASE)) and (string != ""):
+                        ## Clean up strings/lists
+                        index = copiedStrings.index(string)
+                        average += float(copiedConfidence[index])
+                        divisor += 1
+
+                        if string in listOfStrings:
+                            listOfStrings.remove(string)
+                        joinedStrings = joinedStrings.replace(string, "")
 
         if average != 0:
             average = average / divisor
         elif average == 0:
             average = 100.0
+
         cdf.loc[currentIndex, 'Collectors'] = average
         df.loc[currentIndex, 'Collectors'] = collectors
 
@@ -656,8 +675,8 @@ def parsing():
         listOfStrings = joinedStrings.split(" | ")
         listOfStrings = list(filter(None, listOfStrings))  # Removes empty strings
 
-        print("Updated listOfStrings: ", listOfStrings)
-        print("Original lists: ", copiedStrings, "\n", copiedConfidence, "\n\n")
+        #print("Updated listOfStrings: ", listOfStrings)
+        #print("Original lists: ", copiedStrings, "\n", copiedConfidence, "\n\n")
 
         ### FILL IN THE REST OF THE COLUMNS OF THE DATAFRAME
         # Start from Country (Category[7]), since that's where things start getting messy
