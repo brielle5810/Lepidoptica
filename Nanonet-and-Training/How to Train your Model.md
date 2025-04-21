@@ -35,14 +35,14 @@ This important folder contains `en_filtered_config.yaml`, a file that controls t
 #### > `en_filtered_config.yaml`
 I will go over the most important parameters I had to change and what they do. Other parameters are still important, but haven't been changed from the original `en_filtered_config.yaml` provided by EasyOcr's repository.
 
-**symbol:** Added symbols `♀♂°`
-**lang_char:** Added characters `ÇÑÜÉÁĄÓÃÍÂÚÊÔÄÕçñüéáąóãíâúêôäõ`
-**experiment_name:** This is the name given to your model directory when outputted to saved_models. In this verbal example, we'll set it to `fine_tuning`
-**train_data:** Location of data directory. In our verbal example, this would be `all_data/fine_tuning_data`
-**valid_data:** Location of validation data directory. In our verbal example, this would be `all_data/fine_tuning_data/nanodata_val`
-**batch_size:** Lowered to 8. Don’t lower it any further or you’ll get errors. 
-**saved_model:** Location of model that we're building on top of. For `fine_tuning1`, this was `saved_models/english_g2.pth`. For `fine_tuning2`, this was `saved_models/fine_tuning1.pth`.
-**select_data:** Location of training data directory, within train_data. In our verbal example, this would be `nanodata_train`
+<br>**symbol:** Added symbols `♀♂°`
+<br>**lang_char:** Added characters `ÇÑÜÉÁĄÓÃÍÂÚÊÔÄÕçñüéáąóãíâúêôäõ`
+<br>**experiment_name:** This is the name given to your model directory when outputted to saved_models. In this verbal example, we'll set it to `fine_tuning`
+<br>**train_data:** Location of data directory. In our verbal example, this would be `all_data/fine_tuning_data`
+<br>**valid_data:** Location of validation data directory. In our verbal example, this would be `all_data/fine_tuning_data/nanodata_val`
+<br>**batch_size:** Lowered to 8. Don’t lower it any further or you’ll get errors. 
+<br>**saved_model:** Location of model that we're building on top of. For `fine_tuning1`, this was `saved_models/english_g2.pth`. For `fine_tuning2`, this was `saved_models/fine_tuning1.pth`.
+<br>**select_data:** Location of training data directory, within train_data. In our verbal example, this would be `nanodata_train`
 
 ### :butterfly: all_data/
 This is the data that was used to train my model attempts. As you can see, each directory has a `nanodata_train/` and `nanodata_val/` subdirectory. We would move `fine_tuning_data/`, created by `NanoNet-To-Data.ipynb`, here for organization purposes. 
