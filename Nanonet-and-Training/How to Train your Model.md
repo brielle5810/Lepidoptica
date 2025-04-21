@@ -12,7 +12,7 @@ Before I get into the steps taken to actually train the model, I want to outline
 ## Directories
 This is a map of our training directory, `lepidoptica-custom-model/`. Forewarning: everything has been adjusted to work in Google Colab. So for this to work, you need to unzip and upload everything to Google Drive. There is a default directory, but that can be changed within code (which I will note if necessary). Anything not mentioned is still important, just not enough to go into further details with. 
 
-### :butterfly: data_organization
+### :butterfly: data_organization/
 
 `nanodata_all/` should be a directory within here where you include all the original nanonet data (images, each with a corresponding txt file with the same name, containing the label [fig.1]).
 
@@ -29,7 +29,7 @@ This program is responsible for taking the nanonet data in `nanodata_all/` and t
 |:--:|
 | fig.2: Images after being read through NanoNet-To-Data.ipynb |
 
-### :butterfly: config_files
+### :butterfly: config_files/
 This important folder contains `en_filtered_config.yaml`, a file that controls training configurations. Editing this file will change the batch size, allowed characters, data locations, and more. Currently, none of the files in here are named `en_filtered_config.yaml`. Instead, they're named for which fine_tuned model they were used for, just for version history. Be aware that if you'll train your own version, you'll need to name this file `en_filtered_config.yaml`, or change this name in `trainer.ipynb`. 
 
 #### > `en_filtered_config.yaml`
@@ -40,13 +40,14 @@ I will go over the most important parameters I had to change and what they do. O
 **experiment_name:** This is the name given to your model directory when outputted to saved_models. In this verbal example, we'll set it to `fine_tuning`
 **train_data:** Location of data directory. In our verbal example, this would be `all_data/fine_tuning_data`
 **valid_data:** Location of validation data directory. In our verbal example, this would be `all_data/fine_tuning_data/nanodata_val`
+**batch_size:** Lowered to 8. Don’t lower it any further or you’ll get errors. 
 **saved_model:** Location of model that we're building on top of. For `fine_tuning1`, this was `saved_models/english_g2.pth`. For `fine_tuning2`, this was `saved_models/fine_tuning1.pth`.
 **select_data:** Location of training data directory, within train_data. In our verbal example, this would be `nanodata_train`
 
-### :butterfly: all_data
+### :butterfly: all_data/
 This is the data that was used to train my model attempts. As you can see, each directory has a `nanodata_train/` and `nanodata_val/` subdirectory. We would move `fine_tuning_data/`, created by `NanoNet-To-Data.ipynb`, here for organization purposes. 
 
-### :butterfly: saved_models
+### :butterfly: saved_models/
 When the trainer runs, it will create the new model directory here. Each model directory will save a model after each epoch. It will also save the `best_accuracy.pth` and `best_norm_ED.pth`. Finally, there are three log files to show the history of the training and testing. In our verbal example, this directory will be called `fine_tuning` (see `experiment_name` in the config file).
 
 Any model you want to include as a base model to build off of should be included in the root of this directory, as the following models are:
