@@ -250,15 +250,15 @@ def parsing():
         # Category[6]: Sex Symbol
         if chr(0x2640) in listOfStrings:    # FEMALE
             df.loc[currentIndex, 'Sex'] = "female"
-            index = listOfStrings.index(chr(0x2640))
+            index = listOfStrings.index(str(chr(0x2640)))
             cdf.iloc[currentIndex, 'Sex'] = listOfConfidence[index]
-            listOfStrings.remove(chr(0x2640))
+            listOfStrings.remove(str(chr(0x2640)))
             listOfConfidence.remove(listOfConfidence[index])
         elif chr(0x2642) in listOfStrings:  # MALE
             df.loc[currentIndex, 'Sex'] = "male"
-            index = listOfStrings.index(chr(0x2640))
+            index = listOfStrings.index(str(chr(0x2640)))
             cdf.iloc[currentIndex, 'Sex'] = listOfConfidence[index]
-            listOfStrings.remove(chr(0x2642))
+            listOfStrings.remove(str(chr(0x2640)))
             listOfConfidence.remove(listOfConfidence[index])
 
         ### Category[1]: Specimen Voucher
