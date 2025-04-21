@@ -193,7 +193,7 @@ def parsing():
         df.loc[currentIndex] = ["#########", '', '', '', '', '', '', '', '', '', '', '', '', '',
                                  '', '', '', '', '', '', '', '', '', '', '', '', '', '',
                                  '', '', '', '', '', '', '', '', '', '', '']
-        cdf.loc[currentIndex] = ["100.0"] * len(df.columns)
+        cdf.loc[currentIndex] = ["100.0"] * len(cdf.columns)
 
         # The order that the categories are filled in is, at first, determined by the order the text is parsed from the photo
         # Some items, (genus, species, and subspecies) always come first
