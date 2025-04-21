@@ -293,14 +293,20 @@ def parsing():
                 for string in copiedStrings:
                     if (re.findall(x.group(), string)) and (string != ""):
                         index = copiedStrings.index(string)
-                        average += float(copiedConfidence[index])
+                        if (copiedConfidence[index].strip() != ''):
+                            average += float(copiedConfidence[index])
+                        else:
+                            print("Confidence rating is empty for: ", string)
                         divisor += 1
                         if string in listOfStrings:
                             listOfConfidence.pop(listOfStrings.index(string))
                             listOfStrings.remove(string)
                     elif (re.findall(string, x.group())) and (string != ""):
                         index = copiedStrings.index(string)
-                        average += float(copiedConfidence[index])
+                        if (copiedConfidence[index].strip() != ''):
+                            average += float(copiedConfidence[index])
+                        else:
+                            print("Confidence rating is empty for: ", string)
                         divisor += 1
                         if string in listOfStrings:
                             listOfConfidence.pop(listOfStrings.index(string))
@@ -382,7 +388,10 @@ def parsing():
                     if (re.search(string, df.iloc[currentIndex, iter], re.IGNORECASE)) and (string != ""):
                         #print("Found the string in the df!", string, "in df", df.iloc[currentIndex, iter])
                         index = copiedStrings.index(string)
-                        average += float(copiedConfidence[index])
+                        if (copiedConfidence[index].strip() != ''):
+                            average += float(copiedConfidence[index])
+                        else:
+                            print("Confidence rating is empty for: ", string)
                         divisor += 1
 
                         listOfConfidence.pop(listOfStrings.index(string))  ### Remove from list of confidences
@@ -391,7 +400,10 @@ def parsing():
                     elif (re.search(df.iloc[currentIndex, iter], string, re.IGNORECASE)) and (string != ""):
                         #print("Found the df in the string!", df.iloc[currentIndex, iter], "in string", string)
                         index = copiedStrings.index(string)
-                        average += float(copiedConfidence[index])
+                        if (copiedConfidence[index].strip() != ''):
+                            average += float(copiedConfidence[index])
+                        else:
+                            print("Confidence rating is empty for: ", string)
                         divisor += 1
 
                         listOfConfidence.pop(listOfStrings.index(string))  ### Remove from list of confidences
@@ -439,14 +451,20 @@ def parsing():
                 for string in copiedStrings:
                     if (re.findall(x.group(), string)) and (string != ""):
                         index = copiedStrings.index(string)
-                        average += float(copiedConfidence[index])
+                        if (copiedConfidence[index].strip() != ''):
+                            average += float(copiedConfidence[index])
+                        else:
+                            print("Confidence rating is empty for: ", string)
                         divisor += 1
                         if string in listOfStrings:
                             listOfStrings.remove(string)
                         joinedStrings = re.sub(string, "", joinedStrings)
                     elif (re.findall(string, x.group())) and (string != ""):
                         index = copiedStrings.index(string)
-                        average += float(copiedConfidence[index])
+                        if (copiedConfidence[index].strip() != ''):
+                            average += float(copiedConfidence[index])
+                        else:
+                            print("Confidence rating is empty for: ", string)
                         divisor += 1
                         if string in listOfStrings:
                             listOfStrings.remove(string)
@@ -554,7 +572,10 @@ def parsing():
             for string in copiedStrings:
                 if (re.findall(dates_found, string)) and (string != ""):
                     index = copiedStrings.index(string)
-                    average += float(copiedConfidence[index])
+                    if (copiedConfidence[index].strip() != ''):
+                        average += float(copiedConfidence[index])
+                    else:
+                        print("Confidence rating is empty for: ", string)
                     divisor += 1
                     if string in listOfStrings:
                         listOfConfidence.pop(listOfStrings.index(string))  ### Remove from list of confidences
@@ -562,7 +583,10 @@ def parsing():
                     joinedStrings = re.sub(string, "", joinedStrings)
                 elif (re.findall(string, dates_found)) and (string != ""):
                     index = copiedStrings.index(string)
-                    average += float(copiedConfidence[index])
+                    if (copiedConfidence[index].strip() != ''):
+                        average += float(copiedConfidence[index])
+                    else:
+                        print("Confidence rating is empty for: ", string)
                     divisor += 1
                     if string in listOfStrings:
                         listOfConfidence.pop(listOfStrings.index(string))  ### Remove from list of confidences
@@ -614,7 +638,7 @@ def parsing():
         divisor = 1
         for string in listOfStrings:
             ## leg le8 and 1cg are the common mispellings of leg.
-            if "&" in string or "leg" in string or "le8" in string or "1cg" in string:
+            if "&" in string or "leg" in string or "le8" in string or "1cg" in string or "leg." in string:
                 if collectors == "":
                     collectors += string
                 else:
@@ -622,7 +646,10 @@ def parsing():
                     divisor += 1
 
                 index = listOfStrings.index(string)
-                average += float(listOfConfidence[index])
+                if (listOfConfidence[index].strip() != ''):
+                    average += float(listOfConfidence[index])
+                else:
+                    print("Confidence rating is empty for: ", string)
                 ## Clean up strings/lists
                 joinedStrings = joinedStrings.replace(string, "")
 

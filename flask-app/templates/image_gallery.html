@@ -101,6 +101,7 @@
         }
     </script>
 <body class="">
+<div class="">
     {% if images %}
         <div class="container mt-4">
             <!-- <h2 class="mb-4">Uploaded Images</h2> -->
@@ -130,7 +131,7 @@
         {% else %}
         <h2 class="text-center" style="color: #004954"><i>No images available</i></h2>
         {% endif %}
-
+        <div class="d-flex flex-column align-items-center">
         <br>
             <!--    #removed link styling-->
             <button class="mb-2" onclick="submitSelected()"><b>REPROCESS</b> SELECTED</button>
@@ -141,7 +142,10 @@
             <!--<button class="mb-2" onclick="ocr()">EXTRACT DATA</button>-->
         <br>
         <br>
+
+        </div>
     </div>
+</div>
 </body>
 
 
