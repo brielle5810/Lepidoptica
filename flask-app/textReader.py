@@ -83,7 +83,7 @@ def split_date(date_str):
         year = date_list[1]
     elif len(date_list) == 1:
         year = date_list[0]
-        if len(date_list[0]) == 3 and date_list[0][0] == "'":
+        if len(date_list[0]) == 2 and date_list[0][0] == "'":
             year = date_list[0].replace("'", "19")
 
     if (len(date_list) >= 2) and re.search("i|ii|iii|iv|v|vi|vii|viii|ix|x|xi|xii", month):
@@ -176,7 +176,7 @@ def parsing():
     print("data", originalData, "\n")
 
     for line in originalData:
-        df.loc[len(df)] = [None] * len(df.columns)
+        df.loc[len(df)] = [''] * len(df.columns)
         cdf.loc[len(cdf)] = ["100.0"] * len(cdf.columns)
 
         listOfStrings = line
@@ -189,16 +189,17 @@ def parsing():
         print("List of confidence: ", listOfConfidence)
 
         # Default values of the df and cdf
-        df.loc[currentIndex] = ["#########", '', '', '', '', '', '', '', '', '', '', '', '', '',
-                                 '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-                                 '', '', '', '', '', '', '', '', '', '', '']
+        df.loc[currentIndex] = [''] * len(df.columns)
         cdf.loc[currentIndex] = ["100.0"] * len(cdf.columns)
+
+        ### Category[0]: CatalogNumber can be filled in off the top (#########)
+        df.iloc[currentIndex, 0] = "#########"
 
         # The order that the categories are filled in is, at first, determined by the order the text is parsed from the photo
         # Some items, (genus, species, and subspecies) always come first
         # Categories 3 - 6: (family--not often included...), Genus, Species, and Subspecies
         for x in range(3, 6):
-            if listOfStrings[0] != "UF" and listOfStrings[0] != "FLMNH":
+            if listOfStrings[0] != "UF" and listOfStrings[0] != "FLMNH" and listOfStrings[0] != str(chr(0x2640)) and listOfStrings[0] != str(chr(0x2642)):
                 word = listOfStrings[0]
                 word_conf = listOfConfidence[0]
                 old_word = listOfStrings[0]
@@ -250,14 +251,14 @@ def parsing():
         if chr(0x2640) in listOfStrings:    # FEMALE
             df.loc[currentIndex, 'Sex'] = "female"
             index = listOfStrings.index(str(chr(0x2640)))
-            cdf.iloc[currentIndex, 'Sex'] = listOfConfidence[index]
+            cdf.loc[currentIndex, 'Sex'] = listOfConfidence[index]
             listOfStrings.remove(str(chr(0x2640)))
             listOfConfidence.remove(listOfConfidence[index])
         elif chr(0x2642) in listOfStrings:  # MALE
             df.loc[currentIndex, 'Sex'] = "male"
-            index = listOfStrings.index(str(chr(0x2640)))
-            cdf.iloc[currentIndex, 'Sex'] = listOfConfidence[index]
-            listOfStrings.remove(str(chr(0x2640)))
+            index = listOfStrings.index(str(chr(0x2642)))
+            cdf.loc[currentIndex, 'Sex'] = listOfConfidence[index]
+            listOfStrings.remove(str(chr(0x2642)))
             listOfConfidence.remove(listOfConfidence[index])
 
         ### Category[1]: Specimen Voucher
@@ -280,6 +281,9 @@ def parsing():
         x = re.search(r"(MGCL)?\s?[0-9]{7}", joinedStrings, re.IGNORECASE)
         if x is not None:
             voucher = x.group()
+            y = re.search("\s", voucher)
+            if y is None:
+                voucher = voucher.replace("MGCL", "MGCL ")
             joinedStrings = joinedStrings.replace(x.group(), "")  # REMOVE FROM BIG STRING
         df.loc[currentIndex, 'Specimen_voucher'] = voucher
 
@@ -317,10 +321,11 @@ def parsing():
 
 
         ### LOCALITIES: Categories[7 - 10] ###
-        placeEntity = locationtagger.find_locations(text=joinedStrings)
+        locationString = joinedStrings.replace(" | ", " ")
+        placeEntity = locationtagger.find_locations(text=locationString)
 
         # split all words into ngrams to test against the dictionaries
-        words = [t for t in joinedStrings.split() if len(t) > 2]
+        words = [t for t in locationString.split() if len(t) > 2]
         ngrams = get_ngrams(words, 3)  # heres the thing... so few have 5 words
 
         # load dictionaries
@@ -363,8 +368,8 @@ def parsing():
             index = listOfStrings.index(best_match)
             cdf.loc[currentIndex, 'County'] = listOfConfidence[index]
         if not best_match:
-            df.loc[currentIndex, 'County'] = ''
             # use city ?
+            df.loc[currentIndex, 'County'] = ", ".join(placeEntity.cities)
 
         # Getting all cities
         print("The cities in text : ")
@@ -460,6 +465,7 @@ def parsing():
             # See if it's only one, or both longitude/latitude
             x = re.findall(r"\d+[.,]\d+[NSEW]*[,\s]*\d+[.,]\d+[NSEW]*", joinedStrings, re.IGNORECASE)
             y = re.findall(r"\d+[.,]\d+[NSEW]*", "".join(x), re.IGNORECASE)
+            print("Lat and long found??: ", x, y)
             iter = 0
             # Iterate through both elements and populate longitude and latitude (if there ARE two)
             for element in y:

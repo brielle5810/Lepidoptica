@@ -156,7 +156,7 @@ html, body {
 }
 
 a.nav-a:hover {
-    border-bottom: black 5px solid;
+    border-bottom: #033e1f 5px solid;
 }
 
 #content {
