@@ -30,7 +30,6 @@ num_files = 0
 num_processed = 0
 
 reader = easyocr.Reader(['en'], gpu=False, recog_network="fine_tuning2")
-has_parsed = False
 
 for folder in [UPLOAD_FOLDER, STAGE1_FOLDER, PREPROCESS_FOLDER, SAVED_ORIGINALS, OCR_OUTPUT, MODIFIED_FOLDER]:
     os.makedirs(folder, exist_ok=True)
@@ -259,6 +258,7 @@ def ocr():
     confidence = open(confidence_path, "w", encoding="utf8")
     confidence.write("CatalogNumber,Specimen_voucher,Family,Genus,Species,Subspecies,Sex,Country,State,County,Locality name,Elevation min,Elevation max,Elevation unit,Collectors,Latitude,Longitude,Georeferencing source,Georeferencing precision,Questionable label data,Do not publish,Collecting event start,Collecting event end,Date verbatim,Remarks public,Remarks private,Cataloged date,Cataloger First,Cataloger last,Prep type 1,Prep count 1,Prep type 2,Prep number 2,Prep type 3,Prep number 3,Other record number,Other record source,publication,publication")
     confidence.close()
+
 
     #Write data to csv
     #Confidence for each data point stored in confidence.csv
@@ -677,11 +677,11 @@ def apply_processing_strength(image_np, strength, thickness):
 def output():
     #TODO: RUN TEXTREADER.PY
     #NEED TO MARK if IT HAS ALREADY BEEN RUN, or it will overwrite user changes
-    global has_parsed
-
-    if not has_parsed:
-        textReader.parsing()
-        has_parsed = True
+    # global has_parsed
+    #
+    # if not has_parsed:
+    #     textReader.parsing()
+    #     has_parsed = True
 
     final_path = os.path.join(OCR_OUTPUT, "data.csv")
 

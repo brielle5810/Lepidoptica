@@ -15,7 +15,6 @@ import os
 import csv
 import copy
 
-# def fuzzy_match...
 
 OCR_OUTPUT = "ocr_output"
 
@@ -30,7 +29,7 @@ def get_best_match(term, spec_list, threshold=80):
 
 
 def load_spec_vocab(file_path):
-    with open(file_path, 'r') as f:
+    with open(file_path, 'r', encoding='utf-8') as f:
         lines = f.readlines()
     spec_list = [line.strip() for line in lines if line.strip()]
     return spec_list
@@ -161,7 +160,7 @@ def parsing():
     currentIndex = 0  # Refers to the current ocr output we're parsing (0 - (n-1)) where n is the number of photos uploaded
 
     ##### PROTOTYPE
-    with open(os.path.join(OCR_OUTPUT, "confidence.csv"), 'r', newline='') as file:
+    with open(os.path.join(OCR_OUTPUT, "confidence.csv"), 'r', newline='', encoding='utf-8') as file:
         next(file)   # Skip header (contains df category names)
         reader = csv.reader(file)
         originalConfidence = list(reader)
@@ -170,7 +169,7 @@ def parsing():
 
 
     ### START READING FROM THE OCR OUTPUT FILE (data.csv)
-    with open(os.path.join(OCR_OUTPUT, "data.csv"), 'r') as file:
+    with open(os.path.join(OCR_OUTPUT, "data.csv"), 'r', encoding='utf-8') as file:
         next(file)  # Skip header (contains df category names)
         reader = csv.reader(file)
         originalData = list(reader)
@@ -665,5 +664,6 @@ def parsing():
     pd.set_option('display.max_columns', None)
     print("\nUpdated df:\n", df)
     print("\nUpdated cdf:\n", cdf)
+
     df.to_csv(os.path.join(OCR_OUTPUT, "parsed.csv"), index=False, encoding="utf8")
     cdf.to_csv(os.path.join(OCR_OUTPUT, "parsed_confidence.csv"), index=False, encoding="utf8")
