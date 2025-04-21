@@ -665,5 +665,12 @@ def parsing():
     print("\nUpdated df:\n", df)
     print("\nUpdated cdf:\n", cdf)
 
-    df.to_csv(os.path.join(OCR_OUTPUT, "parsed.csv"), index=False, encoding="utf8")
-    cdf.to_csv(os.path.join(OCR_OUTPUT, "parsed_confidence.csv"), index=False, encoding="utf8")
+    ### WRITE TO FILES NOW PLEASE AND THANK YOU
+    final_path = os.path.join(OCR_OUTPUT, "parsed.csv")
+    final_confidence_path = os.path.join(OCR_OUTPUT, "parsed_confidence.csv")
+
+    final_data = open(final_path, "w", encoding="utf8")
+    final_conf_data = open(final_confidence_path, "w", encoding="utf8")
+
+    df.to_csv(final_data, index=False)
+    cdf.to_csv(final_conf_data, index=False)
