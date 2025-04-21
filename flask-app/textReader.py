@@ -126,7 +126,6 @@ nltk.download('maxent_ne_chunker_tab')
 
 
 def parsing():
-# if __name__ == "__main__":
     ### BASIC STEP BY STEP:
         # 1. Split OCR output (which I assume is just one big string of \n delimited text
         # 2. Separate said words into categories: parsedList[]
@@ -149,7 +148,7 @@ def parsing():
 ### CODE START ###
     # data is the template list of metadata attributes; there'll be a list for each image
     # Category[0]: CatalogNumber can be filled in off the top (#########)
-    data = [["#########", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]]
+    data = [["#########", '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']]
     conf_data = [["100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0",
                  "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0",
                  "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0"]]
@@ -191,12 +190,10 @@ def parsing():
         print("List of confidence: ", listOfConfidence)
 
         # Default values of the df and cdf
-        df.loc[currentIndex] = ["#########", "", "", "", "", "", "", "", "", "", "", "", "", "",
-             "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-             "", "", "", "", "", "", "", "", "", "", ""]
-        cdf.loc[currentIndex] = ["100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0",
-            "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0",
-            "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0"]
+        df.loc[currentIndex] = ["#########", '', '', '', '', '', '', '', '', '', '', '', '', '',
+                                 '', '', '', '', '', '', '', '', '', '', '', '', '', '',
+                                 '', '', '', '', '', '', '', '', '', '', '']
+        cdf.loc[currentIndex] = ["100.0"] * len(df.columns)
 
         # The order that the categories are filled in is, at first, determined by the order the text is parsed from the photo
         # Some items, (genus, species, and subspecies) always come first
@@ -413,6 +410,7 @@ def parsing():
         # UNITS: m, km, ft, mi, yd
         x = re.search(r"\d+ ?[dfikmty]+[.']?", joinedStrings)
         if x is not None:
+            print("Preliminary elevation: ", x.group())
             unit = re.search(r"[a-zA-Z]+", x.group())
             if unit is not None:
                 df.loc[currentIndex, 'Elevation unit'] = unit.group()
@@ -479,7 +477,7 @@ def parsing():
                 print("No lat and long ig")
 
 
-        ### NOW BEGINS THE DATE SAGA ###
+        ### NOW BEGINS THE DATE SAGA (Categories[21 - 23] ###
         print("\nJoined strings: ", joinedStrings)
         dateString = joinedStrings.replace(" | ", " ")
         print("Date string: ", dateString, "\n")
@@ -646,7 +644,7 @@ def parsing():
         # Start from Country (Category[7]), since that's where things start getting messy
         i = 7
         while i < len(df.columns):
-            if df.iloc[currentIndex, i] == "":
+            if df.iloc[currentIndex, i] == '':
                 if listOfStrings[0] in copiedStrings:
                     df.iloc[currentIndex, i] = listOfStrings[0]
                     index = copiedStrings.index(listOfStrings[0])
@@ -667,5 +665,5 @@ def parsing():
     pd.set_option('display.max_columns', None)
     print("\nUpdated df:\n", df)
     print("\nUpdated cdf:\n", cdf)
-    df.to_csv(os.path.join(OCR_OUTPUT, "parsed.csv"), index=False)
-    cdf.to_csv(os.path.join(OCR_OUTPUT, "parsed_confidence.csv"), index=False)
+    df.to_csv(os.path.join(OCR_OUTPUT, "parsed.csv"), index=False, encoding="utf8")
+    cdf.to_csv(os.path.join(OCR_OUTPUT, "parsed_confidence.csv"), index=False, encoding="utf8")
