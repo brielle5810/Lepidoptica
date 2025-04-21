@@ -52,13 +52,6 @@ def get_best_match_from_ngrams(ngrams, vocab_list, threshold=80):
             best_match, best_score = match, score
     return (best_match, best_score) if best_score >= threshold else (None, 0)
 
-def is_valid_date(date_str, format):
-    try:
-        datetime.strptime(date_str, format)
-        return True
-    except ValueError:
-        return False
-
 def split_date(date_str):
     day = month = year = ""
     date_list = [date_str]
