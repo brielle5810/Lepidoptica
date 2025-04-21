@@ -123,7 +123,6 @@ nltk.download('punkt_tab')
 nltk.download('averaged_perceptron_tagger_eng')
 nltk.download('maxent_ne_chunker_tab')
 
-
 def parsing():
     ### BASIC STEP BY STEP:
         # 1. Split OCR output (which I assume is just one big string of \n delimited text
