@@ -193,7 +193,7 @@ def parsing():
         df.loc[currentIndex] = ["#########", '', '', '', '', '', '', '', '', '', '', '', '', '',
                                  '', '', '', '', '', '', '', '', '', '', '', '', '', '',
                                  '', '', '', '', '', '', '', '', '', '', '']
-        cdf.loc[currentIndex] = ["100.0"] * len(df.columns)
+        cdf.loc[currentIndex] = ["100.0"] * len(cdf.columns)
 
         # The order that the categories are filled in is, at first, determined by the order the text is parsed from the photo
         # Some items, (genus, species, and subspecies) always come first
@@ -665,5 +665,13 @@ def parsing():
     pd.set_option('display.max_columns', None)
     print("\nUpdated df:\n", df)
     print("\nUpdated cdf:\n", cdf)
-    df.to_csv(os.path.join(OCR_OUTPUT, "parsed.csv"), index=False, encoding="utf8")
-    cdf.to_csv(os.path.join(OCR_OUTPUT, "parsed_confidence.csv"), index=False, encoding="utf8")
+
+    ### WRITE TO FILES NOW PLEASE AND THANK YOU
+    final_path = os.path.join(OCR_OUTPUT, "parsed.csv")
+    final_confidence_path = os.path.join(OCR_OUTPUT, "parsed_confidence.csv")
+
+    final_data = open(final_path, "w", encoding="utf8")
+    final_conf_data = open(final_confidence_path, "w", encoding="utf8")
+
+    df.to_csv(final_data, index=False)
+    cdf.to_csv(final_conf_data, index=False)
