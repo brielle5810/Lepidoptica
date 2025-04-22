@@ -720,7 +720,7 @@ def parsing():
         # Start from Country (Category[7]), since that's where things start getting messy
         i = 7
         while i < len(df.columns):
-            if df.iloc[currentIndex, i] == '':
+            if df.iloc[currentIndex, i] == '' and len(listOfStrings) != 0:
                 if listOfStrings[0] in copiedStrings:
                     df.iloc[currentIndex, i] = listOfStrings[0]
                     index = copiedStrings.index(listOfStrings[0])
