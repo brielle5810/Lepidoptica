@@ -745,5 +745,7 @@ def parsing():
     final_data = open(final_path, "w", encoding="utf8")
     final_conf_data = open(final_confidence_path, "w", encoding="utf8")
 
-    df.to_csv(final_data, index=False)
-    cdf.to_csv(final_conf_data, index=False)
+    # df.to_csv(final_data, index=False)
+    # cdf.to_csv(final_conf_data, index=False)
+    df.to_csv(final_data, index=False, quoting=csv.QUOTE_MINIMAL)
+    cdf.to_csv(final_conf_data, index=False, quoting=csv.QUOTE_MINIMAL)
