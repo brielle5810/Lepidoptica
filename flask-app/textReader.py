@@ -78,6 +78,8 @@ def split_date(date_str):
         year = date_list[0]
         if len(date_list[0]) == 2 and date_list[0][0] == "'":
             year = date_list[0].replace("'", "19")
+        elif len(year) == 2:
+            year = "19" + year
 
     if (len(date_list) >= 2) and re.search(r"i|ii|iii|iv|v|vi|vii|viii|ix|x|xi|xii", month):
         month = month[:-1]  # Get rid of slash
@@ -256,7 +258,7 @@ def parsing():
         # First check if UF and FLMNH are in there somewhere - if so, remove them
         i = 0
         while i < len(listOfStrings) - 1:
-            if re.search(r"FLMNH", listOfStrings[i], re.IGNORECASE) or re.search(r"UF", listOfStrings[i], re.IGNORECASE):
+            if re.search(r"(FLMNH|FLNH)", listOfStrings[i], re.IGNORECASE) or re.search(r"UF", listOfStrings[i], re.IGNORECASE):
                 listOfStrings.pop(i)
                 listOfConfidence.pop(i)
             else:
@@ -271,9 +273,10 @@ def parsing():
         x = re.search(r"(MGCL)?\s?[0-9]{7}", joinedStrings, re.IGNORECASE)
         if x is not None:
             voucher = x.group()
-            y = re.search(r"\s", voucher)
-            if y is None:
+            if re.search(r"\s", voucher) is None:
                 voucher = voucher.replace("MGCL", "MGCL ")
+            if re.search(r"MGCL", voucher) is None:
+                voucher = "MGCL " + voucher
             joinedStrings = joinedStrings.replace(x.group(), "")  # REMOVE FROM BIG STRING
         df.loc[currentIndex, 'Specimen_voucher'] = voucher
 
@@ -526,31 +529,31 @@ def parsing():
             dates_found = x.group()
         # Roman numerals format
         # DD.MM.YYYY where MM = roman numerals
-        elif re.search(r"\d{1,2}[.,\s]*(?:i|ii|iii|iv|v|vi|vii|viii|ix|x|xi|xii)+[.,\s]*\d{4}", dateString, re.IGNORECASE):
+        elif re.search(r"\d{1,2}[.,\s-]*(?:i|ii|iii|iv|v|vi|vii|viii|ix|x|xi|xii)+[.,\s-]*\d{4}", dateString, re.IGNORECASE):
             print("It's DD.MM.YYYY roman numerals format!")
-            x = re.search(r"\d{1,2}[.,\s]*(?:i|ii|iii|iv|v|vi|vii|viii|ix|x|xi|xii)+[.,\s]*\d{4}", dateString, re.IGNORECASE)
+            x = re.search(r"\d{1,2}[.,\s-]*(?:i|ii|iii|iv|v|vi|vii|viii|ix|x|xi|xii)+[.,\s-]*\d{4}", dateString, re.IGNORECASE)
             dates_found = x.group()
         # DD MM YYYY where MM = date name (abbreviate or otherwise).
-        elif re.search(r"\d{1,2}[.,\s]*(?:jan|feb|mar|apr|may|jun|jul|aug|sept|oct|nov|dec|January|February|March|April|May|June|July|August|September|October|November|December)+[.,\s]*\d{2,4}", dateString, re.IGNORECASE):
+        elif re.search(r"\d{1,2}[.,\s-]*(?:jan|feb|mar|apr|may|jun|jul|aug|sept|oct|nov|dec|January|February|March|April|May|June|July|August|September|October|November|December)+[.,\s-]*\d{2,4}", dateString, re.IGNORECASE):
             print("It's a DD MonthName YYYY format!")
-            if re.search(r"\d{1,2}[.,\s]*(?:jan|feb|mar|apr|may|jun|jul|aug|sept|oct|nov|dec)*[.,\s]*\d{4};*", dateString, re.IGNORECASE):
+            if re.search(r"\d{1,2}[.,\s-]*(?:jan|feb|mar|apr|may|jun|jul|aug|sept|oct|nov|dec)*[.,\s-]*\d{4};*", dateString, re.IGNORECASE):
                 print("Abbreviated Date")
-                x = re.search(r"\d{1,2}[.,\s]*(?:jan|feb|mar|apr|may|jun|jul|aug|sept|oct|nov|dec)*[.,\s]*\d{4};*", dateString, re.IGNORECASE)
+                x = re.search(r"\d{1,2}[.,\s-]*(?:jan|feb|mar|apr|may|jun|jul|aug|sept|oct|nov|dec)*[.,\s-]*\d{4};*", dateString, re.IGNORECASE)
                 dates_found = x.group()
-            elif re.search(r"\d{1,2}[.,\s]*(?:January|February|March|April|May|June|July|August|September|October|November|December)*[.,\s]*\d{4};*", dateString, re.IGNORECASE):
+            elif re.search(r"\d{1,2}[.,\s-]*(?:January|February|March|April|May|June|July|August|September|October|November|December)*[.,\s-]*\d{4};*", dateString, re.IGNORECASE):
                 print("Non-abbreviated Date")
-                x = re.search(r"\d{1,2}[.,\s]*(?:January|February|March|April|May|June|July|August|September|October|November|December)*[.,\s]*\d{4};*", dateString, re.IGNORECASE)
+                x = re.search(r"\d{1,2}[.,\s-]*(?:January|February|March|April|May|June|July|August|September|October|November|December)*[.,\s-]*\d{4};*", dateString, re.IGNORECASE)
                 dates_found = x.group()
         # MM DD YYYY where MM = date name (abbreviate or otherwise).
-        elif re.search(r"(?:jan|feb|mar|apr|may|jun|jul|aug|sept|oct|nov|dec|January|February|March|April|May|June|July|August|September|October|November|December)+[.,\s]*\d{0,2}[.,\s]*\d{4};*", dateString, re.IGNORECASE):
+        elif re.search(r"(?:jan|feb|mar|apr|may|jun|jul|aug|sept|oct|nov|dec|January|February|March|April|May|June|July|August|September|October|November|December)+[.,\s-]*\d{0,2}[.,\s]*\d{4};*", dateString, re.IGNORECASE):
             print("It's a MonthName DD YYYY format!")
-            if re.search(r"(?:jan|feb|mar|apr|may|jun|jul|aug|sept|oct|nov|dec)+[.,\s]*\d{0,2}[.,\s]*\d{4};*", dateString, re.IGNORECASE):
+            if re.search(r"(?:jan|feb|mar|apr|may|jun|jul|aug|sept|oct|nov|dec)+[.,\s-]*\d{0,2}[.,\s-]*\d{4};*", dateString, re.IGNORECASE):
                 print("Abbreviated Date")
-                x = re.search(r"(?:jan|feb|mar|apr|may|jun|jul|aug|sept|oct|nov|dec)+[.,\s]*\d{0,2}[.,\s]*\d{4};*", dateString, re.IGNORECASE)
+                x = re.search(r"(?:jan|feb|mar|apr|may|jun|jul|aug|sept|oct|nov|dec)+[.,\s-]*\d{0,2}[.,\s-]*\d{4};*", dateString, re.IGNORECASE)
                 dates_found = x.group()
-            elif re.search(r"(?:January|February|March|April|May|June|July|August|September|October|November|December)+[.,\s]*\d{0,2}[.,\s]*\d{4};*", dateString, re.IGNORECASE):
+            elif re.search(r"(?:January|February|March|April|May|June|July|August|September|October|November|December)+[.,\s-]*\d{0,2}[.,\s-]*\d{4};*", dateString, re.IGNORECASE):
                 print("Non-abbreviated Date")
-                x = re.search(r"(?:January|February|March|April|May|June|July|August|September|October|November|December)+[.,\s]*\d{0,2}[.,\s]*\d{4};*", dateString, re.IGNORECASE)
+                x = re.search(r"(?:January|February|March|April|May|June|July|August|September|October|November|December)+[.,\s-]*\d{0,2}[.,\s-]*\d{4};*", dateString, re.IGNORECASE)
                 dates_found = x.group()
         # YYYY   OR   'YY
         elif re.search(r"\d{4};?(?![a-zA-Z-])", dateString) is not None:
@@ -632,10 +635,11 @@ def parsing():
 
 
         ### HARD RESET OF STRING: (We're also gonna remove the sta., Acc., colln., etc.)
-        joinedStrings = re.sub(r"[sS]ta\.", "", joinedStrings, re.IGNORECASE)
-        joinedStrings = re.sub(r"([aA]cc\.|[aA]ccession)", "", joinedStrings, re.IGNORECASE)
+        joinedStrings = re.sub(r"[sS]ta\.?", "", joinedStrings, re.IGNORECASE)
+        joinedStrings = re.sub(r"([aA]cc\.?|[aA]ccession)", "", joinedStrings, re.IGNORECASE)
         joinedStrings = re.sub(r"MGCL\s?", "", joinedStrings, re.IGNORECASE)
-        joinedStrings = re.sub(r"([cC]olln\.|[cC]oll\.)", "", joinedStrings, re.IGNORECASE)
+        joinedStrings = re.sub(r"([cC]olln\.?|[cC]oll\.?)", "", joinedStrings, re.IGNORECASE)
+        joinedStrings = re.sub(r"([cC]ollection)", "", joinedStrings, re.IGNORECASE)
         joinedStrings = re.sub(r"[mM]useum", "", joinedStrings, re.IGNORECASE)
         peopleString = joinedStrings.replace(" | ", " ")
         listOfStrings = joinedStrings.split(" | ")
