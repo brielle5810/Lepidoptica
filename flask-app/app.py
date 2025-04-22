@@ -448,12 +448,15 @@ def update_cell():
     row_index = int(data["row"])
     col_index = int(data["col"])
     new_value = data["value"]
-    print(new_value)
+    confidence_value = data.get("confidence")
+    #print(new_value)
 
     data_path = os.path.join(OCR_OUTPUT, "parsed.csv")
+    confidence_path = os.path.join(OCR_OUTPUT, "parsed_confidence.csv")
 
     try:
         df_data = pd.read_csv(data_path, dtype=str) #read all as string to avoid compat type errors
+        df_conf = pd.read_csv(confidence_path, dtype=str)
 
         if row_index < 0 or row_index >= len(df_data):
             return jsonify(success=False, error="Invalid row index"), 404
@@ -464,8 +467,15 @@ def update_cell():
         df_data.iloc[:, col_index] = df_data.iloc[:, col_index].astype("object")
         df_data.iat[row_index, col_index] = new_value
 
+        # Update parsed_confidence.csv, if value was provided
+        if confidence_value is not None:
+            df_conf.iloc[:, col_index] = df_conf.iloc[:, col_index].astype("object")
+            df_conf.iat[row_index, col_index] = confidence_value
+
         # save back to CSV
         df_data.to_csv(data_path, index=False)
+        df_conf.to_csv(confidence_path, index=False)
+
         return jsonify(success=True)
 
     except Exception as e:
@@ -474,6 +484,7 @@ def update_cell():
 @app.route("/update_mult_cells", methods=["POST"])
 def update_mult_cells():
     data_path = os.path.join(OCR_OUTPUT, "parsed.csv")
+    confidence_path = os.path.join(OCR_OUTPUT, "parsed_confidence.csv")
 
     if not os.path.exists(data_path):
         return jsonify(success=False, error="CSV file not found"), 404
@@ -487,18 +498,26 @@ def update_mult_cells():
         if not isinstance(updates, list):
             return jsonify(success=False, error="Expected a list of updates"), 400
 
-        df = pd.read_csv(data_path)
+        df = pd.read_csv(data_path, dtype=str)
+        df_conf = pd.read_csv(confidence_path, dtype=str)
 
         for update in updates: #each cell
             row = int(update.get("row", -1))
             col = int(update.get("col", -1))
             value = update.get("value", "")
+            confidence_value = float(update.get("confidence", 0.0))
 
             if 0 <= row < len(df) and 0 <= col < len(df.columns):
                 # update value for each cell. to be empty for other selected cells when merging
                 # or to swap vals in drag
                 df.iloc[:, col] = df.iloc[:, col].astype("object")
                 df.iat[row, col] = value
+
+                # Update parsed_confidence.csv, if value was provided
+                if confidence_value is not None:
+                    df_conf.iloc[:, col] = df_conf.iloc[:, col].astype("object")
+                    df_conf.iat[row, col] = confidence_value
+
             else:
                 print(f"invalid update attempted: row={row}, col={col} --skipping")
 
@@ -507,6 +526,8 @@ def update_mult_cells():
             return jsonify(success=False, error="df has no columns"), 500
 
         df.to_csv(data_path, index=False)
+        df_conf.to_csv(confidence_path, index=False)
+
         return jsonify(success=True)
 
     except Exception as e:

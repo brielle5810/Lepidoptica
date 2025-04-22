@@ -355,14 +355,15 @@
                     eraseIcon.addEventListener('click', (e) => {
                         e.stopPropagation();  // Prevent triggering drag or edit
                         const contentDiv = cell.querySelector('.cell-content').textContent;
-                        if (contentDiv) {
-                            contentDiv.textContent = "";
-                            cell.querySelector('.cell-content').textContent = "";
-                            const rowIndex = i - 1;
-                            const colIndex = j - 3;
-                            saveCellChange(rowIndex, colIndex, "", cell);
-                        }
+
+                        cell.dataset.confidence = 100.0;
                         cell.style.backgroundColor = cell.dataset.baselineColor;
+
+                        contentDiv.textContent = "";
+                        cell.querySelector('.cell-content').textContent = "";
+                        const rowIndex = i - 1;
+                        const colIndex = j - 3;
+                        saveCellChange(rowIndex, colIndex, "", cell);
 
                         // Clear any selected cells for merge functionality
                         clearSelectedCells();
@@ -469,8 +470,13 @@
                                 sourceContent.innerHTML = targetContent.innerHTML;
                                 targetContent.innerHTML = temp;
 
+                                const tempConfidence = draggedCell.dataset.confidence;
+                                draggedCell.dataset.confidence = cell.dataset.confidence;
+                                cell.dataset.confidence = tempConfidence;
+
                                 draggedCell.style.backgroundColor = targetColor;
                                 cell.style.backgroundColor = sourceColor;
+
                                 draggedCell.dataset.originalContent = cell.dataset.originalContent;
                                 cell.dataset.originalContent = originalTextContent;
 
@@ -480,8 +486,8 @@
                                 const targetCol = cell.cellIndex - 3;
 
                                 const updates = [
-                                    {row: sourceRow, col: sourceCol, value: sourceContent.textContent.trim()},
-                                    {row: targetRow, col: targetCol, value: targetContent.textContent.trim()}
+                                    {row: sourceRow, col: sourceCol, value: sourceContent.textContent.trim(), confidence: draggedCell.dataset.confidence},
+                                    {row: targetRow, col: targetCol, value: targetContent.textContent.trim(), confidence: cell.dataset.confidence}
                                 ];
 
                                 saveMultipleCellChanges(updates);
@@ -500,6 +506,7 @@
 
                 let cellConfidence = confidenceValues[i - 1][j - 3];
                 cell.dataset.baselineColor = cell.style.backgroundColor;
+                cell.dataset.confidence = cellConfidence;
 
                 //console.log(confidenceValues[i - 1][j - 3]);
 
@@ -533,6 +540,7 @@
                     } else if (newContent !== originalContent) {
                         const rowIndex = i - 1;
                         const colIndex = j - 3;
+                        cell.dataset.confidence = 100.0;
                         saveCellChange(rowIndex, colIndex, newContent, cell);
                     }
                 });
@@ -651,12 +659,14 @@
                     if (targetContent) {
                         targetContent.textContent = mergedText.trim();
                         targetCell.style.backgroundColor = cell.dataset.baselineColor;
+                        targetCell.dataset.confidence = 100.0;
                     }
 
                     updates.push({
                         row: targetRow,
                         col: targetCol,
-                        value: mergedText
+                        value: mergedText, 
+                        confidence: targetCell.dataset.confidence
                     });
 
                     for (let i = 1; i < selectedCells.length; i++) {
@@ -670,11 +680,13 @@
                         }
 
                         cell.style.backgroundColor = cell.dataset.baselineColor;
+                        cell.dataset.confidence = 100.0;
 
                         updates.push({
                             row: row,
                             col: col,
-                            value: ""
+                            value: "", 
+                            confidence: cell.dataset.confidence
                         });
                     }
 
@@ -793,13 +805,16 @@
         }
 
         function saveCellChange(rowIndex, colIndex, newContent, cell = null) {
+            const confidence = cell ? cell.dataset.confidence : null;
+
             fetch("/update_cell", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     row: rowIndex,
                     col: colIndex,
-                    value: newContent
+                    value: newContent,
+                    confidence: confidence
                 })
                 }).then(res => res.json())
                 .then(data => {
