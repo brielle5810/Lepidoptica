@@ -58,13 +58,13 @@ def split_date(date_str):
 
     if re.search(r"\.", date_str):
         date_list = date_str.split(".")
-    elif re.search(",", date_str):
+    elif re.search(r",", date_str):
         date_list = date_str.split(",")
-    elif re.search("/", date_str):
+    elif re.search(r"/", date_str):
         date_list = date_str.split("/")
-    elif re.search("-", date_str):
+    elif re.search(r"-", date_str):
         date_list = date_str.split("-")
-    elif re.search(" ", date_str):
+    elif re.search(r" ", date_str):
         date_list = date_str.split(" ")
 
     if len(date_list) == 3:
@@ -79,12 +79,12 @@ def split_date(date_str):
         if len(date_list[0]) == 2 and date_list[0][0] == "'":
             year = date_list[0].replace("'", "19")
 
-    if (len(date_list) >= 2) and re.search("i|ii|iii|iv|v|vi|vii|viii|ix|x|xi|xii", month):
+    if (len(date_list) >= 2) and re.search(r"i|ii|iii|iv|v|vi|vii|viii|ix|x|xi|xii", month):
         month = month[:-1]  # Get rid of slash
-        numeral_List = re.findall("i|ii|iii|iv|v|vi|vii|viii|ix|x|xi|xii", month)
+        numeral_List = re.findall(r"i|ii|iii|iv|v|vi|vii|viii|ix|x|xi|xii", month)
         roman_numeral = "".join(numeral_List)
         month = str(roman.fromRoman(roman_numeral.upper())) + "/"
-    elif (len(date_list) >= 2) and re.search("[^a-zA-Z]", month):
+    elif (len(date_list) >= 2) and re.search(r"[^a-zA-Z]", month):
         month = month[:-1]  # Get rid of slash
         try:
             datetime_object = datetime.strptime(month, "%B")  # Uses the full month name format
@@ -271,7 +271,7 @@ def parsing():
         x = re.search(r"(MGCL)?\s?[0-9]{7}", joinedStrings, re.IGNORECASE)
         if x is not None:
             voucher = x.group()
-            y = re.search("\s", voucher)
+            y = re.search(r"\s", voucher)
             if y is None:
                 voucher = voucher.replace("MGCL", "MGCL ")
             joinedStrings = joinedStrings.replace(x.group(), "")  # REMOVE FROM BIG STRING
@@ -291,7 +291,8 @@ def parsing():
                 average = 0.0
                 divisor = 0
                 for string in copiedStrings:
-                    if (re.findall(x.group(), string)) and (string != ""):
+                    #if (re.findall(x.group(), string)) and (string != ""):
+                    if (re.findall(re.escape(x.group()), string)) and (string != ""):
                         index = copiedStrings.index(string)
                         if (copiedConfidence[index].strip() != ''):
                             average += float(copiedConfidence[index])
@@ -301,7 +302,9 @@ def parsing():
                         if string in listOfStrings:
                             listOfConfidence.pop(listOfStrings.index(string))
                             listOfStrings.remove(string)
-                    elif (re.findall(string, x.group())) and (string != ""):
+                    # elif (re.findall(string, x.group())) and (string != ""):
+                    elif (re.findall(re.escape(string), x.group())) and (string != ""):
+
                         index = copiedStrings.index(string)
                         if (copiedConfidence[index].strip() != ''):
                             average += float(copiedConfidence[index])
@@ -385,7 +388,10 @@ def parsing():
             divisor = 0
             for string in listOfStrings:
                 if df.iloc[currentIndex, iter] != "":
-                    if (re.search(string, df.iloc[currentIndex, iter], re.IGNORECASE)) and (string != ""):
+                    #if (re.search(string, df.iloc[currentIndex, iter], re.IGNORECASE)) and (string != ""):
+                    if (re.search(re.escape(string), df.iloc[currentIndex, iter], re.IGNORECASE)) and (
+                                string != ""):
+
                         #print("Found the string in the df!", string, "in df", df.iloc[currentIndex, iter])
                         index = copiedStrings.index(string)
                         if (copiedConfidence[index].strip() != ''):
@@ -449,7 +455,8 @@ def parsing():
                 average = 0.0
                 divisor = 0
                 for string in copiedStrings:
-                    if (re.findall(x.group(), string)) and (string != ""):
+                    #if (re.findall(x.group(), string)) and (string != ""):
+                    if (re.findall(re.escape(x.group()), string)) and (string != ""):
                         index = copiedStrings.index(string)
                         if (copiedConfidence[index].strip() != ''):
                             average += float(copiedConfidence[index])
@@ -459,7 +466,9 @@ def parsing():
                         if string in listOfStrings:
                             listOfStrings.remove(string)
                         joinedStrings = re.sub(string, "", joinedStrings)
-                    elif (re.findall(string, x.group())) and (string != ""):
+                    #elif (re.findall(string, x.group())) and (string != ""):
+                    elif (re.findall(re.escape(string), x.group())) and (string != ""):
+
                         index = copiedStrings.index(string)
                         if (copiedConfidence[index].strip() != ''):
                             average += float(copiedConfidence[index])
@@ -522,35 +531,35 @@ def parsing():
             x = re.search(r"\d{1,2}[.,\s]*(?:i|ii|iii|iv|v|vi|vii|viii|ix|x|xi|xii)+[.,\s]*\d{4}", dateString, re.IGNORECASE)
             dates_found = x.group()
         # DD MM YYYY where MM = date name (abbreviate or otherwise).
-        elif re.search("\d{1,2}[.,\s]*(?:jan|feb|mar|apr|may|jun|jul|aug|sept|oct|nov|dec|January|February|March|April|May|June|July|August|September|October|November|December)+[.,\s]*\d{2,4}", dateString, re.IGNORECASE):
+        elif re.search(r"\d{1,2}[.,\s]*(?:jan|feb|mar|apr|may|jun|jul|aug|sept|oct|nov|dec|January|February|March|April|May|June|July|August|September|October|November|December)+[.,\s]*\d{2,4}", dateString, re.IGNORECASE):
             print("It's a DD MonthName YYYY format!")
             if re.search(r"\d{1,2}[.,\s]*(?:jan|feb|mar|apr|may|jun|jul|aug|sept|oct|nov|dec)*[.,\s]*\d{4};*", dateString, re.IGNORECASE):
                 print("Abbreviated Date")
                 x = re.search(r"\d{1,2}[.,\s]*(?:jan|feb|mar|apr|may|jun|jul|aug|sept|oct|nov|dec)*[.,\s]*\d{4};*", dateString, re.IGNORECASE)
                 dates_found = x.group()
-            elif re.search("\d{1,2}[.,\s]*(?:January|February|March|April|May|June|July|August|September|October|November|December)*[.,\s]*\d{4};*", dateString, re.IGNORECASE):
+            elif re.search(r"\d{1,2}[.,\s]*(?:January|February|March|April|May|June|July|August|September|October|November|December)*[.,\s]*\d{4};*", dateString, re.IGNORECASE):
                 print("Non-abbreviated Date")
-                x = re.search("\d{1,2}[.,\s]*(?:January|February|March|April|May|June|July|August|September|October|November|December)*[.,\s]*\d{4};*", dateString, re.IGNORECASE)
+                x = re.search(r"\d{1,2}[.,\s]*(?:January|February|March|April|May|June|July|August|September|October|November|December)*[.,\s]*\d{4};*", dateString, re.IGNORECASE)
                 dates_found = x.group()
         # MM DD YYYY where MM = date name (abbreviate or otherwise).
-        elif re.search("(?:jan|feb|mar|apr|may|jun|jul|aug|sept|oct|nov|dec|January|February|March|April|May|June|July|August|September|October|November|December)+[.,\s]*\d{0,2}[.,\s]*\d{4};*", dateString, re.IGNORECASE):
+        elif re.search(r"(?:jan|feb|mar|apr|may|jun|jul|aug|sept|oct|nov|dec|January|February|March|April|May|June|July|August|September|October|November|December)+[.,\s]*\d{0,2}[.,\s]*\d{4};*", dateString, re.IGNORECASE):
             print("It's a MonthName DD YYYY format!")
             if re.search(r"(?:jan|feb|mar|apr|may|jun|jul|aug|sept|oct|nov|dec)+[.,\s]*\d{0,2}[.,\s]*\d{4};*", dateString, re.IGNORECASE):
                 print("Abbreviated Date")
                 x = re.search(r"(?:jan|feb|mar|apr|may|jun|jul|aug|sept|oct|nov|dec)+[.,\s]*\d{0,2}[.,\s]*\d{4};*", dateString, re.IGNORECASE)
                 dates_found = x.group()
-            elif re.search("(?:January|February|March|April|May|June|July|August|September|October|November|December)+[.,\s]*\d{0,2}[.,\s]*\d{4};*", dateString, re.IGNORECASE):
+            elif re.search(r"(?:January|February|March|April|May|June|July|August|September|October|November|December)+[.,\s]*\d{0,2}[.,\s]*\d{4};*", dateString, re.IGNORECASE):
                 print("Non-abbreviated Date")
-                x = re.search("(?:January|February|March|April|May|June|July|August|September|October|November|December)+[.,\s]*\d{0,2}[.,\s]*\d{4};*", dateString, re.IGNORECASE)
+                x = re.search(r"(?:January|February|March|April|May|June|July|August|September|October|November|December)+[.,\s]*\d{0,2}[.,\s]*\d{4};*", dateString, re.IGNORECASE)
                 dates_found = x.group()
         # YYYY   OR   'YY
-        elif re.search("\d{4};?(?![a-zA-Z-])", dateString) is not None:
+        elif re.search(r"\d{4};?(?![a-zA-Z-])", dateString) is not None:
             print("It's a YYYY format!")
-            x = re.search("\d{4};?(?![a-zA-Z-])", dateString)
+            x = re.search(r"\d{4};?(?![a-zA-Z-])", dateString)
             dates_found = x.group()
-        elif re.search("'?\d{2};?(?![a-zA-Z-])", dateString) is not None:
+        elif re.search(r"'?\d{2};?(?![a-zA-Z-])", dateString) is not None:
             print("It's a 'YY format!")
-            x = re.search("\d{2};?(?![a-zA-Z-])", dateString)
+            x = re.search(r"\d{2};?(?![a-zA-Z-])", dateString)
             dates_found = x.group()
         else:
             dates_found = ""
@@ -570,7 +579,8 @@ def parsing():
             average = 0.0
             divisor = 0
             for string in copiedStrings:
-                if (re.findall(dates_found, string)) and (string != ""):
+                if (re.findall(re.escape(dates_found), string)) and (string != ""):
+                #if (re.findall(dates_found, string)) and (string != ""):
                     index = copiedStrings.index(string)
                     if (copiedConfidence[index].strip() != ''):
                         average += float(copiedConfidence[index])
@@ -581,7 +591,9 @@ def parsing():
                         listOfConfidence.pop(listOfStrings.index(string))  ### Remove from list of confidences
                         listOfStrings.remove(string)
                     joinedStrings = re.sub(string, "", joinedStrings)
-                elif (re.findall(string, dates_found)) and (string != ""):
+                #elif (re.findall(string, dates_found)) and (string != ""):
+                elif (re.findall(re.escape(string), dates_found)) and (string != ""):
+
                     index = copiedStrings.index(string)
                     if (copiedConfidence[index].strip() != ''):
                         average += float(copiedConfidence[index])
@@ -666,7 +678,10 @@ def parsing():
                 divisor = 0
 
                 for string in copiedStrings:
-                    if (re.findall(string, collectors, re.IGNORECASE)) and (string != ""):
+
+                    #if (re.findall(string, collectors, re.IGNORECASE)) and (string != ""):
+                    if (re.findall(re.escape(string), collectors, re.IGNORECASE)) and (string != ""):
+
                         ## Clean up strings/lists
                         index = copiedStrings.index(string)
                         average += float(copiedConfidence[index])
