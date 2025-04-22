@@ -132,7 +132,7 @@ def crop_images_in_batch(filenames):
             image = Image.open(image_path)
             image = ImageOps.exif_transpose(image)
             width, height = image.size
-            new_width = int(width * 0.4)
+            new_width = int(width * 0.35)
             cropped_image = image.crop((0, 0, new_width, height))
 
             cropped_image.save(cropped_path)
