@@ -29,7 +29,7 @@ OCR_OUTPUT = "ocr_output"
 num_files = 0
 num_processed = 0
 
-reader = easyocr.Reader(['en'], gpu=False, recog_network="fine_tuning2")
+reader = easyocr.Reader(['en'], gpu=False, recog_network="fine_tuning1")
 
 for folder in [UPLOAD_FOLDER, STAGE1_FOLDER, PREPROCESS_FOLDER, SAVED_ORIGINALS, OCR_OUTPUT, MODIFIED_FOLDER]:
     os.makedirs(folder, exist_ok=True)
@@ -155,8 +155,8 @@ def preprocess_images_in_batch():
             image = image.convert("RGB")
             image_np = np.array(image)
 
-            # ### Alexia's Work
-            # greyscale image
+            #### Soft preprocessing
+            # Grayscale
             image_np = cv2.cvtColor(image_np, cv2.COLOR_BGR2GRAY)
 
             # thickening the font
@@ -164,12 +164,36 @@ def preprocess_images_in_batch():
             image_np = cv2.dilate(image_np, kernel_22, iterations=1)
             image_np = cv2.bitwise_not(image_np)
 
-            # blurring image
-            sigma = 0.5
-            image_np = gaussian_filter(image_np, sigma=sigma)
-
             # image binarization
-            _, image_np = cv2.threshold(image_np, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+            image_np = cv2.adaptiveThreshold(image_np, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 19, 8)
+
+            # CLAHE
+            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+            image_np = clahe.apply(image_np)
+
+            # To remove noise
+            kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
+            image_np = cv2.morphologyEx(image_np, cv2.MORPH_OPEN, kernel)
+
+            # Sharpening
+            laplacian = cv2.Laplacian(image_np, cv2.CV_64F)
+            image_np = cv2.convertScaleAbs(image_np - 0.7 * laplacian)
+
+            # ### Alexia's Work
+            # greyscale image
+            # image_np = cv2.cvtColor(image_np, cv2.COLOR_BGR2GRAY)
+            #
+            # # thickening the font
+            # image_np = cv2.bitwise_not(image_np)
+            # image_np = cv2.dilate(image_np, kernel_22, iterations=1)
+            # image_np = cv2.bitwise_not(image_np)
+            #
+            # # blurring image
+            # sigma = 0.5
+            # image_np = gaussian_filter(image_np, sigma=sigma)
+            #
+            # # image binarization
+            # _, image_np = cv2.threshold(image_np, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
             # save in preprocess folder
             processed_pil = Image.fromarray(image_np)
