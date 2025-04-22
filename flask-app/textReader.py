@@ -405,7 +405,9 @@ def parsing():
 
                         listOfConfidence.pop(listOfStrings.index(string))  ### Remove from list of confidences
                         listOfStrings.remove(string)  ### Remove from list of strings
-                        joinedStrings = re.sub(string, "", joinedStrings)  ### REMOVE FROM BIG STRING
+                        #joinedStrings = re.sub(string, "", joinedStrings)  ### REMOVE FROM BIG STRING
+                        joinedStrings = joinedStrings.replace(string, "")
+
                     elif (re.search(df.iloc[currentIndex, iter], string, re.IGNORECASE)) and (string != ""):
                         #print("Found the df in the string!", df.iloc[currentIndex, iter], "in string", string)
                         index = copiedStrings.index(string)
@@ -417,7 +419,8 @@ def parsing():
 
                         listOfConfidence.pop(listOfStrings.index(string))  ### Remove from list of confidences
                         listOfStrings.remove(string)  ### Remove from list of strings
-                        joinedStrings = re.sub(string, "", joinedStrings)  ### REMOVE FROM BIG STRING
+                        #joinedStrings = re.sub(string, "", joinedStrings)  ### REMOVE FROM BIG STRING
+                        joinedStrings = joinedStrings.replace(string, "")
 
             if average != 0:
                 average = average / divisor
@@ -468,7 +471,9 @@ def parsing():
                         divisor += 1
                         if string in listOfStrings:
                             listOfStrings.remove(string)
-                        joinedStrings = re.sub(string, "", joinedStrings)
+                        #joinedStrings = re.sub(string, "", joinedStrings)
+                        joinedStrings = joinedStrings.replace(string, "")
+
                     #elif (re.findall(string, x.group())) and (string != ""):
                     elif (re.findall(re.escape(string), x.group())) and (string != ""):
 
@@ -480,7 +485,9 @@ def parsing():
                         divisor += 1
                         if string in listOfStrings:
                             listOfStrings.remove(string)
-                        joinedStrings = re.sub(string, "", joinedStrings)
+                        #joinedStrings = re.sub(string, "", joinedStrings)
+                        joinedStrings = joinedStrings.replace(string, "")
+
                 if average != 0:
                     average = average / divisor
                 elif average == 0:
@@ -593,7 +600,8 @@ def parsing():
                     if string in listOfStrings:
                         listOfConfidence.pop(listOfStrings.index(string))  ### Remove from list of confidences
                         listOfStrings.remove(string)
-                    joinedStrings = re.sub(string, "", joinedStrings)
+                    #joinedStrings = re.sub(string, "", joinedStrings)
+                    joinedStrings = joinedStrings.replace(string, "")
                 #elif (re.findall(string, dates_found)) and (string != ""):
                 elif (re.findall(re.escape(string), dates_found)) and (string != ""):
 
@@ -606,7 +614,9 @@ def parsing():
                     if string in listOfStrings:
                         listOfConfidence.pop(listOfStrings.index(string))  ### Remove from list of confidences
                         listOfStrings.remove(string)
-                    joinedStrings = re.sub(string, "", joinedStrings)
+                    #joinedStrings = re.sub(string, "", joinedStrings)
+                    joinedStrings = joinedStrings.replace(string, "")
+
             if average != 0:
                 average = average / divisor
             elif average == 0:
