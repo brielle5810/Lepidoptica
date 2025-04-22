@@ -519,7 +519,7 @@ def parsing():
         #print("Date string: ", dateString, "\n")
 
         datefinder_output = datefinder.find_dates(dateString)
-        dates_found = []
+        dates_found = ""
 
         ### START CHECKING FOR THE COMMON DATE OUTPUTS
         # DD.MM.YYYY | DD,MM,YYYY | DD/MM/YYYY | DD-MM-YYYY   OR   MM.DD.YYYY | MM,DD,YYYY | MM/DD/YYYY | MM-DD-YYYY
@@ -749,7 +749,5 @@ def parsing():
     final_data = open(final_path, "w", encoding="utf8")
     final_conf_data = open(final_confidence_path, "w", encoding="utf8")
 
-    # df.to_csv(final_data, index=False)
-    # cdf.to_csv(final_conf_data, index=False)
-    df.to_csv(final_data, index=False, quoting=csv.QUOTE_MINIMAL)
-    cdf.to_csv(final_conf_data, index=False, quoting=csv.QUOTE_MINIMAL)
+    df.to_csv(final_data, index=False)
+    cdf.to_csv(final_conf_data, index=False)

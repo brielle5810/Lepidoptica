@@ -423,8 +423,8 @@ def delete_row(row_index):
 
     try:
         # write to csv
-        df_data.to_csv(data_path, index=False)
-        df_conf.to_csv(conf_path, index=False)
+        df_data.to_csv(data_path, index=False, header=True)
+        df_conf.to_csv(conf_path, index=False, header=True)
     except Exception as e:
         abort(500, description="Error writing to CSV files: " + str(e))
 
