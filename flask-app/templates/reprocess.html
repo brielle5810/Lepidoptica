@@ -56,8 +56,7 @@
                                 <div class="row">
                                     <label style="font-weight:bold; color:#006666;">Processing Strength:</label>
                                     <select onchange="modifyExample('{{ image }}')" name="processing_strength_{{ image }}">
-                                        <option selected>Choose an option</option>
-                                        <option value="soft" style="color: #578a3d">Soft</option>
+                                        <option value="soft" style="color: #578a3d" selected>Soft</option>
                                         <option value="medium" style="color: #3b7554">Medium</option>
                                         <option value="strong" style="color: #006666">Strong</option>
                                     </select>
@@ -141,7 +140,7 @@
             lineValue = lineInput.value;
         }
         if (!strengthSelect){
-            strengthValue = "strong";   //default
+            strengthValue = "soft";   //default
         }
         else{
             strengthValue = strengthSelect.value;

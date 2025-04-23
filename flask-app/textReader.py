@@ -444,7 +444,7 @@ def parsing():
             if unit is not None:
                 df.loc[currentIndex, 'Elevation unit'] = unit.group()
                 df.loc[currentIndex, 'Elevation max'] = re.sub(r"[a-zA-Z]+", "", x.group())
-                cdf.loc[currentIndex, 'Elevation unit'] = listOfConfidence[index]
+                #cdf.loc[currentIndex, 'Elevation unit'] = listOfConfidence[index]
             else:
                 df.loc[currentIndex, 'Elevation max'] = x.group()
             joinedStrings = re.sub(x.group(), "", joinedStrings)

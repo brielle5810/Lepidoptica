@@ -392,7 +392,7 @@
                         clearSelectedCells();
 
                         draggedCell = cell;
-                        console.log("Dragged Cell: ", draggedCell);
+                        //console.log("Dragged Cell: ", draggedCell);
 
                         // Get click offset relative to the cell
                         const rect = cell.getBoundingClientRect();
@@ -437,7 +437,7 @@
 
                     //Add dragend event
                     cell.querySelector('.drag-handle').addEventListener('dragend', () => {
-                        console.log("Drag Ended");
+                        //console.log("Drag Ended");
                         draggedCell = null;
                     });
 
@@ -459,12 +459,12 @@
 
                     // Add drop event to swap content
                     cell.addEventListener('drop', (e) => {
-                            console.log("Dragged Cell: ", draggedCell);
-                            console.log("Target Cell: ", cell);
+                            //console.log("Dragged Cell: ", draggedCell);
+                            //console.log("Target Cell: ", cell);
 
                             e.preventDefault();
 
-                            console.log("Drop Event Triggered");
+                            //console.log("Drop Event Triggered");
 
                             if (draggedCell && draggedCell !== cell) {
                                 const sourceContent = draggedCell.querySelector('.cell-content');
@@ -533,7 +533,6 @@
 
                 //Change to white when user selects cell
                 cell.querySelector('.cell-content').addEventListener("focus", function () {
-                    console.log("working?");
                     cell.dataset.originalContent = cell.querySelector('.cell-content').textContent.trim(); // Save original text
                     cell.dataset.originalColor = cell.style.backgroundColor; // Save original color
                     cell.style.backgroundColor = cell.dataset.baselineColor;

@@ -86,8 +86,30 @@
             document.getElementById("num-processed").textContent = numProcessed;
             document.getElementById("num-files").textContent = numFiles;
             //}
+
+            //When progress hits 100%, show the second loading screen
+            if (width >= 100) {
+
+                showSecondLoadingScreen();
+            }
+
+
             i = 0;
         }
     }
+
+    function showSecondLoadingScreen() {
+        document.body.innerHTML = `
+            <div id="content"></div>
+            <div class="loading-container">
+                <h1 style="font-weight:bold; color:#006666;">Loading...</h1>
+                <h2 style="color: #578a3d"><i>Parsing text output...</i></h2>
+                <div class="loader"></div>
+            </div>
+        `;
+        document.body.className = "page-loading-2";
+        console.log("Preprocessing message!!");
+    }
+
 </script>
 </html>
