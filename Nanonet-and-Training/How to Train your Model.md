@@ -109,7 +109,7 @@ More information on how to run programs in this virtual environment is in the `R
 17. That's all folks!
 
 ## History
-We actually trained a few different models (all found in `saved_models/`), but these two are the most successful ones. Our program now uses `fine_tuning2.pth`.
+We actually trained a few different models (all found in `saved_models/`), but these two are the most successful ones. Our program now uses `fine_tuning1.pth`.
 
 ### First saved_model - fine_tuning1_attempt3 (fine_tuning1.pth)
 - Built on top of saved_model `english_g2.pth`, which is what is used as the easyocr English model
@@ -118,11 +118,14 @@ We actually trained a few different models (all found in `saved_models/`), but t
 - Adjusted `trainer.py` and the rest of the files to work with google drive
 - Data = 3533 images (2827 for training, 706 for validation)
 - Accuracy: 73.371, Norm ED: 0.9336, Training Loss: 0, Validation Loss: 0.63248
+- Ultimately is the final model used in the program
 
 ### Second saved_model - fine_tuning2_attempt2 (fine_tuning2.pth)
 - Built on top of `fine_tuning1.pth`, my previously saved model
 - Experimented with preprocessing to try and get better metrics
 - Data = 5710 images (4569 for training, 1141 for validation)
 - Accuracy: 83.523, Norm ED: 0.9349, Training Loss: 0, Validation Loss: 0.59990
+- Suffered from overfitting. We also believe that the way we collected data images (through words rather than lines) affected how the model was reading in the text, resulting in missing spaces.
+- Recommendation: Take the raw data that was used to make this model, remake the boxes to include more spaces, retrain `fine_tuning1.pth` with this data. 
 
 **Total images used for training: 9243**
