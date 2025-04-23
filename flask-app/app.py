@@ -685,9 +685,6 @@ def output():
         print("File read successfully:")
         df = df.fillna('')
         df_list = df.values.tolist()
-        for item in df_list:
-            if np.isnan(item):
-                df_list[df_list.index(item)] = ""
     except pd.errors.EmptyDataError as e:
         print(f"Error: {e}")
     except FileNotFoundError:
