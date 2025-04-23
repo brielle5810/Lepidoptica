@@ -756,8 +756,8 @@ def output():
     ### USE THIS FOR THE FINAL VERSION
     try:
         df = pd.read_csv(os.path.join(OCR_OUTPUT, "parsed.csv"))
-        df = df.replace("nan", "")  ### REPLACE nans WITH EMPTY SPACES
         print("File read successfully:")
+        df = df.fillna('')
         df_list = df.values.tolist()
         for item in df_list:
             if np.isnan(item):
