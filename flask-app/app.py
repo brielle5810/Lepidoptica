@@ -260,12 +260,9 @@ def ocr():
             image_np = np.array(image)
             results = reader.readtext(image_np)
             ocr_df = pd.DataFrame(results, columns=['bbox', 'text', 'confidence'])
-            #ocr_df.to_csv(final_path)
 
             transcription_lines = "\n\""
             confidence_lines = "\n"
-
-            #num_processed = num_processed + 0.5
 
             num_cols = len(ocr_df)
             column_counter = 0
@@ -275,7 +272,6 @@ def ocr():
                 temp_str = str(ocr_df.loc[i].at["text"]).replace("\"", "\"\"")
 
                 if column_counter >= 38:
-                    #transcription_lines = transcription_lines + ocr_df[line][1]
                     transcription_lines = transcription_lines + temp_str
                 elif column_counter == 0:
                     transcription_lines = transcription_lines + temp_str
@@ -306,7 +302,6 @@ def ocr():
         except Exception as e:
             print(f"Error preprocessing {filename}: {e}")
 
-    #TODO: RUN TEXTREADER.PY
     textReader.parsing()
 
     return jsonify({"success": True, "message": f"OCR Complete"})
@@ -664,13 +659,6 @@ def apply_processing_strength(image_np, strength, thickness):
 
 @app.route("/output", methods=["GET"])
 def output():
-    #NEED TO MARK if IT HAS ALREADY BEEN RUN, or it will overwrite user changes
-    # global has_parsed
-    #
-    # if not has_parsed:
-    #     textReader.parsing()
-    #     has_parsed = True
-
     final_path = os.path.join(OCR_OUTPUT, "data.csv")
 
     #view the images
