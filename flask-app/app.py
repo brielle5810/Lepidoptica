@@ -293,7 +293,6 @@ def ocr():
 
     #Write data to csv
     #Confidence for each data point stored in confidence.csv
-
     for filename in os.listdir(PREPROCESS_FOLDER):
         name = filename.split(".")[0]
         image_path = os.path.join(PREPROCESS_FOLDER, filename)
