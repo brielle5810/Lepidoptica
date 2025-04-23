@@ -283,6 +283,13 @@ def ocr():
     confidence.write("CatalogNumber,Specimen_voucher,Family,Genus,Species,Subspecies,Sex,Country,State,County,Locality name,Elevation min,Elevation max,Elevation unit,Collectors,Latitude,Longitude,Georeferencing source,Georeferencing precision,Questionable label data,Do not publish,Collecting event start,Collecting event end,Date verbatim,Remarks public,Remarks private,Cataloged date,Cataloger First,Cataloger last,Prep type 1,Prep count 1,Prep type 2,Prep number 2,Prep type 3,Prep number 3,Other record number,Other record source,publication,publication")
     confidence.close()
 
+    parsed = open(final_path, "w", encoding="utf8")
+    parsed.write("CatalogNumber,Specimen_voucher,Family,Genus,Species,Subspecies,Sex,Country,State,County,Locality name,Elevation min,Elevation max,Elevation unit,Collectors,Latitude,Longitude,Georeferencing source,Georeferencing precision,Questionable label data,Do not publish,Collecting event start,Collecting event end,Date verbatim,Remarks public,Remarks private,Cataloged date,Cataloger First,Cataloger last,Prep type 1,Prep count 1,Prep type 2,Prep number 2,Prep type 3,Prep number 3,Other record number,Other record source,publication,publication")
+    parsed.close()
+
+    parsed_confidence = open(final_confidence_path, "w", encoding="utf8")
+    parsed_confidence.write("CatalogNumber,Specimen_voucher,Family,Genus,Species,Subspecies,Sex,Country,State,County,Locality name,Elevation min,Elevation max,Elevation unit,Collectors,Latitude,Longitude,Georeferencing source,Georeferencing precision,Questionable label data,Do not publish,Collecting event start,Collecting event end,Date verbatim,Remarks public,Remarks private,Cataloged date,Cataloger First,Cataloger last,Prep type 1,Prep count 1,Prep type 2,Prep number 2,Prep type 3,Prep number 3,Other record number,Other record source,publication,publication")
+    parsed_confidence.close()
 
     #Write data to csv
     #Confidence for each data point stored in confidence.csv
