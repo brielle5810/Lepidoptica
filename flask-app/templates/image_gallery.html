@@ -112,11 +112,6 @@
                     {% for image in images %}
                         <div class="col border border-success">
                             <div class="card p-2 border-0" style="color: red;">
-{#                                <img src="{{ url_for('download_preprocessed_file', name=image) }}" class="card-img-top" alt="Processed Image">#}
-{#                                <div class="card-body text-center">#}
-{#                                    <input type="checkbox" name="selected_images" value="{{ image }}">#}
-{#                                </div>#}
-
                                 <div class="selectable-card" onclick="toggleSelection(this)">
                                     <img src="{{ url_for('download_preprocessed_file', name=image) }}" class="card-img-top" alt="Processed Image">
                                     <input type="checkbox" name="selected_images" value="{{ image }}" class="hidden-checkbox">
@@ -137,9 +132,7 @@
             <button class="mb-2" onclick="submitSelected()"><b>REPROCESS</b> SELECTED</button>
             <button class="mb-2"> <a href="/" style="all: unset;"><b>UPLOAD</b> MORE</a></button>
             <button class="mb-2" onclick="deleteAll()"><b>DELETE</b> ALL IMAGES</button>
-            <!--<button class="mb-2"> <a href="/output" style="all: unset;">EXTRACT DATA</a></button>-->
             <button class="mb-2" onclick="showOCRLoadingScreen()"><b>EXTRACT</b> DATA</button>
-            <!--<button class="mb-2" onclick="ocr()">EXTRACT DATA</button>-->
         <br>
         <br>
 

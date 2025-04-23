@@ -367,7 +367,7 @@
                         e.stopPropagation();  // Prevent triggering drag or edit
                         const contentDiv = cell.querySelector('.cell-content').textContent;
 
-                        cell.dataset.confidence = 100.0;
+                        cell.dataset.confidence = 1.0;
                         cell.style.backgroundColor = cell.dataset.baselineColor;
 
                         contentDiv.textContent = "";
@@ -550,7 +550,7 @@
                     } else if (newContent !== originalContent) {
                         const rowIndex = i - 1;
                         const colIndex = j - 3;
-                        cell.dataset.confidence = 100.0;
+                        cell.dataset.confidence = 1.0;
                         saveCellChange(rowIndex, colIndex, newContent, cell);
                     }
                 });
@@ -669,7 +669,7 @@
                     if (targetContent) {
                         targetContent.textContent = mergedText.trim();
                         targetCell.style.backgroundColor = cell.dataset.baselineColor;
-                        targetCell.dataset.confidence = 100.0;
+                        targetCell.dataset.confidence = 1.0;
                     }
 
                     updates.push({
@@ -690,7 +690,7 @@
                         }
 
                         cell.style.backgroundColor = cell.dataset.baselineColor;
-                        cell.dataset.confidence = 100.0;
+                        cell.dataset.confidence = 1.0;
 
                         updates.push({
                             row: row,

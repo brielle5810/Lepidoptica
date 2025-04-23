@@ -49,9 +49,6 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "tiff"}
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# class ImageTable(Table):
-#     image = Col('Image')
-#     imageName = Col('Image Name')
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -103,10 +100,6 @@ def move_originals(filename):
     
     if os.path.exists(original_path):
         shutil.move(original_path, saved_path)  # Moves file instead of deleting it
-
-# @app.route("/edit", methods=["GET", "POST"])
-# def edit():
-#     return render_template("edit.html")
 
 
 @app.route("/preprocess", methods=["GET", "POST"])
@@ -180,22 +173,6 @@ def preprocess_images_in_batch():
             laplacian = cv2.Laplacian(image_np, cv2.CV_64F)
             image_np = cv2.convertScaleAbs(image_np - 0.7 * laplacian)
 
-            # ### Alexia's Work
-            # greyscale image
-            # image_np = cv2.cvtColor(image_np, cv2.COLOR_BGR2GRAY)
-            #
-            # # thickening the font
-            # image_np = cv2.bitwise_not(image_np)
-            # image_np = cv2.dilate(image_np, kernel_22, iterations=1)
-            # image_np = cv2.bitwise_not(image_np)
-            #
-            # # blurring image
-            # sigma = 0.5
-            # image_np = gaussian_filter(image_np, sigma=sigma)
-            #
-            # # image binarization
-            # _, image_np = cv2.threshold(image_np, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-
             # save in preprocess folder
             processed_pil = Image.fromarray(image_np)
             processed_pil.save(final_path)
@@ -232,25 +209,6 @@ def progress():
 
 @app.route("/ocr", methods=["POST"])
 def ocr():
-    #This version creates individual .csv files for each image
-    # for filename in os.listdir(PREPROCESS_FOLDER):
-    #     name = filename.split(".")[0]
-    #     image_path = os.path.join(PREPROCESS_FOLDER, filename)
-    #     final_path = os.path.join(OCR_OUTPUT, name + ".csv")
-    #
-    #     try:
-    #         image = Image.open(image_path)
-    #         image_np = np.array(image)
-    #         results = reader.readtext(image_np)
-    #         ocr_df = pd.DataFrame(results, columns=['bbox', 'text', 'confidence'])
-    #         ocr_df.to_csv(final_path)
-    #         print(final_path + " saved")
-    #
-    #     except Exception as e:
-    #         print(f"Error preprocessing {filename}: {e}")
-
-    #Attempting to create a version that just fills data in data.csv
-
     #Update global vars
     global num_processed
     global num_files
@@ -303,24 +261,18 @@ def ocr():
             image_np = np.array(image)
             results = reader.readtext(image_np)
             ocr_df = pd.DataFrame(results, columns=['bbox', 'text', 'confidence'])
-            #ocr_df.to_csv(final_path)
 
             transcription_lines = "\n\""
             confidence_lines = "\n"
-
-            #num_processed = num_processed + 0.5
 
             num_cols = len(ocr_df)
             column_counter = 0
             for i in range(num_cols):
                 #If there are more sections of data in the dataframe than fields in the csv, start lumping data together in the last column
                 #Note: This will not update the confidence for that column with the current implementation
-                #temp_str = ""
-                #if str(ocr_df.loc[i].at["text"]) != "nan":
                 temp_str = str(ocr_df.loc[i].at["text"]).replace("\"", "\"\"")
 
                 if column_counter >= 38:
-                    #transcription_lines = transcription_lines + ocr_df[line][1]
                     transcription_lines = transcription_lines + temp_str
                 elif column_counter == 0:
                     transcription_lines = transcription_lines + temp_str
@@ -351,7 +303,6 @@ def ocr():
         except Exception as e:
             print(f"Error preprocessing {filename}: {e}")
 
-    #TODO: RUN TEXTREADER.PY
     textReader.parsing()
 
     return jsonify({"success": True, "message": f"OCR Complete"})
@@ -573,22 +524,6 @@ def delete_file(filename):
             os.remove(file_path)
 
     return jsonify({"success": True, "message": f"{filename} attempted deletion in all folders"})
-    # file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-    # preprocessed_path = os.path.join(app.config["PREPROCESS_FOLDER"], filename)
-    # stage1_path = os.path.join(app.config["STAGE1_FOLDER"], filename)
-    # saved_originals_path = os.path.join(app.config["SAVED_ORIGINALS"], filename)
-    # modified_path = os.path.join(app.config["MODIFIED_FOLDER"], filename)
-    #
-    # if os.path.exists(file_path):
-    #     os.remove(file_path)
-    # if os.path.exists(preprocessed_path):
-    #     os.remove(preprocessed_path)
-    # if os.path.exists(stage1_path):
-    #     os.remove(stage1_path)
-    # if os.path.exists(saved_originals_path):
-    #     os.remove(saved_originals_path)
-    # if os.path.exists(modified_path):
-    #     os.remove(modified_path)
 
 @app.route("/delete_all", methods=["DELETE"])
 def delete_all():
@@ -601,7 +536,7 @@ def delete_all():
 
 
 # @app.before_request
-# def clear_on_new_session():
+# def clear_on_new_session(): // clearing on session-based approach, if you choose to use sessions in the future
 #     if "visited" not in session:
 #         session["visited"] = True
 #         print("clearing it all!")
@@ -621,10 +556,6 @@ def img_reprocessing():
     processing_strength = data.get("processing_strength")
     line_value = float(data.get("line_value"))
     crop_factor = float(data.get("crop_factor"))
-    print(image_name)
-    print(crop_factor)
-    print(line_value)
-    print(processing_strength)
 
     original_path = os.path.join(SAVED_ORIGINALS, image_name)
     modified_path = os.path.join(MODIFIED_FOLDER, image_name)
@@ -700,6 +631,8 @@ def apply_processing_strength(image_np, strength, thickness):
     elif strength == "medium":
         print("Applying medium processing")
         image_np = cv2.cvtColor(image_np, cv2.COLOR_BGR2GRAY)
+
+        image_np = apply_thickness(image_np, thickness)
         # Use slightly stronger kernel and denoising
         # kernel = np.ones((3, 3), np.uint8)
         image_np = cv2.fastNlMeansDenoising(image_np, None, 10, 10, 7)
@@ -727,13 +660,6 @@ def apply_processing_strength(image_np, strength, thickness):
 
 @app.route("/output", methods=["GET"])
 def output():
-    #NEED TO MARK if IT HAS ALREADY BEEN RUN, or it will overwrite user changes
-    # global has_parsed
-    #
-    # if not has_parsed:
-    #     textReader.parsing()
-    #     has_parsed = True
-
     final_path = os.path.join(OCR_OUTPUT, "data.csv")
 
     #view the images
