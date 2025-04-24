@@ -175,6 +175,12 @@ def parsing():
 
         listOfStrings = line
         listOfConfidence = originalConfidence[currentIndex]
+
+        ### Just for my own sanity; remove extraneous quotation marks from words
+        for i, string in enumerate(listOfStrings):
+            if re.search("\"", string):
+                listOfStrings[i] = re.sub("\"", "", listOfStrings[i])
+
         ## These COPIES will get used later
         copiedStrings = copy.deepcopy(listOfStrings)
         copiedConfidence = copy.deepcopy(listOfConfidence)
@@ -188,12 +194,6 @@ def parsing():
 
         ### Category[0]: CatalogNumber can be filled in off the top (#########)
         df.iloc[currentIndex, 0] = "#########"
-
-        ### Just for my own sanity; remove extraneous quotes from words
-        for string in listOfStrings:
-            if re.search("\"", string):
-                print("HUZZAH")
-                re.sub("\"", "", listOfStrings[listOfStrings.index(string)])
 
         # The order that the categories are filled in is, at first, determined by the order the text is parsed from the photo
         # Some items, (genus, species, and subspecies) always come first
@@ -273,7 +273,7 @@ def parsing():
         # Split the string (delim will allow us to reincorporate it into list form in the proper order later)
         delim = " | "
         joinedStrings = delim.join(listOfStrings)
-        print("New and improved joined string: ", joinedStrings)
+        #print("New and improved joined string: ", joinedStrings)
 
         voucher = ""
         x = re.search(r"(MGCL)?\s?[0-9]{7}", joinedStrings, re.IGNORECASE)
@@ -333,7 +333,7 @@ def parsing():
 
         ### LOCALITIES: Categories[7 - 10] ###
         locationString = joinedStrings.replace(" | ", " ")
-        print("Location string:", locationString)
+        #print("Location string:", locationString)
         placeEntity = locationtagger.find_locations(text=locationString)
 
         # split all words into ngrams to test against the dictionaries
@@ -397,7 +397,7 @@ def parsing():
                     #if (re.search(string, df.iloc[currentIndex, iter], re.IGNORECASE)) and (string != ""):
                     if (re.search(re.escape(string), df.iloc[currentIndex, iter], re.IGNORECASE) is not None) and (
                                 string != ""):
-                        print("Found the string in the df!", string, "in df", df.iloc[currentIndex, iter])
+                        #print("Found the string in the df!", string, "in df", df.iloc[currentIndex, iter])
                         index = copiedStrings.index(string)
                         if copiedConfidence[index].strip() != '':
                             average += float(copiedConfidence[index])
@@ -411,7 +411,7 @@ def parsing():
                         joinedStrings = joinedStrings.replace(string, "")
 
                     elif (re.search(df.iloc[currentIndex, iter], string, re.IGNORECASE) is not None) and (string != ""):
-                        print("Found the df in the string!", df.iloc[currentIndex, iter], "in string", string)
+                        #print("Found the df in the string!", df.iloc[currentIndex, iter], "in string", string)
                         index = copiedStrings.index(string)
                         if copiedConfidence[index].strip() != '':
                             average += float(copiedConfidence[index])
@@ -446,7 +446,7 @@ def parsing():
         # UNITS: m, km, ft, mi, yd
         x = re.search(r"\d+ ?[dfikmty]+[.']?", joinedStrings)
         if x is not None:
-            print("Preliminary elevation: ", x.group())
+            #print("Preliminary elevation: ", x.group())
             unit = re.search(r"[a-zA-Z]+", x.group())
             if unit is not None:
                 df.loc[currentIndex, 'Elevation unit'] = unit.group()
@@ -510,7 +510,7 @@ def parsing():
             # See if it's only one, or both longitude/latitude
             x = re.findall(r"\d+[.,]\d+[NSEW]*[,\s]*\d+[.,]\d+[NSEW]*", joinedStrings, re.IGNORECASE)
             y = re.findall(r"\d+[.,]\d+[NSEW]*", "".join(x), re.IGNORECASE)
-            print("Lat and long found??: ", x, y)
+            #print("Lat and long found??: ", x, y)
             iter = 0
             # Iterate through both elements and populate longitude and latitude (if there ARE two)
             for element in y:
@@ -524,13 +524,13 @@ def parsing():
                 cdf.loc[currentIndex, 'Latitude'] = listOfConfidence[index]
                 cdf.loc[currentIndex, 'Longitude'] = listOfConfidence[index]
             except ValueError:
-                print("No lat and long ig")
+                print("No latitude and/or longitude")
 
 
         ### NOW BEGINS THE DATE SAGA (Categories[21 - 23] ###
-        print("\nJoined strings: ", joinedStrings)
+        #print("\nJoined strings: ", joinedStrings)
         dateString = joinedStrings.replace(" | ", " ")
-        print("Date string: ", dateString, "\n")
+        #print("Date string: ", dateString, "\n")
 
         datefinder_output = datefinder.find_dates(dateString)
         dates_found = ""
@@ -730,8 +730,7 @@ def parsing():
         listOfStrings = joinedStrings.split(" | ")
         listOfStrings = list(filter(None, listOfStrings))  # Removes empty strings
 
-        print("Updated listOfStrings: ", listOfStrings)
-        #print("Original lists: ", copiedStrings, "\n", copiedConfidence, "\n\n")
+        #print("Updated listOfStrings: ", listOfStrings)
 
         ### FILL IN THE REST OF THE COLUMNS OF THE DATAFRAME
         # Start from Country (Category[7]), since that's where things start getting messy
@@ -757,8 +756,8 @@ def parsing():
     df = df.replace("nan", "")  ### REPLACE nans WITH EMPTY SPACES
     cdf = cdf.iloc[:-1]
     pd.set_option('display.max_columns', None)
-    print("\nUpdated df:\n", df)
-    print("\nUpdated cdf:\n", cdf)
+    #print("\nUpdated df:\n", df)
+    #print("\nUpdated cdf:\n", cdf)
 
     ### WRITE TO FILES NOW PLEASE AND THANK YOU
     final_path = os.path.join(OCR_OUTPUT, "parsed.csv")
