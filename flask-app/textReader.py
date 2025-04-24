@@ -101,8 +101,8 @@ def split_date(date_str):
         month = month + "/"
 
     date_string = f"{month}{day}{year}"
-    if re.findall("[;|\s]", date_string):
-        date_string = re.sub("[;|\s]", "", date_string)
+    if re.findall(r"[;|\s]", date_string):
+        date_string = re.sub(r"[;|\s]", "", date_string)
 
     return date_string
 
@@ -438,8 +438,8 @@ def parsing():
 
         ### CLEANING SOME STUFF UP BEFORE NUMBER CALCULATIONS
         # Remove collection information (19XX-XX / # 20XX-X) stuff from string
-        joinedStrings = re.sub("[0-9]{4}-[0-9]+", "", joinedStrings)
-        joinedStrings = re.sub("#\s[0-9]{4}-[0-9]+", "", joinedStrings)
+        joinedStrings = re.sub(r"[0-9]{4}-[0-9]+", "", joinedStrings)
+        joinedStrings = re.sub(r"#\s[0-9]{4}-[0-9]+", "", joinedStrings)
 
 
         ### Category[12]: Elevation Max (will always have the unit attached to it so this is the reliable one)
