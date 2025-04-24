@@ -584,20 +584,20 @@ def apply_thickness(image_np, thickness):
         return image_np
 
     image_np = cv2.bitwise_not(image_np)
-    kernal = np.ones((2, 2), np.uint8)
+    kernel = np.ones((2, 2), np.uint8)
 
     if thickness == 0:
-        image_np = cv2.erode(image_np, kernal, iterations=3)
+        image_np = cv2.erode(image_np, kernel, iterations=3)
     if thickness == 1:
-        image_np = cv2.erode(image_np, kernal, iterations=2)
+        image_np = cv2.erode(image_np, kernel, iterations=2)
     if thickness == 2:
-        image_np = cv2.erode(image_np, kernal, iterations=1)
+        image_np = cv2.erode(image_np, kernel, iterations=1)
     if thickness == 4:
-        image_np = cv2.dilate(image_np, kernal, iterations=1)
+        image_np = cv2.dilate(image_np, kernel, iterations=1)
     if thickness == 5:
-        image_np = cv2.dilate(image_np, kernal, iterations=2)
+        image_np = cv2.dilate(image_np, kernel, iterations=2)
     if thickness == 6:
-        image_np = cv2.dilate(image_np, kernal, iterations=3)
+        image_np = cv2.dilate(image_np, kernel, iterations=3)
 
     image_np = cv2.bitwise_not(image_np)
     return image_np
