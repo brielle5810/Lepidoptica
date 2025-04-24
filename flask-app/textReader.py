@@ -101,8 +101,8 @@ def split_date(date_str):
         month = month + "/"
 
     date_string = f"{month}{day}{year}"
-    if re.findall("[;|\s]", date_string):
-        date_string = re.sub("[;|\s]", "", date_string)
+    if re.findall(r"[;|\s]", date_string):
+        date_string = re.sub(r"[;|\s]", "", date_string)
 
     return date_string
 
@@ -141,7 +141,7 @@ def parsing():
 ### CODE START ###
     # data is the template list of metadata attributes; there'll be a list for each image
     # Category[0]: CatalogNumber can be filled in off the top (#########)
-    data = [["#########", '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']]
+    data = [["#########", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan"]]
     conf_data = [["100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0",
                  "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0",
                  "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0", "100.0"]]
@@ -170,11 +170,17 @@ def parsing():
     #print("data", originalData, "\n")
 
     for line in originalData:
-        df.loc[len(df)] = [''] * len(df.columns)
+        df.loc[len(df)] = ["nan"] * len(df.columns)
         cdf.loc[len(cdf)] = ["100.0"] * len(cdf.columns)
 
         listOfStrings = line
         listOfConfidence = originalConfidence[currentIndex]
+
+        ### Just for my own sanity; remove extraneous quotation marks from words
+        for i, string in enumerate(listOfStrings):
+            if re.search("\"", string):
+                listOfStrings[i] = re.sub("\"", "", listOfStrings[i])
+
         ## These COPIES will get used later
         copiedStrings = copy.deepcopy(listOfStrings)
         copiedConfidence = copy.deepcopy(listOfConfidence)
@@ -183,7 +189,7 @@ def parsing():
         print("List of confidence: ", listOfConfidence)
 
         # Default values of the df and cdf
-        df.loc[currentIndex] = [''] * len(df.columns)
+        df.loc[currentIndex] = ["nan"] * len(df.columns)
         cdf.loc[currentIndex] = ["100.0"] * len(cdf.columns)
 
         ### Category[0]: CatalogNumber can be filled in off the top (#########)
@@ -309,7 +315,7 @@ def parsing():
                     elif (re.findall(re.escape(string), x.group())) and (string != ""):
 
                         index = copiedStrings.index(string)
-                        if (copiedConfidence[index].strip() != ''):
+                        if copiedConfidence[index].strip() != '':
                             average += float(copiedConfidence[index])
                         else:
                             print("Confidence rating is empty for: ", string)
@@ -340,8 +346,7 @@ def parsing():
         countyList = load_spec_vocab("dictionaries/countyDict.txt")
 
         ### Getting all countries
-        #print("The countries in text : ")
-        #print(placeEntity.countries)
+        print("The countries in text : ", placeEntity.countries)
 
         df.loc[currentIndex, 'Country'] = ", ".join(placeEntity.countries)
         if not placeEntity.countries:
@@ -354,8 +359,7 @@ def parsing():
                 print("No country found")
 
         ### Getting all states
-        #print("The states in text : ")
-        #print(placeEntity.regions)
+        print("The states in text : ", placeEntity.regions)
 
         df.loc[currentIndex, 'State'] = ", ".join(placeEntity.regions)
         if not placeEntity.regions:
@@ -380,8 +384,7 @@ def parsing():
             df.loc[currentIndex, 'County'] = ", ".join(placeEntity.cities)
 
         # Getting all cities
-        #print("The cities in text : ")
-        #print(placeEntity.cities)
+        print("The cities in text : ", placeEntity.cities)
         df.loc[currentIndex, 'Locality name'] = ", ".join(placeEntity.cities)
 
         # Confidence rating check/removing localities
@@ -392,12 +395,11 @@ def parsing():
             for string in listOfStrings:
                 if df.iloc[currentIndex, iter] != "":
                     #if (re.search(string, df.iloc[currentIndex, iter], re.IGNORECASE)) and (string != ""):
-                    if (re.search(re.escape(string), df.iloc[currentIndex, iter], re.IGNORECASE)) and (
+                    if (re.search(re.escape(string), df.iloc[currentIndex, iter], re.IGNORECASE) is not None) and (
                                 string != ""):
-
                         #print("Found the string in the df!", string, "in df", df.iloc[currentIndex, iter])
                         index = copiedStrings.index(string)
-                        if (copiedConfidence[index].strip() != ''):
+                        if copiedConfidence[index].strip() != '':
                             average += float(copiedConfidence[index])
                         else:
                             print("Confidence rating is empty for: ", string)
@@ -408,10 +410,10 @@ def parsing():
                         #joinedStrings = re.sub(string, "", joinedStrings)  ### REMOVE FROM BIG STRING
                         joinedStrings = joinedStrings.replace(string, "")
 
-                    elif (re.search(df.iloc[currentIndex, iter], string, re.IGNORECASE)) and (string != ""):
+                    elif (re.search(df.iloc[currentIndex, iter], string, re.IGNORECASE) is not None) and (string != ""):
                         #print("Found the df in the string!", df.iloc[currentIndex, iter], "in string", string)
                         index = copiedStrings.index(string)
-                        if (copiedConfidence[index].strip() != ''):
+                        if copiedConfidence[index].strip() != '':
                             average += float(copiedConfidence[index])
                         else:
                             print("Confidence rating is empty for: ", string)
@@ -421,6 +423,11 @@ def parsing():
                         listOfStrings.remove(string)  ### Remove from list of strings
                         #joinedStrings = re.sub(string, "", joinedStrings)  ### REMOVE FROM BIG STRING
                         joinedStrings = joinedStrings.replace(string, "")
+                    else:
+                        df.loc[currentIndex, 'Country'] = "nan"
+                        df.loc[currentIndex, 'State'] = "nan"
+                        df.loc[currentIndex, 'County'] = "nan"
+                        df.loc[currentIndex, 'Locality name'] = "nan"
 
             if average != 0:
                 average = average / divisor
@@ -431,8 +438,8 @@ def parsing():
 
         ### CLEANING SOME STUFF UP BEFORE NUMBER CALCULATIONS
         # Remove collection information (19XX-XX / # 20XX-X) stuff from string
-        joinedStrings = re.sub("[0-9]{4}-[0-9]+", "", joinedStrings)
-        joinedStrings = re.sub("#\s[0-9]{4}-[0-9]+", "", joinedStrings)
+        joinedStrings = re.sub(r"[0-9]{4}-[0-9]+", "", joinedStrings)
+        joinedStrings = re.sub(r"#\s[0-9]{4}-[0-9]+", "", joinedStrings)
 
 
         ### Category[12]: Elevation Max (will always have the unit attached to it so this is the reliable one)
@@ -464,7 +471,7 @@ def parsing():
                     #if (re.findall(x.group(), string)) and (string != ""):
                     if (re.findall(re.escape(x.group()), string)) and (string != ""):
                         index = copiedStrings.index(string)
-                        if (copiedConfidence[index].strip() != ''):
+                        if copiedConfidence[index].strip() != '':
                             average += float(copiedConfidence[index])
                         else:
                             print("Confidence rating is empty for: ", string)
@@ -478,7 +485,7 @@ def parsing():
                     elif (re.findall(re.escape(string), x.group())) and (string != ""):
 
                         index = copiedStrings.index(string)
-                        if (copiedConfidence[index].strip() != ''):
+                        if copiedConfidence[index].strip() != '':
                             average += float(copiedConfidence[index])
                         else:
                             print("Confidence rating is empty for: ", string)
@@ -517,7 +524,7 @@ def parsing():
                 cdf.loc[currentIndex, 'Latitude'] = listOfConfidence[index]
                 cdf.loc[currentIndex, 'Longitude'] = listOfConfidence[index]
             except ValueError:
-                print("No lat and long ig")
+                print("No latitude and/or longitude")
 
 
         ### NOW BEGINS THE DATE SAGA (Categories[21 - 23] ###
@@ -572,7 +579,7 @@ def parsing():
             x = re.search(r"\d{2};?(?![a-zA-Z-])", dateString)
             dates_found = x.group()
         else:
-            dates_found = ""
+            dates_found = "nan"
 
         print("Preliminary dates found: ", dates_found)
         df.loc[currentIndex, 'Date verbatim'] = dates_found
@@ -592,7 +599,7 @@ def parsing():
                 if (re.findall(re.escape(dates_found), string)) and (string != ""):
                 #if (re.findall(dates_found, string)) and (string != ""):
                     index = copiedStrings.index(string)
-                    if (copiedConfidence[index].strip() != ''):
+                    if copiedConfidence[index].strip() != '':
                         average += float(copiedConfidence[index])
                     else:
                         print("Confidence rating is empty for: ", string)
@@ -606,7 +613,7 @@ def parsing():
                 elif (re.findall(re.escape(string), dates_found)) and (string != ""):
 
                     index = copiedStrings.index(string)
-                    if (copiedConfidence[index].strip() != ''):
+                    if copiedConfidence[index].strip() != '':
                         average += float(copiedConfidence[index])
                     else:
                         print("Confidence rating is empty for: ", string)
@@ -672,7 +679,7 @@ def parsing():
                     divisor += 1
 
                 index = listOfStrings.index(string)
-                if (listOfConfidence[index].strip() != ''):
+                if listOfConfidence[index].strip() != '':
                     average += float(listOfConfidence[index])
                 else:
                     print("Confidence rating is empty for: ", string)
@@ -680,7 +687,7 @@ def parsing():
                 joinedStrings = joinedStrings.replace(string, "")
 
         if collectors != "":
-            #print("Collectors: ", collectors)
+            print("Collectors: ", collectors)
             # Remove extraneous semicolons/legate abbreviations, space or not
             collectors = re.sub(r"(;\s)|;", "", collectors)
             collectors = re.sub(r"(leg|le8|1cg)\.?\s?", "", collectors, re.IGNORECASE)
@@ -724,13 +731,12 @@ def parsing():
         listOfStrings = list(filter(None, listOfStrings))  # Removes empty strings
 
         #print("Updated listOfStrings: ", listOfStrings)
-        #print("Original lists: ", copiedStrings, "\n", copiedConfidence, "\n\n")
 
         ### FILL IN THE REST OF THE COLUMNS OF THE DATAFRAME
         # Start from Country (Category[7]), since that's where things start getting messy
         i = 7
         while i < len(df.columns):
-            if df.iloc[currentIndex, i] == '' and len(listOfStrings) != 0:
+            if df.iloc[currentIndex, i] == "nan" and len(listOfStrings) != 0:
                 if listOfStrings[0] in copiedStrings:
                     df.iloc[currentIndex, i] = listOfStrings[0]
                     index = copiedStrings.index(listOfStrings[0])
@@ -747,17 +753,18 @@ def parsing():
 
     ### FINAL PRINT OF DATAFRAME
     df = df.iloc[:-1]   # Remove extraneous last row
+    df = df.replace("nan", "")  ### REPLACE nans WITH EMPTY SPACES
     cdf = cdf.iloc[:-1]
     pd.set_option('display.max_columns', None)
-    print("\nUpdated df:\n", df)
-    print("\nUpdated cdf:\n", cdf)
+    #print("\nUpdated df:\n", df)
+    #print("\nUpdated cdf:\n", cdf)
 
     ### WRITE TO FILES NOW PLEASE AND THANK YOU
     final_path = os.path.join(OCR_OUTPUT, "parsed.csv")
     final_confidence_path = os.path.join(OCR_OUTPUT, "parsed_confidence.csv")
 
-    final_data = open(final_path, "w", encoding="utf8")
-    final_conf_data = open(final_confidence_path, "w", encoding="utf8")
+    final_data = open(final_path, "w", encoding="utf8", newline='')
+    final_conf_data = open(final_confidence_path, "w", encoding="utf8", newline='')
 
-    df.to_csv(final_data, index=False)
-    cdf.to_csv(final_conf_data, index=False)
+    df.to_csv(final_data, mode ='a', index=False)
+    cdf.to_csv(final_conf_data, mode='a', index=False)

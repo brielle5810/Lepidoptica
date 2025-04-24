@@ -303,12 +303,18 @@ a.nav-a:hover {
 }
 
 .selected-cell {
-
-
     outline: 2px solid #3399ff;
     outline-offset: -2px;
 }
 
+#downloadOption {
+    background-color:#f3f7e9;
+    color:#006666;
+    border-color:#578a3d;
+    border-radius:5px;
+    font-weight: bold;
+    font-size: 18px;
+}
 
 /*.custom-scrollbar-js,*/
 /*.custom-scrollbar-css {*/

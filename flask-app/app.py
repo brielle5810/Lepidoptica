@@ -1,3 +1,4 @@
+import math
 import os
 import secrets
 
@@ -679,8 +680,18 @@ def output():
     pd.set_option('display.max_columns', None)
 
     ### USE THIS FOR THE FINAL VERSION
-    df = pd.read_csv(os.path.join(OCR_OUTPUT, "parsed.csv")).fillna('')
-    df_list = df.values.tolist()
+    try:
+        df = pd.read_csv(os.path.join(OCR_OUTPUT, "parsed.csv"))
+        print("File read successfully:")
+        df = df.fillna('')
+        df_list = df.values.tolist()
+    except pd.errors.EmptyDataError as e:
+        print(f"Error: {e}")
+    except FileNotFoundError:
+        print("Error: File not found. Check the file path.")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+
     print("df_list:\n", df_list, "\n")
     print("====================================")
 
